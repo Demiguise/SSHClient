@@ -1,0 +1,159 @@
+{
+    // See https://go.microsoft.com/fwlink/?LinkId=733558
+    // for the documentation about the tasks.json format
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "Build",
+            "type": "shell",
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "problemMatcher": {
+                "owner": "cpp",
+                "fileLocation" : [
+                    "relative",
+                    "${workspaceFolder}/bld",
+                ],
+                "pattern" : {
+                    "regexp": "^([\\w\\d\\\\\\/\\.]+)\\((\\d+),(\\d+)\\):\\s(error|warning):(.*)",
+                    "file":1,
+                    "line": 2,
+                    "column": 3,
+                    "severity": 4,
+                    "message": 5,
+                },
+            },
+            "windows": {
+                "command": "${workspaceFolder}/cmake/scripts/win64/build.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/cmake/scripts/linux/gencmake.bat",
+            }
+        },
+        {
+            "label": "Clean",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "windows": {
+                "command": "${workspaceFolder}/cmake/scripts/win64/rebuild.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/cmake/scripts/linux/gencmake.bat",
+            }
+        },
+        {
+            "label": "CMake - Release",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "windows": {
+                "command": "${workspaceFolder}/cmake/scripts/win64/gencmake.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/cmake/scripts/linux/gencmake.bat",
+            }
+        },
+        {
+            "label": "CMake - Debug",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "options": {
+                "env": {
+                    "DEBUG": "1"
+                }
+            },
+            "windows": {
+                "command": "${workspaceFolder}/cmake/scripts/win64/gencmake.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/cmake/scripts/linux/gencmake.bat",
+            }
+        },
+        {
+            "label": "CMake - Clean",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "windows": {
+                "command": "rm -rf bld/",
+            },
+            "linux": {
+                "command": ""
+            }
+        },
+        {
+            "label": "CPPCheck",
+            "type": "process",
+            "command" : "",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "options": {
+                "cwd": "${workspaceFolder}/source",
+            },
+            "windows": {
+                "command": "C:\\Program Files\\Cppcheck\\cppcheck.exe",
+                "args": [
+                    "--platform=win64",
+                    "--xml-version=2",
+                    "--language=c++",
+                    "--std=c++14",
+                    "--enable=all",
+                    "--force",
+                    "--output-file=${workspaceFolder}/cppcheck.xml",
+                    "-j 8",
+                    "."
+                ]
+            },
+            "linux": {
+                "command": "cppcheck",
+            }
+        }
+    ]
+}
