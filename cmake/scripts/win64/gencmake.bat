@@ -5,7 +5,7 @@ if not defined DevEnvDir (
 
 set buildType=Release
 
-if not "%DEBUG%"=="" set buildType=Debug
+if not "%DEBUG%"=="" set buildType=DebugFull
 
 echo "Generating project for [%buildType%] configuration"
 
