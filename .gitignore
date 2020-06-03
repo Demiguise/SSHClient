@@ -1,0 +1,9 @@
+#Folders
+[Ll]ib/
+[Bb]ld/
+tmp/
+.clangd/
+
+#File types
+compile_commands.json
+cppcheck.xml
