@@ -2,10 +2,6 @@ set(SRCS
   ssh.cpp
 )
 
-set(HDRS
-  include/ssh.h
-)
-
 set(SSH_Common_Defines
 )
 
@@ -23,12 +19,11 @@ set(CMAKE_DEBUG_POSTFIX _d)
 
 add_library(SSH
   ${SRCS}
-  ${HDRS}
 )
 
 target_include_directories(SSH
   PUBLIC
-    include
+    ${PROJECT_SOURCE_DIR}/include
 )
 
 target_compile_definitions(SSH
