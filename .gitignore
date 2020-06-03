@@ -7,3 +7,5 @@ tmp/
 #File types
 compile_commands.json
 cppcheck.xml
+
+.vscode/c_cpp_properties.json
