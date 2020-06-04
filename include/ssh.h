@@ -11,6 +11,7 @@ namespace SSH
   {
     Idle,
     Disconnected,
+    Connecting,
     Authenticating,
     Connected,
   };

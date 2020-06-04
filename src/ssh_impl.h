@@ -19,6 +19,8 @@ namespace SSH
 
     TResult Send(const char* pBuf, const int bufLen);
 
+    void Poll();
+
     void Connect(const char* pszUser);
     void Disconnect();
 
