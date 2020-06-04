@@ -143,7 +143,6 @@ void Client::Impl::Poll()
       to the implementation to handle.
     */
     Log(LogLevel::Info, "Recieved %d bytes from remote!", recievedBytes.value());
-    LogBuffer(LogLevel::Debug, "Recv", buf.Buffer(), recievedBytes.value());
   }
 }
 
