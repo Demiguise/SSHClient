@@ -27,7 +27,8 @@ public:
 
 Client::Impl::Impl(ClientOptions options, TCtx ctx)
   : mSendFunc(options.send)
-  , mRecvFunc(options.onRecv)
+  , mRecvFunc(options.recv)
+  , mOnRecvFunc(options.onRecv)
   , mCtx(ctx)
   , mState(State::Idle)
 {
@@ -50,8 +51,20 @@ void Client::Impl::Poll()
     return;
   }
 
+  //Populate our buffer with data from the underlying transport
   SecureBuffer<1024> buf;
   auto recievedBytes = mRecvFunc(mCtx, buf.Buffer(), buf.Length());
+
+  if (!recievedBytes.has_value())
+  {
+    //No data received, nothing to do.
+    return;
+  }
+
+  /*
+    We received a number of bytes from the transport, simply hand them over
+    to the implementation to handle.
+  */
 }
 
 void Client::Impl::Connect(const char* pszUser)

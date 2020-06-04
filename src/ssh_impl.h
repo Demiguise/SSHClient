@@ -10,8 +10,14 @@ namespace SSH
   protected:
     TSendFunc mSendFunc;
     TRecvFunc mRecvFunc;
+    TOnRecvFunc mOnRecvFunc;
+
     TCtx mCtx;
     State mState;
+
+#ifdef __DEBUG
+    TLogFunc mLogFunc;
+#endif //~__DEBUG
 
   public:
     Impl(ClientOptions options, TCtx ctx);
@@ -25,6 +31,10 @@ namespace SSH
     void Disconnect();
 
     State GetState() const { return mState; }
+
+#ifdef __DEBUG
+    void SetLogFunc(TLogFunc func) { mLogFunc = func; }
+#endif //~__DEBUG
   };
 }
 

@@ -20,12 +20,18 @@ namespace SSH
   using TResult = std::optional<int>;
 
   using TSendFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
-  using TRecvFunc = std::function<TResult (TCtx ctx, const char *pBuf, const int bufLen)>;
+  using TRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
+  using TOnRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
+
+#ifdef __DEBUG
+  using TLogFunc = std::function<TResult (const char* pszLogString)>;
+#endif //~__DEBUG
 
   struct ClientOptions
   {
-    TSendFunc send;
-    TRecvFunc onRecv;
+    TSendFunc send;   //Function for how the SSH Client will SEND data into the socket
+    TRecvFunc recv;   //Function for how the SSH Client will RECEIVE data from a socket
+    TOnRecvFunc onRecv; //Function for when the SSH Client has received data for your application
   };
 
   class Client
@@ -48,6 +54,10 @@ namespace SSH
     void Disconnect();
 
     State GetState() const;
+
+#ifdef __DEBUG
+    void SetLogFunc(TLogFunc func);
+#endif //~__DEBUG
   };
 }
 
