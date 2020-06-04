@@ -7,7 +7,7 @@ set(SSH_Common_Defines
 )
 
 set(SSH_Debug_Defines
-  __DEBUG
+  _DEBUG
 )
 
 set(SSH_Common_Options

@@ -33,8 +33,3 @@ State Client::GetState() const
 {
   return mImpl->GetState();
 }
-
-void Client::SetLogFunc(TLogFunc func)
-{
-  mImpl->SetLogFunc(func);
-}

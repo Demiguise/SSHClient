@@ -15,7 +15,7 @@ namespace SSH
     TCtx mCtx;
     State mState;
 
-#ifdef __DEBUG
+#ifdef _DEBUG
     TLogFunc mLogFunc;
 #endif //~__DEBUG
 
@@ -31,10 +31,6 @@ namespace SSH
     void Disconnect();
 
     State GetState() const { return mState; }
-
-#ifdef __DEBUG
-    void SetLogFunc(TLogFunc func) { mLogFunc = func; }
-#endif //~__DEBUG
   };
 }
 

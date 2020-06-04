@@ -31,6 +31,9 @@ Client::Impl::Impl(ClientOptions options, TCtx ctx)
   , mOnRecvFunc(options.onRecv)
   , mCtx(ctx)
   , mState(State::Idle)
+#ifdef _DEBUG
+  , mLogFunc(options.log)
+#endif //~__DEBUG
 {
 }
 
