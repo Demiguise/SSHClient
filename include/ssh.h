@@ -35,9 +35,17 @@ namespace SSH
     TCtx mCtx;
     State mState;
 
+    /*
+      Seperate implementation details away from the client interface.
+      Interface API can stay solid while implemenation details change underneath.
+    */
+    class ClientImpl;
+    friend class ClientImpl;
+    std::unique_ptr<ClientImpl> mImpl;
+
   public:
-    //Base constructor
     Client(ClientOptions options, TCtx ctx);
+    ~Client();
 
     TResult Send(const char* pBuf, const int bufLen);
     TResult Recv(const char* pBuf, const int bufLen);

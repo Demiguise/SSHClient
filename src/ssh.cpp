@@ -1,4 +1,5 @@
 #include "ssh.h"
+#include "ssh_impl.h"
 
 using namespace SSH;
 
@@ -8,6 +9,12 @@ Client::Client(ClientOptions options, TCtx ctx)
   , mCtx(ctx)
   , mState(State::Idle)
 {
+  mImpl = std::make_unique<ClientImpl>();
+}
+
+Client::~Client()
+{
+  mImpl.reset();
 }
 
 TResult Client::Send(const char* pBuf, const int bufLen)
