@@ -70,7 +70,7 @@ void Client::Impl::Log(LogLevel level, const std::string frmt, ...)
   mLogFunc(buffer);
 }
 
-void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const unsigned char* pBuf, const int bufLen)
+void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const Byte* pBuf, const int bufLen)
 {
   std::unique_ptr<char[]> pLogBuf;
   int bytesWritten = 0;

@@ -22,7 +22,7 @@ namespace SSH
     LogLevel mLogLevel;
 
     void Log(LogLevel level, std::string frmt, ...);
-    void LogBuffer(LogLevel level, std::string bufferName, const Byte *pBuf, const int bufLen);
+    void LogBuffer(LogLevel level, std::string bufferName, const Byte* pBuf, const int bufLen);
 
   public:
     Impl(ClientOptions options, TCtx ctx);
