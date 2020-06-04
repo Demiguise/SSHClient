@@ -101,7 +101,15 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const ch
 
 TResult Client::Impl::Send(const char* pBuf, const int bufLen)
 {
-  return mSendFunc(mCtx, pBuf, bufLen);
+  auto sentBytes = mSendFunc(mCtx, pBuf, bufLen);
+  if (!sentBytes.has_value())
+  {
+    Log(LogLevel::Warning, "Failed to send %d bytes", bufLen);
+    return {};
+  }
+
+  Log(LogLevel::Debug, "Successfully sent %d/%d bytes", sentBytes, bufLen);
+  return sentBytes;
 }
 
 void Client::Impl::Poll()
@@ -138,6 +146,13 @@ void Client::Impl::Connect(const char* pszUser)
 
   Log(LogLevel::Debug, "Starting poll async call");
   auto fut = std::async(&Impl::Poll, this);
+
+  char buf[512];
+  int bytesWritten = snprintf(buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
+  buf[bytesWritten++] = 0x0D;
+  buf[bytesWritten++] = 0x0A;
+
+  Send(buf, bytesWritten);
 }
 
 void Client::Impl::Disconnect()
