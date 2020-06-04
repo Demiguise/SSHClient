@@ -19,11 +19,6 @@ TResult Client::Send(const char* pBuf, const int bufLen)
   return mImpl->Send(pBuf, bufLen);
 }
 
-TResult Client::Recv(const char* pBuf, const int bufLen)
-{
-  return mImpl->Recv(pBuf, bufLen);
-}
-
 void Client::Connect(const char* pszUser)
 {
   mImpl->Connect(pszUser);

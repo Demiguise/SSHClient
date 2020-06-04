@@ -18,7 +18,6 @@ namespace SSH
     ~Impl();
 
     TResult Send(const char* pBuf, const int bufLen);
-    TResult Recv(const char* pBuf, const int bufLen);
 
     void Connect(const char* pszUser);
     void Disconnect();

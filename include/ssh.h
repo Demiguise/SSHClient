@@ -24,7 +24,7 @@ namespace SSH
   struct ClientOptions
   {
     TSendFunc send;
-    TRecvFunc recv;
+    TRecvFunc onRecv;
   };
 
   class Client
@@ -42,7 +42,6 @@ namespace SSH
     ~Client();
 
     TResult Send(const char* pBuf, const int bufLen);
-    TResult Recv(const char* pBuf, const int bufLen);
 
     void Connect(const char* pszUser);
     void Disconnect();
