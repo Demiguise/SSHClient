@@ -21,18 +21,18 @@ namespace SSH
     TLogFunc mLogFunc;
     LogLevel mLogLevel;
 
-    void Log(LogLevel level, const char* frmt, ...);
-    void LogBuffer(LogLevel level, const char* pszBufferName, const unsigned char* pBuf, const int bufLen);
+    void Log(LogLevel level, std::string frmt, ...);
+    void LogBuffer(LogLevel level, std::string bufferName, const Byte *pBuf, const int bufLen);
 
   public:
     Impl(ClientOptions options, TCtx ctx);
     ~Impl();
 
-    TResult Send(const char* pBuf, const int bufLen);
+    TResult Send(const Byte* pBuf, const int bufLen);
 
     void Poll();
 
-    void Connect(const char* pszUser);
+    void Connect(const std::string pszUser);
     void Disconnect();
 
     State GetState() const { return mState; }

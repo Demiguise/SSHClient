@@ -49,7 +49,7 @@ Client::Impl::~Impl()
 {
 }
 
-void Client::Impl::Log(LogLevel level, const char* frmt, ...)
+void Client::Impl::Log(LogLevel level, const std::string frmt, ...)
 {
   char buffer[Impl::sMaxLogLength];
   int bytesWritten = 0;
@@ -61,7 +61,7 @@ void Client::Impl::Log(LogLevel level, const char* frmt, ...)
 
   va_list args;
   va_start(args, frmt);
-  bytesWritten = vsnprintf(buffer, Impl::sMaxLogLength, frmt, args);
+  bytesWritten = vsnprintf(buffer, Impl::sMaxLogLength, frmt.c_str(), args);
   va_end(args);
 
   //Add the null terminator.
@@ -70,7 +70,7 @@ void Client::Impl::Log(LogLevel level, const char* frmt, ...)
   mLogFunc(buffer);
 }
 
-void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const unsigned char* pBuf, const int bufLen)
+void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const unsigned char* pBuf, const int bufLen)
 {
   std::unique_ptr<char[]> pLogBuf;
   int bytesWritten = 0;
@@ -82,7 +82,7 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const un
     return;
   }
 
-  const int totalBytes = (bufLen * 3) + strlen(pszBufferName) + extraChars + (bufLen / columnLimit); //Each character is actually "XX "
+  const int totalBytes = (bufLen * 3) + bufferName.length() + extraChars + (bufLen / columnLimit); //Each character is actually "XX "
   pLogBuf = std::make_unique<char[]>(totalBytes);
   if (pLogBuf == nullptr)
   {
@@ -91,7 +91,7 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const un
   }
 
   //Output the name of the buffer we were passed
-  bytesWritten = sprintf(pLogBuf.get(), "[%s]", pszBufferName);
+  bytesWritten = sprintf(pLogBuf.get(), "[%s]", bufferName.c_str());
 
   //Now print each byte in hexadecimal form
   for (int i = 0; i < bufLen ; ++i)
@@ -111,7 +111,7 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const un
   mLogFunc(pLogBuf.get());
 }
 
-TResult Client::Impl::Send(const char* pBuf, const int bufLen)
+TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
 {
   auto sentBytes = mSendFunc(mCtx, pBuf, bufLen);
   if (!sentBytes.has_value())
@@ -146,17 +146,17 @@ void Client::Impl::Poll()
   }
 }
 
-void Client::Impl::Connect(const char* pszUser)
+void Client::Impl::Connect(const std::string pszUser)
 {
   mState = State::Connecting;
 
-  Log(LogLevel::Info, "Beginning to connect with user %s", pszUser);
+  Log(LogLevel::Info, "Beginning to connect with user %s", pszUser.c_str());
 
   Log(LogLevel::Debug, "Starting poll async call");
   auto fut = std::async(std::launch::async, &Impl::Poll, this);
 
-  char buf[512];
-  int bytesWritten = snprintf(buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
+  Byte buf[512];
+  int bytesWritten = snprintf((char*)buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 

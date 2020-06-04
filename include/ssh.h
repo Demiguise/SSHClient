@@ -7,6 +7,8 @@
 
 namespace SSH
 {
+  using Byte = unsigned char;
+
   enum class State
   {
     Idle,
@@ -27,9 +29,9 @@ namespace SSH
   using TCtx = std::weak_ptr<void>;
   using TResult = std::optional<int>;
 
-  using TSendFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
-  using TRecvFunc = std::function<TResult (TCtx ctx, unsigned char* pBuf, const int bufLen)>;
-  using TOnRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
+  using TSendFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
+  using TRecvFunc = std::function<TResult (TCtx ctx, Byte* pBuf, const int bufLen)>;
+  using TOnRecvFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
   struct ClientOptions
@@ -56,9 +58,9 @@ namespace SSH
     Client(ClientOptions options, TCtx ctx);
     ~Client();
 
-    TResult Send(const char* pBuf, const int bufLen);
+    TResult Send(const Byte* pBuf, const int bufLen);
 
-    void Connect(const char* pszUser);
+    void Connect(const std::string pszUser);
     void Disconnect();
 
     State GetState() const;

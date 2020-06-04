@@ -14,12 +14,12 @@ Client::~Client()
   mImpl.reset();
 }
 
-TResult Client::Send(const char* pBuf, const int bufLen)
+TResult Client::Send(const Byte* pBuf, const int bufLen)
 {
   return mImpl->Send(pBuf, bufLen);
 }
 
-void Client::Connect(const char* pszUser)
+void Client::Connect(const std::string pszUser)
 {
   mImpl->Connect(pszUser);
 }
