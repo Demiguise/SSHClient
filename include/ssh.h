@@ -7,9 +7,25 @@
 
 namespace SSH
 {
+  enum class State
+  {
+    Idle,
+    Disconnected,
+    Authenticating,
+    Connected,
+  };
+
   using TCtx = std::weak_ptr<void>;
-  using TSendFunc = std::function<void (TCtx ctx, const char* pBuf, const int bufLen)>;
-  using TRecvFunc = std::function<void (TCtx ctx, const char *pBuf, const int bufLen)>;
+  using TResult = std::optional<int>;
+
+  using TSendFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
+  using TRecvFunc = std::function<TResult (TCtx ctx, const char *pBuf, const int bufLen)>;
+
+  struct ClientOptions
+  {
+    TSendFunc send;
+    TRecvFunc recv;
+  };
 
   class Client
   {
@@ -17,13 +33,19 @@ namespace SSH
     TSendFunc mSendFunc;
     TRecvFunc mRecvFunc;
     TCtx mCtx;
+    State mState;
 
   public:
     //Base constructor
-    Client(TSendFunc sendFunc, TRecvFunc recvFunc, TCtx ctx);
+    Client(ClientOptions options, TCtx ctx);
 
-    void Send(const char* pBuf, const int bufLen);
-    void Recv(const char* pBuf, const int bufLen);
+    TResult Send(const char* pBuf, const int bufLen);
+    TResult Recv(const char* pBuf, const int bufLen);
+
+    void Connect(const char* pszUser);
+    void Disconnect();
+
+    State GetState() const { return mState; }
   };
 }
 

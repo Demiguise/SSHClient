@@ -2,20 +2,29 @@
 
 using namespace SSH;
 
-Client::Client(TSendFunc sendFunc, TRecvFunc recvFunc, TCtx ctx)
-  : mSendFunc(sendFunc)
-  , mRecvFunc(recvFunc)
+Client::Client(ClientOptions options, TCtx ctx)
+  : mSendFunc(options.send)
+  , mRecvFunc(options.recv)
   , mCtx(ctx)
+  , mState(State::Idle)
 {
-
 }
 
-void Client::Send(const char* pBuf, const int bufLen)
+TResult Client::Send(const char* pBuf, const int bufLen)
 {
-  mSendFunc(mCtx, pBuf, bufLen);
+  return mSendFunc(mCtx, pBuf, bufLen);
 }
 
-void Client::Recv(const char* pBuf, const int bufLen)
+TResult Client::Recv(const char* pBuf, const int bufLen)
 {
-  mRecvFunc(mCtx, pBuf, bufLen);
+  return mRecvFunc(mCtx, pBuf, bufLen);
+}
+
+void Client::Connect(const char* pszUser)
+{
+}
+
+void Client::Disconnect()
+{
+
 }
