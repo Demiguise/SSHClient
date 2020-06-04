@@ -1,5 +1,6 @@
 #include "ssh_impl.h"
 
+#include <stdarg.h>
 #include <future>
 #include <array>
 #include <cstring> //Memset_s
@@ -31,14 +32,34 @@ Client::Impl::Impl(ClientOptions options, TCtx ctx)
   , mOnRecvFunc(options.onRecv)
   , mCtx(ctx)
   , mState(State::Idle)
-#ifdef _DEBUG
   , mLogFunc(options.log)
-#endif //~__DEBUG
+  , mLogLevel(options.logLevel)
 {
 }
 
 Client::Impl::~Impl()
 {
+}
+
+void Client::Impl::Log(LogLevel level, const char* frmt, ...)
+{
+  char buffer[Impl::sMaxLogLength];
+  int bytesWritten = 0;
+
+  if (mLogLevel < level)
+  {
+    return;
+  }
+
+  va_list args;
+  va_start(args, frmt);
+  bytesWritten = vsnprintf(buffer, Impl::sMaxLogLength, frmt, args);
+  va_end(args);
+
+  //Add the null terminator.
+  buffer[bytesWritten] = '\0';
+
+  mLogFunc(buffer);
 }
 
 TResult Client::Impl::Send(const char* pBuf, const int bufLen)
@@ -68,11 +89,14 @@ void Client::Impl::Poll()
     We received a number of bytes from the transport, simply hand them over
     to the implementation to handle.
   */
+  Log(LogLevel::Info, "Recieved %d bytes from remote!", recievedBytes.value());
 }
 
 void Client::Impl::Connect(const char* pszUser)
 {
   mState = State::Connecting;
+
+  mLogFunc("Beginning to connect");
 
   auto fut = std::async(&Impl::Poll, this);
 }

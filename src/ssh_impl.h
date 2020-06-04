@@ -7,6 +7,9 @@ namespace SSH
 {
   class Client::Impl
   {
+  private:
+    static const int sMaxLogLength = 256;
+
   protected:
     TSendFunc mSendFunc;
     TRecvFunc mRecvFunc;
@@ -15,9 +18,10 @@ namespace SSH
     TCtx mCtx;
     State mState;
 
-#ifdef _DEBUG
     TLogFunc mLogFunc;
-#endif //~__DEBUG
+    LogLevel mLogLevel;
+
+    void Log(LogLevel level, const char* frmt, ...);
 
   public:
     Impl(ClientOptions options, TCtx ctx);

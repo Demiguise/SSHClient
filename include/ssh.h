@@ -16,25 +16,30 @@ namespace SSH
     Connected,
   };
 
+  enum LogLevel
+  {
+    Error   = 0,
+    Warning = 1,
+    Info    = 2,
+    Debug   = 3,
+  };
+
   using TCtx = std::weak_ptr<void>;
   using TResult = std::optional<int>;
 
   using TSendFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
   using TRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
   using TOnRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
-
-#ifdef _DEBUG
   using TLogFunc = std::function<void (const char* pszLogString)>;
-#endif //~__DEBUG
 
   struct ClientOptions
   {
     TSendFunc send;   //Function for how the SSH Client will SEND data into the socket
     TRecvFunc recv;   //Function for how the SSH Client will RECEIVE data from a socket
     TOnRecvFunc onRecv; //Function for when the SSH Client has received data for your application
-#ifdef _DEBUG
+
     TLogFunc log;
-#endif //~__DEBUG
+    LogLevel logLevel;
   };
 
   class Client
