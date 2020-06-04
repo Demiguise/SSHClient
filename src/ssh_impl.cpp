@@ -96,7 +96,7 @@ void Client::Impl::Connect(const char* pszUser)
 {
   mState = State::Connecting;
 
-  mLogFunc("Beginning to connect");
+  Log(LogLevel::Info, "Beginning to connect with user %s", pszUser);
 
   auto fut = std::async(&Impl::Poll, this);
 }
