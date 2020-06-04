@@ -15,11 +15,11 @@ constexpr char LFbyte = 0x0A;
   A buffer that aims at making sure ALL data within it is correctly
   scrubbed after it goes out of scoped.
 */
-template<std::size_t size>
+template<typename T, std::size_t size>
 class SecureBuffer
 {
 private:
-  std::array<char, size> mArr;
+  std::array<T, size> mArr;
 public:
   SecureBuffer()
   {}
@@ -30,7 +30,7 @@ public:
     memset(mArr.data(), 0, size);
   }
 
-  char* Buffer() { return mArr.data(); }
+  T* Buffer() { return mArr.data(); }
   size_t Length() { return size; }
 };
 
@@ -70,19 +70,21 @@ void Client::Impl::Log(LogLevel level, const char* frmt, ...)
   mLogFunc(buffer);
 }
 
-void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const char* pBuf, const int bufLen)
+void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const unsigned char* pBuf, const int bufLen)
 {
-  char* pLogBuf = nullptr;
+  std::unique_ptr<char[]> pLogBuf;
   int bytesWritten = 0;
   constexpr int extraChars = 5; //[...]\n...\n\0
+  constexpr int columnLimit = 16;
 
   if (mLogLevel < level)
   {
     return;
   }
 
-  const int totalBytes = (bufLen * 3) + strlen(pszBufferName) + extraChars; //Each character is actually "XX "
-  pLogBuf = new char[totalBytes];
+  const int totalBytes = (bufLen * 3) + strlen(pszBufferName) + extraChars + (bufLen / columnLimit); //Each character is actually "XX "
+  Log(LogLevel::Debug, "Need %d bytes to print out %d %s", totalBytes, bufLen, pszBufferName);
+  pLogBuf = std::make_unique<char[]>(totalBytes);
   if (pLogBuf == nullptr)
   {
     //Failed to allocate
@@ -90,24 +92,24 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const ch
   }
 
   //Output the name of the buffer we were passed
-  bytesWritten = sprintf(pLogBuf, "[%s]", pszBufferName);
+  bytesWritten = sprintf(pLogBuf.get(), "[%s]", pszBufferName);
 
   //Now print each byte in hexadecimal form
   for (int i = 0; i < bufLen ; ++i)
   {
-    if ((i % 16) == 0)
+    if ((i % columnLimit) == 0)
     {
-      bytesWritten += sprintf(pLogBuf + bytesWritten, "\n ");
+      bytesWritten += sprintf(pLogBuf.get() + bytesWritten, "\n");
     }
 
-    bytesWritten += sprintf(pLogBuf + bytesWritten, "%.2X ", pBuf[i]);
+    bytesWritten += sprintf(pLogBuf.get() + bytesWritten, "%.2X ", pBuf[i]);
   }
 
   //Ensure we start a new line and end the string
   pLogBuf[bytesWritten++] = '\n';
   pLogBuf[bytesWritten++] = '\0';
 
-  mLogFunc(pLogBuf);
+  mLogFunc(pLogBuf.get());
 }
 
 TResult Client::Impl::Send(const char* pBuf, const int bufLen)
@@ -128,7 +130,7 @@ void Client::Impl::Poll()
   while (mState != State::Disconnected)
   {
     //Populate our buffer with data from the underlying transport
-    SecureBuffer<1024> buf;
+    SecureBuffer<unsigned char, 1024> buf;
     auto recievedBytes = mRecvFunc(mCtx, buf.Buffer(), buf.Length());
 
     if (!recievedBytes.has_value())
