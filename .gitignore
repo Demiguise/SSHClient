@@ -9,3 +9,4 @@ compile_commands.json
 cppcheck.xml
 
 .vscode/c_cpp_properties.json
+.vscode/settings.json
