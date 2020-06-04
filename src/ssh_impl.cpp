@@ -81,7 +81,7 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const ch
     return;
   }
 
-  const int totalBytes = bufLen + strlen(pszBufferName) + extraChars;
+  const int totalBytes = (bufLen * 3) + strlen(pszBufferName) + extraChars; //Each character is actually "XX "
   pLogBuf = new char[totalBytes];
   if (pLogBuf == nullptr)
   {
@@ -100,7 +100,7 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const ch
       bytesWritten += sprintf(pLogBuf + bytesWritten, "\n ");
     }
 
-    bytesWritten += sprintf(pLogBuf + bytesWritten, "%x ", pBuf[i]);
+    bytesWritten += sprintf(pLogBuf + bytesWritten, "%.2X ", pBuf[i]);
   }
 
   //Ensure we start a new line and end the string
