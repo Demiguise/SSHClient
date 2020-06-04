@@ -28,7 +28,7 @@ namespace SSH
   using TResult = std::optional<int>;
 
   using TSendFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
-  using TRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
+  using TRecvFunc = std::function<TResult (TCtx ctx, char* pBuf, const int bufLen)>;
   using TOnRecvFunc = std::function<TResult (TCtx ctx, const char* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 

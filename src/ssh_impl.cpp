@@ -3,13 +3,18 @@
 #include <stdarg.h>
 #include <future>
 #include <array>
-#include <cstring> //Memset_s
+#include <cstring>
 
 using namespace SSH;
 
+//Define the CR/LF bytes here for readability later on
 constexpr char CRbyte = 0x0D;
 constexpr char LFbyte = 0x0A;
 
+/*
+  A buffer that aims at making sure ALL data within it is correctly
+  scrubbed after it goes out of scoped.
+*/
 template<std::size_t size>
 class SecureBuffer
 {
@@ -25,7 +30,7 @@ public:
     memset(mArr.data(), 0, size);
   }
 
-  const char* Buffer() { return mArr.data(); }
+  char* Buffer() { return mArr.data(); }
   size_t Length() { return size; }
 };
 
@@ -84,8 +89,10 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const ch
     return;
   }
 
+  //Output the name of the buffer we were passed
   bytesWritten = sprintf(pLogBuf, "[%s]", pszBufferName);
 
+  //Now print each byte in hexadecimal form
   for (int i = 0; i < bufLen ; ++i)
   {
     if ((i % 16) == 0)
@@ -96,6 +103,7 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const ch
     bytesWritten += sprintf(pLogBuf + bytesWritten, "%x ", pBuf[i]);
   }
 
+  //Ensure we start a new line and end the string
   pLogBuf[bytesWritten++] = '\n';
   pLogBuf[bytesWritten++] = '\0';
 
@@ -117,28 +125,25 @@ TResult Client::Impl::Send(const char* pBuf, const int bufLen)
 
 void Client::Impl::Poll()
 {
-  if (mState == State::Disconnected)
+  while (mState != State::Disconnected)
   {
-    //End the polling async if we're disconnected
-    return;
+    //Populate our buffer with data from the underlying transport
+    SecureBuffer<1024> buf;
+    auto recievedBytes = mRecvFunc(mCtx, buf.Buffer(), buf.Length());
+
+    if (!recievedBytes.has_value())
+    {
+      //No data received, nothing to do.
+      continue;
+    }
+
+    /*
+      We received a number of bytes from the transport, simply hand them over
+      to the implementation to handle.
+    */
+    Log(LogLevel::Info, "Recieved %d bytes from remote!", recievedBytes.value());
+    LogBuffer(LogLevel::Debug, "Recv", buf.Buffer(), recievedBytes.value());
   }
-
-  //Populate our buffer with data from the underlying transport
-  SecureBuffer<1024> buf;
-  auto recievedBytes = mRecvFunc(mCtx, buf.Buffer(), buf.Length());
-
-  if (!recievedBytes.has_value())
-  {
-    //No data received, nothing to do.
-    return;
-  }
-
-  /*
-    We received a number of bytes from the transport, simply hand them over
-    to the implementation to handle.
-  */
-  Log(LogLevel::Info, "Recieved %d bytes from remote!", recievedBytes.value());
-  LogBuffer(LogLevel::Debug, "Recv", buf.Buffer(), recievedBytes.value());
 }
 
 void Client::Impl::Connect(const char* pszUser)
@@ -148,7 +153,7 @@ void Client::Impl::Connect(const char* pszUser)
   Log(LogLevel::Info, "Beginning to connect with user %s", pszUser);
 
   Log(LogLevel::Debug, "Starting poll async call");
-  auto fut = std::async(&Impl::Poll, this);
+  auto fut = std::async(std::launch::async, &Impl::Poll, this);
 
   char buf[512];
   int bytesWritten = snprintf(buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
