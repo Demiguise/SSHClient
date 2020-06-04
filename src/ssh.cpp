@@ -22,9 +22,11 @@ TResult Client::Recv(const char* pBuf, const int bufLen)
 
 void Client::Connect(const char* pszUser)
 {
+  //Set initial state to disconnected while we are attempting to make our connection.
+  mState = State::Disconnected;
 }
 
 void Client::Disconnect()
 {
-
+  mState = State::Disconnected;
 }
