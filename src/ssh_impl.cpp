@@ -7,6 +7,9 @@
 
 using namespace SSH;
 
+constexpr char CRbyte = 0x0D;
+constexpr char LFbyte = 0x0A;
+
 template<std::size_t size>
 class SecureBuffer
 {
@@ -149,8 +152,8 @@ void Client::Impl::Connect(const char* pszUser)
 
   char buf[512];
   int bytesWritten = snprintf(buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
-  buf[bytesWritten++] = 0x0D;
-  buf[bytesWritten++] = 0x0A;
+  buf[bytesWritten++] = CRbyte;
+  buf[bytesWritten++] = LFbyte;
 
   Send(buf, bytesWritten);
 }
