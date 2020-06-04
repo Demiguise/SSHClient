@@ -1,5 +1,6 @@
 set(SRCS
   ssh.cpp
+  ssh_impl.cpp
 )
 
 set(SSH_Common_Defines

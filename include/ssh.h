@@ -30,18 +30,12 @@ namespace SSH
   class Client
   {
   private:
-    TSendFunc mSendFunc;
-    TRecvFunc mRecvFunc;
-    TCtx mCtx;
-    State mState;
-
     /*
       Seperate implementation details away from the client interface.
       Interface API can stay solid while implemenation details change underneath.
     */
-    class ClientImpl;
-    friend class ClientImpl;
-    std::unique_ptr<ClientImpl> mImpl;
+    class Impl;
+    std::unique_ptr<Impl> mImpl;
 
   public:
     Client(ClientOptions options, TCtx ctx);
@@ -53,7 +47,7 @@ namespace SSH
     void Connect(const char* pszUser);
     void Disconnect();
 
-    State GetState() const { return mState; }
+    State GetState() const;
   };
 }
 
