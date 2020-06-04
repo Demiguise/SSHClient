@@ -22,6 +22,7 @@ namespace SSH
     LogLevel mLogLevel;
 
     void Log(LogLevel level, const char* frmt, ...);
+    void LogBuffer(LogLevel level, const char* pszBufferName, const char* pBuf, const int bufLen);
 
   public:
     Impl(ClientOptions options, TCtx ctx);
