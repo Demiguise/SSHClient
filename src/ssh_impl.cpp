@@ -74,7 +74,7 @@ void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const
 {
   std::unique_ptr<char[]> pLogBuf;
   int bytesWritten = 0;
-  constexpr int extraChars = 5; //[...]\n...\n\0
+  constexpr int extraChars = 4; //[...]\n...\0
   constexpr int columnLimit = 16;
 
   if (mLogLevel < level)
@@ -105,7 +105,6 @@ void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const
   }
 
   //Ensure we start a new line and end the string
-  pLogBuf[bytesWritten++] = '\n';
   pLogBuf[bytesWritten++] = '\0';
 
   mLogFunc(pLogBuf.get());
