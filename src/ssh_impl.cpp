@@ -83,7 +83,6 @@ void Client::Impl::LogBuffer(LogLevel level, const char* pszBufferName, const un
   }
 
   const int totalBytes = (bufLen * 3) + strlen(pszBufferName) + extraChars + (bufLen / columnLimit); //Each character is actually "XX "
-  Log(LogLevel::Debug, "Need %d bytes to print out %d %s", totalBytes, bufLen, pszBufferName);
   pLogBuf = std::make_unique<char[]>(totalBytes);
   if (pLogBuf == nullptr)
   {
