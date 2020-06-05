@@ -4,15 +4,18 @@ if not defined DevEnvDir (
 )
 
 set buildType=Release
+set targetType=Lib
 
 if not "%DEBUG%"=="" set buildType=Debug
+if not "%EXE%"=="" set targetType=Exe
 
-echo "Generating project for [%buildType%] configuration"
+echo "Generating project for [%buildType%][%targetType%] configuration"
 
 REM ^ or 'Caret' concats the lines together
 cmake -G Ninja -Bbld -H. ^
 -DCMAKE_BUILD_TYPE=%buildType% ^
 -DSSH_Target_Platform=x64 ^
+-DSSH_Target_Type=%targetType% ^
 -DCMAKE_CXX_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" ^
 -DCMAKE_C_COMPILER="C:/Program Files/LLVM/bin/clang-cl.exe" ^
 -DCMAKE_C_LINKER="C:/Program Files/LLVM/bin/lld-link.exe" ^

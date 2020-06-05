@@ -1,6 +1,7 @@
 set(SRCS
   ssh.cpp
   ssh_impl.cpp
+  packets.cpp
 )
 
 set(SSH_Common_Defines
@@ -16,11 +17,32 @@ set(SSH_Common_Options
 set(SSH_Debug_Options
 )
 
-set(CMAKE_DEBUG_POSTFIX _d)
+if (${SSH_Target_Type} STREQUAL "Exe")
 
-add_library(SSH
-  ${SRCS}
-)
+  add_executable(SSH
+    ${SRCS}
+    win32_harness.cpp
+  )
+
+  set_target_properties(SSH PROPERTIES
+    OUTPUT_NAME "ssh"
+    RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin"
+  )
+
+else()
+
+  set(CMAKE_DEBUG_POSTFIX _d)
+
+  add_library(SSH
+    ${SRCS}
+  )
+
+  set_target_properties(SSH PROPERTIES
+    OUTPUT_NAME "ssh"
+    ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib"
+  )
+
+endif()
 
 target_include_directories(SSH
   PUBLIC
@@ -37,9 +59,4 @@ target_compile_options(SSH
   PRIVATE
     ${SSH_Common_Options}
     $<$<CONFIG:DEBUG>:${SSH_Debug_Options}>
-)
-
-set_target_properties(SSH PROPERTIES
-  OUTPUT_NAME "ssh"
-  ARCHIVE_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/lib"
 )

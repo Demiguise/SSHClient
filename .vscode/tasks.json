@@ -60,7 +60,7 @@
             }
         },
         {
-            "label": "CMake - Release",
+            "label": "CMake (Lib) - Release",
             "type": "shell",
             "problemMatcher": [],
             "presentation": {
@@ -79,7 +79,7 @@
             }
         },
         {
-            "label": "CMake - Debug",
+            "label": "CMake (Lib) - Debug",
             "type": "shell",
             "problemMatcher": [],
             "presentation": {
@@ -93,6 +93,31 @@
             "options": {
                 "env": {
                     "DEBUG": "1"
+                }
+            },
+            "windows": {
+                "command": "${workspaceFolder}/cmake/scripts/win64/gencmake.bat",
+            },
+            "linux": {
+                "command": "${workspaceFolder}/cmake/scripts/linux/gencmake.bat",
+            }
+        },
+        {
+            "label": "CMake (Exe) - Debug",
+            "type": "shell",
+            "problemMatcher": [],
+            "presentation": {
+                "echo": false,
+                "reveal": "always",
+                "focus": false,
+                "panel": "dedicated",
+                "showReuseMessage": false,
+                "clear": true
+            },
+            "options": {
+                "env": {
+                    "DEBUG": "1",
+                    "EXE" : "1"
                 }
             },
             "windows": {
