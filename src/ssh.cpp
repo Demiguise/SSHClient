@@ -3,6 +3,19 @@
 
 using namespace SSH;
 
+const char* SSH::StateToString(State state)
+{
+  switch (state)
+  {
+    case State::Idle: return "Idle";
+    case State::Disconnected: return "Disconnected";
+    case State::Connecting: return "Connecting";
+    case State::Authenticating: return "Authenticating";
+    case State::Connected: return "Connected";
+    default: return "Unknown";
+  }
+}
+
 Client::Client(ClientOptions options, TCtx ctx)
 {
   //TODO: Handle NullPtr

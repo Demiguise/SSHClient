@@ -40,6 +40,7 @@ Client::Impl::Impl(ClientOptions options, TCtx ctx)
   , mOnRecvFunc(options.onRecv)
   , mCtx(ctx)
   , mState(State::Idle)
+  , mStage(Stage::Null)
   , mLogFunc(options.log)
   , mLogLevel(options.logLevel)
 {
@@ -142,6 +143,90 @@ void Client::Impl::Poll()
       to the implementation to handle.
     */
     Log(LogLevel::Info, "Recieved %d bytes from remote!", recievedBytes.value());
+
+    HandleData(buf.Buffer(), recievedBytes.value());
+  }
+}
+
+void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
+{
+  switch (mState)
+  {
+    case State::Idle:
+    case State::Disconnected:
+    {
+      Log(LogLevel::Error, "Recieved %d bytes of data from remote without being connected.", bufLen);
+      return;
+    }
+    case State::Connecting:
+    {
+      PerformHandshake(pBuf, bufLen);
+      return;
+    }
+    default:
+    {
+      Log(LogLevel::Warning, "Unhandled data for (%s) state", StateToString(mState));
+      return;
+    }
+  }
+}
+
+void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
+{
+  if (mStage == Stage::Null)
+  {
+    Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
+  }
+
+  switch (mStage)
+  {
+    case Stage::ServerIdent:
+    {
+      std::string serverIdent;
+      constexpr int minBufLen = 5; //SSH-\LF
+      constexpr int maxBufLen = 255; //RFC4253#section-4.2
+      if (bufLen < minBufLen || bufLen > maxBufLen)
+      {
+        Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be > 6 && < 255", bufLen);
+      };
+
+      /*
+        Although the SSH RFC REQUIRES servers to send <CR><LF>, some only send <LF>.
+        To maintain compatibility, we only check for <LF> bytes and warn when the <CR>
+        is not present.
+      */
+      for (int i = 0; i < bufLen ; ++i)
+      {
+        if (pBuf[i] == LFbyte)
+        {
+          if (pBuf[i-1] != CRbyte)
+          {
+            Log(LogLevel::Warning, "ServerIdent did not use RFC standard <CR><LR> ending.");
+          }
+
+          //Found the ending byte
+          serverIdent.assign((char*)pBuf, i);
+        }
+      }
+
+      if (serverIdent.empty())
+      {
+        Log(LogLevel::Info, "Unable to parse ServerIdent");
+        LogBuffer(LogLevel::Debug, "ServerIdent", pBuf, bufLen);
+      }
+      else
+      {
+        Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
+      }
+
+      mStage = Stage::ServerAlg;
+      return;
+    }
+    default:
+    {
+      Log(LogLevel::Error, "Unhandled stage");
+      return;
+    }
   }
 }
 
@@ -158,6 +243,8 @@ void Client::Impl::Connect(const std::string pszUser)
   int bytesWritten = snprintf((char*)buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
+
+  mStage = Stage::ServerIdent;
 
   Send(buf, bytesWritten);
 }

@@ -5,6 +5,19 @@
 
 namespace SSH
 {
+  enum class Stage
+  {
+    Null, //Empty stage
+
+    //Handshake Stages
+    ServerIdent,
+    ServerAlg,
+
+    //Authentication Stages
+
+    //Channel Stages
+  };
+
   class Client::Impl
   {
   private:
@@ -17,12 +30,17 @@ namespace SSH
 
     TCtx mCtx;
     State mState;
+    Stage mStage;
 
     TLogFunc mLogFunc;
     LogLevel mLogLevel;
 
     void Log(LogLevel level, std::string frmt, ...);
     void LogBuffer(LogLevel level, std::string bufferName, const Byte* pBuf, const int bufLen);
+
+    void HandleData(const Byte* pBuf, const int bufLen);
+
+    void PerformHandshake(const Byte* pBuf, const int bufLen);
 
   public:
     Impl(ClientOptions options, TCtx ctx);

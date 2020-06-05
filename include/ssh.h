@@ -18,6 +18,8 @@ namespace SSH
     Connected,
   };
 
+  const char* StateToString(State state);
+
   enum LogLevel
   {
     Error   = 0,
