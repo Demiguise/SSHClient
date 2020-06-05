@@ -1,9 +1,11 @@
 #include "ssh_impl.h"
+#include "packets.h"
 
 #include <stdarg.h>
 #include <future>
 #include <array>
 #include <cstring>
+#include <algorithm>
 
 using namespace SSH;
 
@@ -179,6 +181,11 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
     Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
   }
 
+  if (!mQueue.empty())
+  {
+    return;
+  }
+
   switch (mStage)
   {
     case Stage::ServerIdent:
@@ -221,6 +228,26 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
       }
 
       mStage = Stage::ServerAlg;
+      return;
+    }
+    case Stage::ServerAlg:
+    {
+      if (bufLen < 4)
+      {
+        //Error
+        return;
+      }
+
+      UINT32 packetLen = GetPacketLength(pBuf);
+      IPacket* pPacket = GetPacket(packetLen);
+      pPacket->Consume(pBuf, std::min(bufLen, (int)packetLen));
+      if (bufLen < packetLen)
+      {
+        //We have to wait for more data, pop this packet into the queue
+        mQueue.push(pPacket);
+        return;
+      }
+
       return;
     }
     default:

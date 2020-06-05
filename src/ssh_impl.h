@@ -2,6 +2,7 @@
 #define __SSH_IMPL_H__
 
 #include "ssh.h"
+#include <queue>
 
 namespace SSH
 {
@@ -18,10 +19,13 @@ namespace SSH
     //Channel Stages
   };
 
+  class IPacket;
+
   class Client::Impl
   {
   private:
     static const int sMaxLogLength = 256;
+    using TPacketQueue = std::queue<IPacket*>;
 
   protected:
     TSendFunc mSendFunc;
@@ -34,6 +38,8 @@ namespace SSH
 
     TLogFunc mLogFunc;
     LogLevel mLogLevel;
+
+    TPacketQueue mQueue;
 
     void Log(LogLevel level, std::string frmt, ...);
     void LogBuffer(LogLevel level, std::string bufferName, const Byte* pBuf, const int bufLen);

@@ -5,6 +5,8 @@
 #include <memory>
 #include <optional>
 
+using UINT32 = uint32_t;
+
 namespace SSH
 {
   using Byte = unsigned char;
