@@ -166,6 +166,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     default:
     {
       Log(LogLevel::Warning, "Unhandled data for (%s) state", StateToString(mState));
+      Disconnect();
       return;
     }
   }
@@ -225,6 +226,7 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
     default:
     {
       Log(LogLevel::Error, "Unhandled stage");
+      Disconnect();
       return;
     }
   }
@@ -251,5 +253,7 @@ void Client::Impl::Connect(const std::string pszUser)
 
 void Client::Impl::Disconnect()
 {
+  Log(LogLevel::Info, "Disconnecting client");
   mState = State::Disconnected;
+  mStage = Stage::Null;
 }
