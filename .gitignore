@@ -1,5 +1,6 @@
 #Folders
 [Ll]ib/
+[Bb]in/
 [Bb]ld/
 tmp/
 .clangd/
