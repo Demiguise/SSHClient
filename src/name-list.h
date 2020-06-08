@@ -17,6 +17,9 @@ namespace SSH
     NameList() = default;
 
     void Init(const Byte *pBuf, const int numBytes);
+
+    std::string_view operator[] (const int n);
+    std::string_view Get (const int n);
   };
 }
 
