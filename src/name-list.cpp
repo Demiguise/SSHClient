@@ -56,3 +56,8 @@ std::string_view NameList::Get(const int n)
 
   return view.substr(startPos, (endPos - startPos));
 }
+
+std::string SelectBestMatch(const NameList& client, const NameList& server)
+{
+  return "";
+}
