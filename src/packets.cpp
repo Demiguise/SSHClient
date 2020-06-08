@@ -94,7 +94,7 @@ public:
     mPayloadLen = mPacketLen - mPaddingLen - 1;
 
     int bytesToConsume = std::min(mPayloadLen, bytesRemaining);
-    memcpy(&(*mIter), pBuf, bytesToConsume);
+    memcpy(&(*mIter), pIter, bytesToConsume);
     mIter += bytesToConsume;
 
     return true;
