@@ -240,48 +240,51 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
     int bytesConsumed = pPacket->Consume(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
     Log(LogLevel::Info, "Packet consumed an additional [%d] bytes", bytesConsumed);
+
+    if (pPacket->Ready())
+    {
+      Log(LogLevel::Info, "Queued packet is now ready!");
+    }
+    else
+    {
+      Log(LogLevel::Info, "Still waiting on more bytes for this packet");
+      return;
+    }
+  }
+  else
+  {
+    if (bytesRemaining < 4)
+    {
+      Log(LogLevel::Error, "Not enough bytes for packet");
+      return;
+    }
+
+    UINT32 packetLen = GetPacketLength(pBuf);
+    IPacket *pPacket = GetPacket(packetLen);
+    if (!pPacket)
+    {
+      Log(LogLevel::Error, "Failed to allocate a packet!");
+      return;
+    }
+
+    if (!pPacket->Init(pBuf, std::min(bytesRemaining, (int)packetLen)))
+    {
+      Log(LogLevel::Error, "Failed to initalise packet");
+    }
+
+    if (bytesRemaining < packetLen)
+    {
+      //We have to wait for more data, pop this packet into the queue
+      Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", (packetLen - bytesRemaining));
+      mQueue.push(pPacket);
+      return;
+    }
   }
 
   switch (mStage)
   {
     case Stage::ServerKEX:
     {
-      if (pPacket)
-      {
-        if (pPacket->Ready())
-        {
-          Log(LogLevel::Info, "Queued packet is now ready!");
-        }
-
-        return;
-      }
-
-      if (bytesRemaining < 4)
-      {
-        //Error
-        return;
-      }
-
-      UINT32 packetLen = GetPacketLength(pBuf);
-      IPacket* pPacket = GetPacket(packetLen);
-      if (!pPacket)
-      {
-        Log(LogLevel::Error, "Failed to allocate a packet!");
-        return;
-      }
-
-      if (!pPacket->Init(pBuf, std::min(bytesRemaining, (int)packetLen)))
-      {
-        Log(LogLevel::Error, "Failed to initalise packet");
-      }
-
-      if (bytesRemaining < packetLen)
-      {
-        //We have to wait for more data, pop this packet into the queue
-        Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", (packetLen - bytesRemaining));
-        mQueue.push(pPacket);
-        return;
-      }
 
       return;
     }
