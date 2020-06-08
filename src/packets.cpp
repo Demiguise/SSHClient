@@ -17,69 +17,80 @@ template<std::size_t size>
 class TPacket : public IPacket
 {
 private:
+  constexpr static int payloadStart = sizeof(UINT32) + sizeof(Byte);
+
   using TArr = std::array<Byte, size>;
-  TArr mPayload;
+  TArr mPacket;
+
+  //Iterator used for reading/writing
   typename TArr::iterator mIter;
 
-  size_t mPacketLen;
+  int mPacketLen;
   Byte mPaddingLen;
   int mPayloadLen;
+
 public:
-  TPacket(size_t packetSize)
-    : mIter(mPayload.begin())
+  TPacket(int packetSize)
+    : mIter(mPacket.begin())
     , mPacketLen(packetSize)
     , mPaddingLen(0)
     , mPayloadLen(0)
   {}
 
+  virtual const Byte* const Begin() const override
+  {
+    return mPacket.data();
+  }
+
+  virtual int Len() const override
+  {
+    return mPacketLen;
+  }
+
   virtual const Byte* const Payload() const override
   {
-    return mPayload.data();
+    return &mPacket[payloadStart];
   }
 
   virtual int PayloadLen() const override
   {
-    return 0;
+    return mPayloadLen;
+  }
+
+  virtual int PaddingLen() const override
+  {
+    return mPaddingLen;
   }
 
   virtual bool Init(const Byte* pBuf, const int numBytes) override
   {
-    int bytesRemaining = numBytes;
-    if (bytesRemaining < 5)
+    if (numBytes < payloadStart)
     {
       //We need a minimum of 5 bytes for the packet and padding length
       return false;
     }
 
 #ifdef _DEBUG
+    //Sanity check the size of the packet
+    if (GetPacketLength(pBuf) != mPacketLen)
+    {
+      return false;
+    }
+
     //Sanity check we have enough space for the packet
-    if (bytesRemaining > mPacketLen)
+    if (numBytes >= mPacketLen)
     {
       return false;
     }
 #endif
 
-    const Byte* pIter = pBuf;
-    pIter += sizeof(UINT32); //Skip packet length since we already know it
-    bytesRemaining -= sizeof(UINT32);
-
-    //Extract padding length, then increment past it.
-    mPaddingLen = *pIter;
-    pIter += sizeof(Byte);
-    bytesRemaining -= sizeof(Byte);
-
-    //We may have run out of space here, so double check
-    if (bytesRemaining <= 0)
-    {
-      //Not an error, since we have enough data to initialise the packet
-      return true;
-    }
-
-    //Extract payload
-    mPayloadLen = mPacketLen - mPaddingLen - 1;
-    int bytesToConsume = std::min(mPayloadLen, bytesRemaining);
+    //Copy as much data into the packet buffer as possible
+    int bytesToConsume = std::min(mPacketLen, numBytes);
     memcpy(&(*mIter), pBuf, bytesToConsume);
     mIter += bytesToConsume;
+
+    //Extract padding length
+    mPaddingLen = mPacket[sizeof(UINT32)];
 
     return true;
   }
@@ -87,7 +98,7 @@ public:
   virtual int Consume(const Byte* pBuf, const int numBytes) override
   {
     //Get the number of bytes needed by this packet
-    int bytesLeft = mPayloadLen - (mIter - mPayload.begin());
+    int bytesLeft = mPacketLen - (mIter - mPacket.begin());
     if (bytesLeft == 0)
     {
       return 0;
