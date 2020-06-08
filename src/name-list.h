@@ -14,9 +14,12 @@ namespace SSH
     int mNumNames;
 
   public:
-    NameList() = default;
+    NameList();
 
     void Init(const Byte *pBuf, const int numBytes);
+
+    NameList& operator+= (std::string newName);
+    void Add(std::string newName);
 
     std::string_view operator[] (const int n);
     std::string_view Get (const int n);

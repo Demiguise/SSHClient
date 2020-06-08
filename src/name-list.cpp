@@ -3,10 +3,32 @@
 
 using namespace SSH;
 
+NameList::NameList()
+  : mList("")
+  , mNumNames(0)
+{}
+
 void NameList::Init(const Byte* pBuf, const int numBytes)
 {
   mList.assign((char*)pBuf, numBytes);
   mNumNames = std::count(mList.begin(), mList.end(), ',') + 1;
+}
+
+NameList& NameList::operator+= (std::string newName)
+{
+  Add(newName);
+  return *this;
+}
+
+void NameList::Add(std::string newName)
+{
+  if (mNumNames > 0)
+  {
+    mList += ',';
+  }
+
+  mList += newName;
+  mNumNames++;
 }
 
 std::string_view NameList::operator[](const int n)
@@ -32,6 +54,5 @@ std::string_view NameList::Get(const int n)
     endPos = view.find(',', startPos);
   }
 
-  auto newView = view.substr(startPos, (endPos - startPos));
-  return newView;
+  return view.substr(startPos, (endPos - startPos));
 }
