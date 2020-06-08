@@ -12,7 +12,7 @@ namespace SSH
 
     //Handshake Stages
     ServerIdent,
-    ServerAlg,
+    ServerKEX,
 
     //Authentication Stages
 
@@ -46,7 +46,8 @@ namespace SSH
 
     void HandleData(const Byte* pBuf, const int bufLen);
 
-    void PerformHandshake(const Byte* pBuf, const int bufLen);
+    void HandleServerIdent(const Byte* pBuf, const int bufLen);
+    void PerformKEX(const Byte* pBuf, const int bufLen);
 
   public:
     Impl(ClientOptions options, TCtx ctx);

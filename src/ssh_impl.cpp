@@ -152,17 +152,28 @@ void Client::Impl::Poll()
 
 void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
 {
-  switch (mState)
+  if (mState == State::Idle ||
+      mState == State::Disconnected)
   {
-    case State::Idle:
-    case State::Disconnected:
+    Log(LogLevel::Error, "Recieved %d bytes of data from remote without being connected.", bufLen);
+    return;
+  }
+
+  switch (mStage)
+  {
+    case Stage::Null:
     {
-      Log(LogLevel::Error, "Recieved %d bytes of data from remote without being connected.", bufLen);
+      Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
       return;
     }
-    case State::Connecting:
+    case Stage::ServerIdent:
     {
-      PerformHandshake(pBuf, bufLen);
+      HandleServerIdent(pBuf, bufLen);
+      return;
+    }
+    case Stage::ServerKEX:
+    {
+      PerformKEX(pBuf, bufLen);
       return;
     }
     default:
@@ -174,13 +185,53 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
   }
 }
 
-void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
+void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
+{
+  std::string serverIdent;
+  constexpr int minBufLen = 5;   //SSH-\LF
+  constexpr int maxBufLen = 255; //RFC4253#section-4.2
+  if (bufLen < minBufLen || bufLen > maxBufLen)
+  {
+    Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be > 6 && < 255", bufLen);
+    return;
+  };
+
+  /*
+    Although the SSH RFC REQUIRES servers to send <CR><LF>, some only send <LF>.
+    To maintain compatibility, we only check for <LF> bytes and warn when the <CR>
+    is not present.
+  */
+  for (int i = 0; i < bufLen; ++i)
+  {
+    if (pBuf[i] == LFbyte)
+    {
+      if (pBuf[i - 1] != CRbyte)
+      {
+        Log(LogLevel::Warning, "ServerIdent did not use RFC standard <CR><LR> ending.");
+      }
+
+      //Found the ending byte
+      serverIdent.assign((char *)pBuf, i);
+    }
+  }
+
+  if (serverIdent.empty())
+  {
+    Log(LogLevel::Info, "Unable to parse ServerIdent");
+    LogBuffer(LogLevel::Debug, "ServerIdent", pBuf, bufLen);
+  }
+  else
+  {
+    Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
+  }
+
+  mStage = Stage::ServerKEX;
+  return;
+}
+
+void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 {
   int bytesRemaining = bufLen;
-  if (mStage == Stage::Null)
-  {
-    Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
-  }
 
   IPacket* pPacket = nullptr;
   if (!mQueue.empty())
@@ -193,49 +244,7 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
 
   switch (mStage)
   {
-    case Stage::ServerIdent:
-    {
-      std::string serverIdent;
-      constexpr int minBufLen = 5; //SSH-\LF
-      constexpr int maxBufLen = 255; //RFC4253#section-4.2
-      if (bufLen < minBufLen || bufLen > maxBufLen)
-      {
-        Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be > 6 && < 255", bufLen);
-      };
-
-      /*
-        Although the SSH RFC REQUIRES servers to send <CR><LF>, some only send <LF>.
-        To maintain compatibility, we only check for <LF> bytes and warn when the <CR>
-        is not present.
-      */
-      for (int i = 0; i < bufLen ; ++i)
-      {
-        if (pBuf[i] == LFbyte)
-        {
-          if (pBuf[i-1] != CRbyte)
-          {
-            Log(LogLevel::Warning, "ServerIdent did not use RFC standard <CR><LR> ending.");
-          }
-
-          //Found the ending byte
-          serverIdent.assign((char*)pBuf, i);
-        }
-      }
-
-      if (serverIdent.empty())
-      {
-        Log(LogLevel::Info, "Unable to parse ServerIdent");
-        LogBuffer(LogLevel::Debug, "ServerIdent", pBuf, bufLen);
-      }
-      else
-      {
-        Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
-      }
-
-      mStage = Stage::ServerAlg;
-      return;
-    }
-    case Stage::ServerAlg:
+    case Stage::ServerKEX:
     {
       if (pPacket)
       {
