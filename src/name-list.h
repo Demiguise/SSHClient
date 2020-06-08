@@ -10,9 +10,12 @@ namespace SSH
   class NameList
   {
   private:
-    std::string mNameList;
+    std::string mList;
+    int mNumNames;
 
   public:
+    NameList() = default;
+
     void Init(const Byte *pBuf, const int numBytes);
   };
 }
