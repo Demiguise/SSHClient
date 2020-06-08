@@ -35,8 +35,10 @@ public:
     return 0;
   }
 
-  virtual void Consume(const Byte* pBuf, const int numBytes) override
-  {}
+  virtual int Consume(const Byte* pBuf, const int numBytes) override
+  {
+    return 0;
+  }
 };
 
 using TPacketVec = std::vector<IPacket*>;
