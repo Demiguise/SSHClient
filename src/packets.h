@@ -12,9 +12,6 @@ namespace SSH
   class IPacket
   {
   public:
-    virtual const Byte* const Begin() const = 0;
-    virtual int Len() const = 0;
-
     virtual const Byte* const Payload() const = 0;
     virtual int PayloadLen() const = 0;
 

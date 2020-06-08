@@ -20,7 +20,7 @@ private:
   constexpr static int payloadStart = sizeof(UINT32) + sizeof(Byte);
 
   using TArr = std::array<Byte, size>;
-  TArr mPacket;
+  TArr mPayload;
 
   //Iterator used for reading/writing
   typename TArr::iterator mIter;
@@ -31,25 +31,15 @@ private:
 
 public:
   TPacket(int packetSize)
-    : mIter(mPacket.begin())
+    : mIter(mPayload.begin())
     , mPacketLen(packetSize)
     , mPaddingLen(0)
     , mPayloadLen(0)
   {}
 
-  virtual const Byte* const Begin() const override
-  {
-    return mPacket.data();
-  }
-
-  virtual int Len() const override
-  {
-    return mPacketLen;
-  }
-
   virtual const Byte* const Payload() const override
   {
-    return &mPacket[payloadStart];
+    return mPayload.data();
   }
 
   virtual int PayloadLen() const override
@@ -64,7 +54,7 @@ public:
 
   virtual bool Ready() const override
   {
-    return mPacketLen == (mIter - mPacket.begin());
+    return mPayloadLen == (mIter - mPayload.begin());
   }
 
   virtual bool Init(const Byte* pBuf, const int numBytes) override
@@ -89,13 +79,23 @@ public:
     }
 #endif
 
-    //Copy as much data into the packet buffer as possible
-    int bytesToConsume = std::min(mPacketLen, numBytes);
+    int bytesRemaining = numBytes;
+    const Byte* pIter = pBuf;
+
+    //Packet Length (Just skip past)
+    pIter += sizeof(UINT32);
+    bytesRemaining -= sizeof(UINT32);
+
+    //Padding length
+    mPaddingLen = *(pIter);
+    pIter += sizeof(Byte);
+    bytesRemaining -= sizeof(Byte);
+
+    mPayloadLen = mPacketLen - mPaddingLen - 1;
+
+    int bytesToConsume = std::min(mPayloadLen, bytesRemaining);
     memcpy(&(*mIter), pBuf, bytesToConsume);
     mIter += bytesToConsume;
-
-    //Extract padding length
-    mPaddingLen = mPacket[sizeof(UINT32)];
 
     return true;
   }
@@ -103,7 +103,7 @@ public:
   virtual int Consume(const Byte* pBuf, const int numBytes) override
   {
     //Get the number of bytes needed by this packet
-    int bytesLeft = mPacketLen - (mIter - mPacket.begin());
+    int bytesLeft = mPayloadLen - (mIter - mPayload.begin());
     if (bytesLeft == 0)
     {
       return 0;
