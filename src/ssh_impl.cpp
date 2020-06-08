@@ -1,6 +1,7 @@
 #include "ssh_impl.h"
 #include "packets.h"
 #include "endian.h"
+#include "constants.h"
 
 #include <stdarg.h>
 #include <future>
@@ -296,14 +297,14 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       const Byte* pKexIter = pPacket->Payload();
 
       //Verify this is a KEX packet
-      if ((*pKexIter) != 0x14) //TODO: Get rid of Magic Number
+      if ((*pKexIter) != SSH_MSG::KEXINIT)
       {
         return;
       }
       pKexIter += sizeof(Byte);
 
       //Skip 16 bytes of random data
-      pKexIter += 16; //TODO: Get rid of Magic Number
+      pKexIter += cKexCookieLength;
 
       pKexIter += ParseNameList(mKex.mAlgorithms.mKex, pKexIter);
       pKexIter += ParseNameList(mKex.mAlgorithms.mServerHost, pKexIter);
