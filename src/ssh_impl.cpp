@@ -182,10 +182,13 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
     Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
   }
 
+  IPacket* pPacket = nullptr;
   if (!mQueue.empty())
   {
-    IPacket* pPacket = mQueue.back();
-    bytesRemaining -= pPacket->Consume(pBuf, bufLen);
+    pPacket = mQueue.back();
+    int bytesConsumed = pPacket->Consume(pBuf, bufLen);
+    bytesRemaining -= bytesConsumed;
+    Log(LogLevel::Info, "Packet consumed an additional [%d] bytes", bytesConsumed);
   }
 
   switch (mStage)
@@ -234,6 +237,16 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
     }
     case Stage::ServerAlg:
     {
+      if (pPacket)
+      {
+        if (pPacket->Ready())
+        {
+          Log(LogLevel::Info, "Queued packet is now ready!");
+        }
+
+        return;
+      }
+
       if (bytesRemaining < 4)
       {
         //Error

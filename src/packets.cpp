@@ -62,6 +62,11 @@ public:
     return mPaddingLen;
   }
 
+  virtual bool Ready() const override
+  {
+    return mPacketLen == (mIter - mPacket.begin());
+  }
+
   virtual bool Init(const Byte* pBuf, const int numBytes) override
   {
     if (numBytes < payloadStart)

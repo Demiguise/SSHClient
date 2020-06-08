@@ -20,6 +20,8 @@ namespace SSH
 
     virtual int PaddingLen() const = 0;
 
+    virtual bool Ready() const = 0;
+
     virtual bool Init(const Byte* pBuf, const int numBytes) = 0;
     virtual int Consume(const Byte* pBuf, const int numBytes) = 0;
   };
