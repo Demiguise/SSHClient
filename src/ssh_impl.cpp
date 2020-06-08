@@ -176,6 +176,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
 
 void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
 {
+  int bytesRemaining = bufLen;
   if (mStage == Stage::Null)
   {
     Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
@@ -183,7 +184,8 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
 
   if (!mQueue.empty())
   {
-    return;
+    IPacket* pPacket = mQueue.back();
+    bytesRemaining -= pPacket->Consume(pBuf, bufLen);
   }
 
   switch (mStage)
@@ -232,7 +234,7 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
     }
     case Stage::ServerAlg:
     {
-      if (bufLen < 4)
+      if (bytesRemaining < 4)
       {
         //Error
         return;
@@ -240,10 +242,11 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
 
       UINT32 packetLen = GetPacketLength(pBuf);
       IPacket* pPacket = GetPacket(packetLen);
-      pPacket->Consume(pBuf, std::min(bufLen, (int)packetLen));
-      if (bufLen < packetLen)
+      pPacket->Consume(pBuf, std::min(bytesRemaining, (int)packetLen));
+      if (bytesRemaining < packetLen)
       {
         //We have to wait for more data, pop this packet into the queue
+        Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", (packetLen - bytesRemaining));
         mQueue.push(pPacket);
         return;
       }
