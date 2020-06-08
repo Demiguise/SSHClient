@@ -2,6 +2,7 @@ set(SRCS
   ssh.cpp
   ssh_impl.cpp
   packets.cpp
+  name-list.cpp
 )
 
 set(SSH_Common_Defines

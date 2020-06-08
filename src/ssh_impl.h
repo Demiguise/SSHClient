@@ -2,6 +2,7 @@
 #define __SSH_IMPL_H__
 
 #include "ssh.h"
+#include "name-list.h"
 #include <queue>
 
 namespace SSH
@@ -20,6 +21,25 @@ namespace SSH
   };
 
   class IPacket;
+
+  struct ListPairs
+  {
+    NameList mClientToServer;
+    NameList mServerToClient;
+  };
+
+  struct KEXData
+  {
+    struct
+    {
+      NameList mKex;
+      NameList mServerHost;
+      ListPairs mEncryption;
+      ListPairs mMAC;
+      ListPairs mCompression;
+      ListPairs mLanguages;
+    } mAlgorithms;
+  };
 
   class Client::Impl
   {
@@ -41,10 +61,15 @@ namespace SSH
 
     TPacketQueue mQueue;
 
+    KEXData mKex;
+
     void Log(LogLevel level, std::string frmt, ...);
     void LogBuffer(LogLevel level, std::string bufferName, const Byte* pBuf, const int bufLen);
 
     void HandleData(const Byte* pBuf, const int bufLen);
+
+    //Returns number of bytes consumed
+    int ParseNameList(NameList& list, const Byte* pBuf);
 
     void HandleServerIdent(const Byte* pBuf, const int bufLen);
     void PerformKEX(const Byte* pBuf, const int bufLen);

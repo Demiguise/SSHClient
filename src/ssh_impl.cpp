@@ -1,5 +1,6 @@
 #include "ssh_impl.h"
 #include "packets.h"
+#include "endian.h"
 
 #include <stdarg.h>
 #include <future>
@@ -185,6 +186,13 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
   }
 }
 
+int Client::Impl::ParseNameList(NameList& list, const Byte* pBuf)
+{
+  UINT32 nameLen = swap_endian<uint32_t>(*(uint32_t*)pBuf);
+  list.Init(pBuf, nameLen);
+  return nameLen;
+}
+
 void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
 {
   std::string serverIdent;
@@ -285,6 +293,28 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
   {
     case Stage::ServerKEX:
     {
+      const Byte* pKexIter = pPacket->Payload();
+
+      //Verify this is a KEX packet
+      if ((*pKexIter) != 13) //TODO: Get rid of Magic Number
+      {
+        return;
+      }
+      pKexIter += sizeof(Byte);
+
+      //Skip 16 bytes of random data
+      pKexIter += 16; //TODO: Get rid of Magic Number
+
+      pKexIter += ParseNameList(mKex.mAlgorithms.mKex, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mServerHost, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mClientToServer, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mServerToClient, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mClientToServer, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mServerToClient, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mClientToServer, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mServerToClient, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
+      pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
 
       return;
     }
