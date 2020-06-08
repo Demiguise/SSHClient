@@ -189,8 +189,8 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
 int Client::Impl::ParseNameList(NameList& list, const Byte* pBuf)
 {
   UINT32 nameLen = swap_endian<uint32_t>(*(uint32_t*)pBuf);
-  list.Init(pBuf, nameLen);
-  return nameLen;
+  list.Init(pBuf + sizeof(UINT32), nameLen);
+  return nameLen + sizeof(UINT32);
 }
 
 void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
@@ -296,7 +296,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       const Byte* pKexIter = pPacket->Payload();
 
       //Verify this is a KEX packet
-      if ((*pKexIter) != 13) //TODO: Get rid of Magic Number
+      if ((*pKexIter) != 0x14) //TODO: Get rid of Magic Number
       {
         return;
       }
