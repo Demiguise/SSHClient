@@ -15,6 +15,7 @@ namespace SSH
     virtual const Byte* const Payload() const = 0;
     virtual int PayloadLen() const = 0;
 
+    virtual bool Init(const Byte* pBuf, const int numBytes) = 0;
     virtual int Consume(const Byte* pBuf, const int numBytes) = 0;
   };
 

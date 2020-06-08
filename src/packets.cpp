@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <cmath>
+#include <algorithm>
 
 using namespace SSH;
 
@@ -20,9 +21,15 @@ private:
   TArr mPayload;
   typename TArr::iterator mIter;
 
+  size_t mPacketLen;
+  Byte mPaddingLen;
+  int mPayloadLen;
 public:
-  TPacket()
+  TPacket(size_t packetSize)
     : mIter(mPayload.begin())
+    , mPacketLen(packetSize)
+    , mPaddingLen(0)
+    , mPayloadLen(0)
   {}
 
   virtual const Byte* const Payload() const override
@@ -35,9 +42,62 @@ public:
     return 0;
   }
 
+  virtual bool Init(const Byte* pBuf, const int numBytes) override
+  {
+    int bytesRemaining = numBytes;
+    if (bytesRemaining < 5)
+    {
+      //We need a minimum of 5 bytes for the packet and padding length
+      return false;
+    }
+
+#ifdef _DEBUG
+    //Sanity check we have enough space for the packet
+    if (bytesRemaining > mPacketLen)
+    {
+      return false;
+    }
+#endif
+
+    const Byte* pIter = pBuf;
+    pIter += sizeof(UINT32); //Skip packet length since we already know it
+    bytesRemaining -= sizeof(UINT32);
+
+    //Extract padding length, then increment past it.
+    mPaddingLen = *pIter;
+    pIter += sizeof(Byte);
+    bytesRemaining -= sizeof(Byte);
+
+    //We may have run out of space here, so double check
+    if (bytesRemaining <= 0)
+    {
+      //Not an error, since we have enough data to initialise the packet
+      return true;
+    }
+
+    //Extract payload
+    mPayloadLen = mPacketLen - mPaddingLen - 1;
+    int bytesToConsume = std::min(mPayloadLen, bytesRemaining);
+    memcpy(&(*mIter), pBuf, bytesToConsume);
+    mIter += bytesToConsume;
+
+    return true;
+  }
+
   virtual int Consume(const Byte* pBuf, const int numBytes) override
   {
-    return 0;
+    //Get the number of bytes needed by this packet
+    int bytesLeft = mPayloadLen - (mIter - mPayload.begin());
+    if (bytesLeft == 0)
+    {
+      return 0;
+    }
+
+    int bytesToConsume = std::min(bytesLeft, numBytes);
+    memcpy(&(*mIter), pBuf, bytesToConsume);
+    mIter += bytesToConsume;
+
+    return bytesToConsume;
   }
 };
 
@@ -86,11 +146,11 @@ size_t RoundUp(size_t size)
 #undef MATCH_SIZE
 }
 
-IPacket* AllocatePacket(size_t requestedSize)
+IPacket* AllocatePacket(size_t requestedSize, size_t actualSize)
 {
   IPacket* pNewPacket = nullptr;
 
-#define MATCH_SIZE(numBytes) else if (requestedSize == numBytes) { pNewPacket = new TPacket<numBytes>(); }
+#define MATCH_SIZE(numBytes) else if (requestedSize == numBytes) { pNewPacket = new TPacket<numBytes>(actualSize); }
   if (false) {} //God I hate this
   MATCH_SIZE(16)
   MATCH_SIZE(32)
@@ -123,7 +183,7 @@ IPacket* SSH::GetPacket(size_t size)
 
   if (freePackets.empty())
   {
-    pNewPacket = AllocatePacket(requestedSize);
+    pNewPacket = AllocatePacket(requestedSize, size);
   }
   else
   {

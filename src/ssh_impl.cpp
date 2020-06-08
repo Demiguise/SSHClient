@@ -242,7 +242,17 @@ void Client::Impl::PerformHandshake(const Byte* pBuf, const int bufLen)
 
       UINT32 packetLen = GetPacketLength(pBuf);
       IPacket* pPacket = GetPacket(packetLen);
-      pPacket->Consume(pBuf, std::min(bytesRemaining, (int)packetLen));
+      if (!pPacket)
+      {
+        Log(LogLevel::Error, "Failed to allocate a packet!");
+        return;
+      }
+
+      if (!pPacket->Init(pBuf, std::min(bytesRemaining, (int)packetLen)))
+      {
+        Log(LogLevel::Error, "Failed to initalise packet");
+      }
+
       if (bytesRemaining < packetLen)
       {
         //We have to wait for more data, pop this packet into the queue
