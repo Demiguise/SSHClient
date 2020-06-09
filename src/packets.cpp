@@ -115,6 +115,37 @@ public:
 
     return bytesToConsume;
   }
+
+  virtual int WriteByte(const Byte data) override
+  {
+    *mIter = data;
+    mIter += sizeof(Byte);
+    return sizeof(Byte);
+  }
+
+  virtual int WriteUInt32(const UINT32 data) override
+  {
+    UINT32* pIter = (UINT32*)&(*mIter);
+    *pIter = swap_endian<uint32_t>(data);
+    mIter += sizeof(UINT32);
+    return sizeof(UINT32);
+  }
+
+  virtual int WriteStr(const std::string data) override
+  {
+    size_t len = data.length();
+    WriteUInt32(len);
+    memcpy(&(*mIter), data.data(), len);
+    mIter += len;
+    return len;
+  }
+
+  virtual int WriteBuf(const Byte* pBuf, const int numBytes) override
+  {
+    memcpy(&(*mIter), pBuf, numBytes);
+    mIter += numBytes;
+    return numBytes;
+  }
 };
 
 using TPacketVec = std::vector<IPacket*>;

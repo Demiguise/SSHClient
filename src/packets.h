@@ -21,6 +21,11 @@ namespace SSH
 
     virtual bool InitFromBuffer(const Byte* pBuf, const int numBytes) = 0;
     virtual int Consume(const Byte* pBuf, const int numBytes) = 0;
+
+    virtual int WriteByte(const Byte data) = 0;
+    virtual int WriteUInt32(const UINT32 data) = 0;
+    virtual int WriteStr(const std::string data) = 0;
+    virtual int WriteBuf(const Byte* pBuf, const int numBytes) = 0;
   };
 
   /*
