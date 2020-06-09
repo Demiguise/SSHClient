@@ -276,7 +276,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       return;
     }
 
-    if (!pPacket->Init(pBuf, std::min(bytesRemaining, (int)packetLen)))
+    if (!pPacket->InitFromBuffer(pBuf, std::min(bytesRemaining, (int)packetLen)))
     {
       Log(LogLevel::Error, "Failed to initalise packet");
     }

@@ -57,7 +57,7 @@ public:
     return mPayloadLen == (mIter - mPayload.begin());
   }
 
-  virtual bool Init(const Byte* pBuf, const int numBytes) override
+  virtual bool InitFromBuffer(const Byte* pBuf, const int numBytes) override
   {
     if (numBytes < payloadStart)
     {

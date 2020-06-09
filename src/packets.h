@@ -19,7 +19,7 @@ namespace SSH
 
     virtual bool Ready() const = 0;
 
-    virtual bool Init(const Byte* pBuf, const int numBytes) = 0;
+    virtual bool InitFromBuffer(const Byte* pBuf, const int numBytes) = 0;
     virtual int Consume(const Byte* pBuf, const int numBytes) = 0;
   };
 
