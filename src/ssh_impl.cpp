@@ -317,6 +317,44 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
 
+      //Now we can send the client KEXData
+      KEXData clientData;
+      int requiredSize =  sizeof(Byte) +
+                          cKexCookieLength +
+                          clientData.mAlgorithms.mKex.Len() +
+                          clientData.mAlgorithms.mServerHost.Len() +
+                          clientData.mAlgorithms.mEncryption.mClientToServer.Len() +
+                          clientData.mAlgorithms.mEncryption.mServerToClient.Len() +
+                          clientData.mAlgorithms.mMAC.mClientToServer.Len() +
+                          clientData.mAlgorithms.mMAC.mServerToClient.Len() +
+                          clientData.mAlgorithms.mCompression.mClientToServer.Len() +
+                          clientData.mAlgorithms.mCompression.mServerToClient.Len() +
+                          clientData.mAlgorithms.mLanguages.mClientToServer.Len() +
+                          clientData.mAlgorithms.mLanguages.mServerToClient.Len() +
+                          sizeof(Byte) +
+                          sizeof(UINT32);
+
+      IPacket* pClientDataPacket = GetPacket(requiredSize);
+
+      pPacket->WriteByte(SSH_MSG::KEXINIT);
+
+      Byte cookie[cKexCookieLength]; //TODO: Randomize this
+      pPacket->WriteBuf(cookie, sizeof(cookie));
+
+      pPacket->WriteStr(clientData.mAlgorithms.mKex.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mServerHost.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mMAC.mClientToServer.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mMAC.mServerToClient.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mCompression.mClientToServer.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mCompression.mServerToClient.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
+      pPacket->WriteStr(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
+
+      pPacket->WriteByte(false); //first_kex_packet_follows
+      pPacket->WriteUInt32(0); //Reserved UINT32
+
       return;
     }
     default:
