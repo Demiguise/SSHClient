@@ -10,4 +10,6 @@ set_property(CACHE SSH_Target_Type PROPERTY STRINGS Lib Exe)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
+include(ExternalProject)
+
 add_subdirectory(src)

@@ -4,6 +4,7 @@
 [Bb]ld/
 tmp/
 .clangd/
+thirdparty/wolfssl
 
 #File types
 compile_commands.json

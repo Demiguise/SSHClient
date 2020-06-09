@@ -18,6 +18,14 @@ set(SSH_Common_Options
 set(SSH_Debug_Options
 )
 
+ExternalProject_Add(wolfSSL
+  SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/wolfssl
+  GIT_REPOSITORY https://github.com/wolfSSL/wolfssl.git
+  GIT_TAG v4.4.0-stable
+  UPDATE_COMMAND ""
+  INSTALL_COMMAND ""
+)
+
 if (${SSH_Target_Type} STREQUAL "Exe")
 
   add_executable(SSH
@@ -44,6 +52,8 @@ else()
   )
 
 endif()
+
+add_dependencies(SSH wolfSSL)
 
 target_include_directories(SSH
   PUBLIC
