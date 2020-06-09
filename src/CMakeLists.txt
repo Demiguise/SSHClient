@@ -18,16 +18,6 @@ set(SSH_Common_Options
 set(SSH_Debug_Options
 )
 
-ExternalProject_Add(wolfSSL
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/wolfssl
-  GIT_REPOSITORY https://github.com/wolfSSL/wolfssl.git
-  GIT_TAG v4.4.0-stable
-  GIT_PROGRESS TRUE
-  UPDATE_COMMAND ""
-  CONFIGURE_COMMAND ""
-  BUILD_COMMAND "MSBuild /nologo /t:build wolfssl.vcxproj"
-)
-
 if (${SSH_Target_Type} STREQUAL "Exe")
 
   add_executable(SSH
@@ -55,11 +45,31 @@ else()
 
 endif()
 
+#WolfSSL (Using it for the WolfCrypt library)
+set(WOLFSSL_LIB_DIR ${PROJECT_SOURCE_DIR}/thirdparty/wolfssl)
+ExternalProject_Add(wolfSSL
+  SOURCE_DIR ${WOLFSSL_LIB_DIR}
+  GIT_REPOSITORY https://github.com/wolfSSL/wolfssl.git
+  GIT_TAG v4.4.0-stable
+  GIT_PROGRESS TRUE
+  UPDATE_COMMAND ""
+  INSTALL_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND MSBuild /nologo /t:build wolfssl.vcxproj
+  BUILD_IN_SOURCE TRUE
+)
+
+set(WOLFSSL_INCLUDE_DIR ${WOLFSSL_LIB_DIR}/wolfssl)
+set(WOLFSSL_LIB ${WOLFSSL_LIB_DIR}/x64/Debug/wolfssl.lib)
+
 add_dependencies(SSH wolfSSL)
+target_link_libraries(SSH ${WOLFSSL_LIB})
 
 target_include_directories(SSH
   PUBLIC
     ${PROJECT_SOURCE_DIR}/include
+  PRIVATE
+    ${WOLFSSL_INCLUDE_DIR}
 )
 
 target_compile_definitions(SSH
