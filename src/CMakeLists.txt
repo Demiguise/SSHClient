@@ -22,8 +22,10 @@ ExternalProject_Add(wolfSSL
   SOURCE_DIR ${PROJECT_SOURCE_DIR}/thirdparty/wolfssl
   GIT_REPOSITORY https://github.com/wolfSSL/wolfssl.git
   GIT_TAG v4.4.0-stable
+  GIT_PROGRESS TRUE
   UPDATE_COMMAND ""
-  INSTALL_COMMAND ""
+  CONFIGURE_COMMAND ""
+  BUILD_COMMAND "MSBuild /nologo /t:build wolfssl.vcxproj"
 )
 
 if (${SSH_Target_Type} STREQUAL "Exe")
