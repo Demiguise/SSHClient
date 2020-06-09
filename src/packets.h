@@ -11,11 +11,6 @@ namespace SSH
   */
   class IPacket
   {
-  private:
-    int mPacketLen;
-    Byte mPaddingLen;
-    int mPayloadLen;
-
   public:
     virtual const Byte* const Payload() const = 0;
     virtual int PayloadLen() const = 0;
