@@ -336,24 +336,24 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
       IPacket* pClientDataPacket = GetPacket(requiredSize);
 
-      pPacket->WriteByte(SSH_MSG::KEXINIT);
+      pPacket->Write((Byte)SSH_MSG::KEXINIT);
 
       Byte cookie[cKexCookieLength]; //TODO: Randomize this
-      pPacket->WriteBuf(cookie, sizeof(cookie));
+      pPacket->Write(cookie, sizeof(cookie));
 
-      pPacket->WriteStr(clientData.mAlgorithms.mKex.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mServerHost.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mMAC.mClientToServer.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mMAC.mServerToClient.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mCompression.mClientToServer.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mCompression.mServerToClient.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
-      pPacket->WriteStr(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
+      pPacket->Write(clientData.mAlgorithms.mKex.Str());
+      pPacket->Write(clientData.mAlgorithms.mServerHost.Str());
+      pPacket->Write(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
+      pPacket->Write(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
+      pPacket->Write(clientData.mAlgorithms.mMAC.mClientToServer.Str());
+      pPacket->Write(clientData.mAlgorithms.mMAC.mServerToClient.Str());
+      pPacket->Write(clientData.mAlgorithms.mCompression.mClientToServer.Str());
+      pPacket->Write(clientData.mAlgorithms.mCompression.mServerToClient.Str());
+      pPacket->Write(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
+      pPacket->Write(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
 
-      pPacket->WriteByte(false); //first_kex_packet_follows
-      pPacket->WriteUInt32(0); //Reserved UINT32
+      pPacket->Write((Byte)false); //first_kex_packet_follows
+      pPacket->Write(0); //Reserved UINT32
 
       return;
     }

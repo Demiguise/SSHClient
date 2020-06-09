@@ -116,14 +116,19 @@ public:
     return bytesToConsume;
   }
 
-  virtual int WriteByte(const Byte data) override
+  virtual int Write(const Byte data) override
   {
     *mIter = data;
     mIter += sizeof(Byte);
     return sizeof(Byte);
   }
 
-  virtual int WriteUInt32(const UINT32 data) override
+  virtual int Write(const int data) override
+  {
+    return Write((UINT32)data);
+  }
+
+  virtual int Write(const UINT32 data) override
   {
     UINT32* pIter = (UINT32*)&(*mIter);
     *pIter = swap_endian<uint32_t>(data);
@@ -131,20 +136,21 @@ public:
     return sizeof(UINT32);
   }
 
-  virtual int WriteStr(const std::string data) override
+  virtual int Write(const std::string data) override
   {
-    size_t len = data.length();
-    WriteUInt32(len);
+    UINT32 len = data.length();
+    Write(len);
     memcpy(&(*mIter), data.data(), len);
     mIter += len;
-    return len;
+    return len + sizeof(UINT32);
   }
 
-  virtual int WriteBuf(const Byte* pBuf, const int numBytes) override
+  virtual int Write(const Byte* pBuf, const int numBytes) override
   {
+    Write(numBytes);
     memcpy(&(*mIter), pBuf, numBytes);
     mIter += numBytes;
-    return numBytes;
+    return numBytes + sizeof(UINT32);
   }
 };
 
