@@ -25,10 +25,6 @@ private:
   //Iterator used for reading/writing
   typename TArr::iterator mIter;
 
-  int mPacketLen;
-  Byte mPaddingLen;
-  int mPayloadLen;
-
 public:
   TPacket(int packetSize)
     : mIter(mPayload.begin())
