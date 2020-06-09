@@ -20,7 +20,6 @@ namespace SSH
     Connected,
   };
 
-  const char* StateToString(State state);
 
   enum LogLevel
   {
@@ -69,6 +68,11 @@ namespace SSH
 
     State GetState() const;
   };
+
+  const char* StateToString(State state);
+
+  void Init(); //Called ONCE before any usage
+  void Cleanup();
 }
 
 #endif //~__SSH_H__

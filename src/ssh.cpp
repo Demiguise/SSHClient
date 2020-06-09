@@ -1,6 +1,8 @@
 #include "ssh.h"
 #include "ssh_impl.h"
 
+#include <wolfssl/wolfcrypt/wc_port.h>
+
 using namespace SSH;
 
 const char* SSH::StateToString(State state)
@@ -14,6 +16,32 @@ const char* SSH::StateToString(State state)
     case State::Connected: return "Connected";
     default: return "Unknown";
   }
+}
+
+static bool gInitialised = false;
+
+void SSH::Init()
+{
+  if (gInitialised)
+  {
+    return;
+  }
+
+  wolfCrypt_Init();
+
+  gInitialised = true;
+}
+
+void SSH::Cleanup()
+{
+  if (!gInitialised)
+  {
+    return;
+  }
+
+  wolfCrypt_Cleanup();
+
+  gInitialised = false;
 }
 
 Client::Client(ClientOptions options, TCtx ctx)

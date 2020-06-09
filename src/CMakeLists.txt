@@ -59,7 +59,7 @@ ExternalProject_Add(wolfSSL
   BUILD_IN_SOURCE TRUE
 )
 
-set(WOLFSSL_INCLUDE_DIR ${WOLFSSL_LIB_DIR}/wolfssl)
+set(WOLFSSL_INCLUDE_DIR ${WOLFSSL_LIB_DIR})
 set(WOLFSSL_LIB ${WOLFSSL_LIB_DIR}/x64/Debug/wolfssl.lib)
 
 add_dependencies(SSH wolfSSL)

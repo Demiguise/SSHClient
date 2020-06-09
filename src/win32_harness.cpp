@@ -62,6 +62,8 @@ int main()
     WSADATA wsaData = { 0 };
     int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
 
+    SSH::Init();
+
     TSharedSock pSock = std::make_shared<WinSock>();
     pSock->Connect("10.7.0.10", 22);
 
