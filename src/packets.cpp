@@ -19,9 +19,10 @@ std::shared_ptr<Packet> Packet::Create(int packetSize)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
+  pPacket->mTotalPacketLen = packetSize + sizeof(UINT32);
   pPacket->mPacketLen = packetSize;
-  pPacket->mPacket.reserve(packetSize);
-  pPacket->mPacket.resize(packetSize);
+  pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
+  pPacket->mPacket.resize(pPacket->mTotalPacketLen);
   pPacket->mIter = pPacket->mPacket.begin();
 
   return pPacket;
@@ -37,19 +38,24 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
 
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
+  /*
+    packetLen does NOT include the MAC or the packetLen field itself.
+    When copying the buffer data into our packet, we will want to take this into account
+    via the fullPacketLen field.
+  */
   const Byte* pIter = pBuf;
   UINT32 packetLen = GetLength(pIter);
+  pPacket->mTotalPacketLen = packetLen + sizeof(UINT32);
   pPacket->mPacketLen = packetLen;
-  pPacket->mPacket.reserve(packetLen);
-  pPacket->mPacket.resize(packetLen);
-
+  pPacket->mPacket.reserve(packetLen + pPacket->mTotalPacketLen);
+  pPacket->mPacket.resize(packetLen + pPacket->mTotalPacketLen);
 
   pIter += sizeof(UINT32);
   UINT32 paddingLen = *(pIter);
   pPacket->mPaddingLen = paddingLen;
-  pPacket->mPayloadLen = (packetLen - paddingLen - 1);
+  pPacket->mPayloadLen = (packetLen - paddingLen - sizeof(Byte));
 
-  UINT32 bytesToConsume = std::min(packetLen, (UINT32)numBytes);
+  UINT32 bytesToConsume = std::min(pPacket->mTotalPacketLen, numBytes);
   std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
 
   pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
@@ -69,7 +75,7 @@ int Packet::PayloadLen() const
 
 UINT32 Packet::Remaining() const
 {
-  return mPacketLen - (mIter - mPacket.begin());
+  return mTotalPacketLen - (mIter - mPacket.begin());
 }
 
 int Packet::Read(const Byte* pBuf, const int numBytes)

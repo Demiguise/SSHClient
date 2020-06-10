@@ -23,9 +23,10 @@ namespace SSH
     TPacketBytes mPacket;
     TPacketIter mIter = mPacket.begin();
 
-    int mPacketLen = 0;
-    int mPayloadLen = 0;
-    Byte mPaddingLen = 0;
+    int mPacketLen = 0; //Value of the packet_length field
+    int mTotalPacketLen = 0; //Size of the whole packet include packet_length and MAC
+    int mPayloadLen = 0; //Calculated value based on packet_length and padding_length
+    Byte mPaddingLen = 0; //Value of the padding_length field
 
     static UINT32 GetLength(const Byte* pBuf);
 
