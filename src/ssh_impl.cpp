@@ -280,7 +280,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       return;
     }
   }
-  else
+  else if (pPacket == nullptr)
   {
     Log(LogLevel::Error, "Not enough bytes for packet");
     return;
@@ -332,24 +332,24 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
       auto pClientDataPacket = Packet::Create(requiredSize);
 
-      pPacket->Write((Byte)SSH_MSG::KEXINIT);
+      pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
 
       Byte cookie[cKexCookieLength]; //TODO: Randomize this
-      pPacket->Write(cookie, sizeof(cookie));
+      pClientDataPacket->Write(cookie, sizeof(cookie));
 
-      pPacket->Write(clientData.mAlgorithms.mKex.Str());
-      pPacket->Write(clientData.mAlgorithms.mServerHost.Str());
-      pPacket->Write(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
-      pPacket->Write(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
-      pPacket->Write(clientData.mAlgorithms.mMAC.mClientToServer.Str());
-      pPacket->Write(clientData.mAlgorithms.mMAC.mServerToClient.Str());
-      pPacket->Write(clientData.mAlgorithms.mCompression.mClientToServer.Str());
-      pPacket->Write(clientData.mAlgorithms.mCompression.mServerToClient.Str());
-      pPacket->Write(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
-      pPacket->Write(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mKex.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mServerHost.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mClientToServer.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mServerToClient.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mClientToServer.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mServerToClient.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
+      pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
 
-      pPacket->Write((Byte)false); //first_kex_packet_follows
-      pPacket->Write(0); //Reserved UINT32
+      pClientDataPacket->Write((Byte)false); //first_kex_packet_follows
+      pClientDataPacket->Write(0); //Reserved UINT32
 
       return;
     }
