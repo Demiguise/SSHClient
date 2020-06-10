@@ -264,7 +264,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
   if (bytesRemaining >= 4)
   {
-    auto pPacket = Packet::Create(pBuf, bufLen);
+    pPacket = Packet::Create(pBuf, bufLen);
     if (!pPacket)
     {
       Log(LogLevel::Error, "Failed to allocate a packet!");
