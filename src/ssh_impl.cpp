@@ -315,6 +315,26 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
       //Now we can send the client KEXData
       KEXData clientData;
+
+      clientData.mAlgorithms.mKex.Add("diffie-hellman-group14-sha1");
+
+      clientData.mAlgorithms.mServerHost.Add("ssh-rsa");
+
+      //Forcing only aes128-ctr for the moment
+      clientData.mAlgorithms.mEncryption.mClientToServer.Add("aes128-ctr");
+      clientData.mAlgorithms.mEncryption.mServerToClient.Add("aes128-ctr");
+
+      //Forcing only hmac-sha2-256 for the moment
+      clientData.mAlgorithms.mMAC.mClientToServer.Add("hmac-sha2-256");
+      clientData.mAlgorithms.mMAC.mServerToClient.Add("hmac-sha2-256");
+
+      //We aren't going to allow compression for the moment
+      clientData.mAlgorithms.mCompression.mClientToServer.Add("none");
+      clientData.mAlgorithms.mCompression.mServerToClient.Add("none");
+
+      //Languages settings are intentionally left empty
+
+      //Figure out the correct size of the packet
       int requiredSize =  sizeof(Byte) +
                           cKexCookieLength +
                           clientData.mAlgorithms.mKex.Len() + sizeof(UINT32) +
@@ -350,6 +370,8 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
       pClientDataPacket->Write((Byte)false); //first_kex_packet_follows
       pClientDataPacket->Write(0); //Reserved UINT32
+
+      Send(pClientDataPacket);
 
       return;
     }
