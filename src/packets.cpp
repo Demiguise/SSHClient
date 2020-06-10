@@ -21,6 +21,7 @@ std::shared_ptr<Packet> Packet::Create(int packetSize)
 
   pPacket->mPacketLen = packetSize;
   pPacket->mPacket.reserve(packetSize);
+  pPacket->mPacket.resize(packetSize);
   pPacket->mIter = pPacket->mPacket.begin();
 
   return pPacket;
@@ -40,7 +41,8 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
   UINT32 packetLen = GetLength(pIter);
   pPacket->mPacketLen = packetLen;
   pPacket->mPacket.reserve(packetLen);
-  pPacket->mIter = pPacket->mPacket.begin();
+  pPacket->mPacket.resize(packetLen);
+
 
   pIter += sizeof(UINT32);
   UINT32 paddingLen = *(pIter);
@@ -49,6 +51,8 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
 
   UINT32 bytesToConsume = std::min(packetLen, (UINT32)numBytes);
   std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
+
+  pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
 
   return pPacket;
 }
@@ -65,13 +69,13 @@ int Packet::PayloadLen() const
 
 UINT32 Packet::Remaining() const
 {
-  return mPacketLen == (mIter - mPacket.begin());
+  return mPacketLen - (mIter - mPacket.begin());
 }
 
 int Packet::Read(const Byte* pBuf, const int numBytes)
 {
   //Get the number of bytes needed by this packet
-  int bytesLeft = mPayloadLen - (mIter - mPacket.begin());
+  int bytesLeft = Remaining();
   if (bytesLeft == 0)
   {
     return 0;
