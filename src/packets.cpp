@@ -10,149 +10,140 @@
 
 using namespace SSH;
 
-/*
-  Concrete template class for the packets
-*/
-template<std::size_t size>
-class TPacket : public IPacket
+constexpr static int payloadStart = sizeof(UINT32) + sizeof(Byte);
+
+Packet::Packet(int packetSize)
+  : mIter(mPacket)
+  , mPacketLen(packetSize)
+  , mPaddingLen(0)
+  , mPayloadLen(0)
+{}
+
+const Byte* const Packet::Data() const
 {
-private:
-  constexpr static int payloadStart = sizeof(UINT32) + sizeof(Byte);
+  return mPacket;
+}
 
-  using TArr = std::array<Byte, size>;
-  TArr mPayload;
+int Packet::DataLen() const
+{
+  return mPacketLen;
+}
 
-  //Iterator used for reading/writing
-  typename TArr::iterator mIter;
+const Byte* const Packet::Payload() const
+{
+  return &mPacket[payloadStart];
+}
 
-  int mPacketLen;
-  Byte mPaddingLen;
-  int mPayloadLen;
+int Packet::PayloadLen() const
+{
+  return mPayloadLen;
+}
 
-public:
-  TPacket(int packetSize)
-    : mIter(mPayload.begin())
-    , mPacketLen(packetSize)
-    , mPaddingLen(0)
-    , mPayloadLen(0)
-  {}
+int Packet::PaddingLen() const
+{
+  return mPaddingLen;
+}
 
-  virtual const Byte* const Payload() const override
+bool Packet::Ready() const
+{
+  return mPayloadLen == (mIter - mPacket);
+}
+
+bool Packet::InitFromBuffer(const Byte* pBuf, const int numBytes)
+{
+  if (numBytes < payloadStart)
   {
-    return mPayload.data();
+    //We need a minimum of 5 bytes for the packet and padding length
+    return false;
   }
-
-  virtual int PayloadLen() const override
-  {
-    return mPayloadLen;
-  }
-
-  virtual int PaddingLen() const override
-  {
-    return mPaddingLen;
-  }
-
-  virtual bool Ready() const override
-  {
-    return mPayloadLen == (mIter - mPayload.begin());
-  }
-
-  virtual bool InitFromBuffer(const Byte* pBuf, const int numBytes) override
-  {
-    if (numBytes < payloadStart)
-    {
-      //We need a minimum of 5 bytes for the packet and padding length
-      return false;
-    }
 
 #ifdef _DEBUG
-    //Sanity check the size of the packet
-    if (GetPacketLength(pBuf) != mPacketLen)
-    {
-      return false;
-    }
+  //Sanity check the size of the packet
+  if (Packets::GetLength(pBuf) != mPacketLen)
+  {
+    return false;
+  }
 
-    //Sanity check we have enough space for the packet
-    if (numBytes >= mPacketLen)
-    {
-      return false;
-    }
+  //Sanity check we have enough space for the packet
+  if (numBytes >= mPacketLen)
+  {
+    return false;
+  }
 #endif
 
-    int bytesRemaining = numBytes;
-    const Byte* pIter = pBuf;
+  int bytesRemaining = numBytes;
+  const Byte* pIter = pBuf;
 
-    //Packet Length (Just skip past)
-    pIter += sizeof(UINT32);
-    bytesRemaining -= sizeof(UINT32);
+  //Packet Length (Just skip past)
+  pIter += sizeof(UINT32);
+  bytesRemaining -= sizeof(UINT32);
 
-    //Padding length
-    mPaddingLen = *(pIter);
-    pIter += sizeof(Byte);
-    bytesRemaining -= sizeof(Byte);
+  //Padding length
+  mPaddingLen = *(pIter);
+  pIter += sizeof(Byte);
+  bytesRemaining -= sizeof(Byte);
 
-    mPayloadLen = mPacketLen - mPaddingLen - 1;
+  mPayloadLen = mPacketLen - mPaddingLen - 1;
 
-    int bytesToConsume = std::min(mPayloadLen, bytesRemaining);
-    memcpy(&(*mIter), pIter, bytesToConsume);
-    mIter += bytesToConsume;
+  int bytesToConsume = std::min(mPayloadLen, bytesRemaining);
+  memcpy(mIter, pIter, bytesToConsume);
+  mIter += bytesToConsume;
 
-    return true;
-  }
+  return true;
+}
 
-  virtual int Consume(const Byte* pBuf, const int numBytes) override
+int Packet::Consume(const Byte* pBuf, const int numBytes)
+{
+  //Get the number of bytes needed by this packet
+  int bytesLeft = mPayloadLen - (mIter - mPacket);
+  if (bytesLeft == 0)
   {
-    //Get the number of bytes needed by this packet
-    int bytesLeft = mPayloadLen - (mIter - mPayload.begin());
-    if (bytesLeft == 0)
-    {
-      return 0;
-    }
-
-    int bytesToConsume = std::min(bytesLeft, numBytes);
-    memcpy(&(*mIter), pBuf, bytesToConsume);
-    mIter += bytesToConsume;
-
-    return bytesToConsume;
+    return 0;
   }
 
-  virtual int Write(const Byte data) override
-  {
-    *mIter = data;
-    mIter += sizeof(Byte);
-    return sizeof(Byte);
-  }
+  int bytesToConsume = std::min(bytesLeft, numBytes);
+  memcpy(mIter, pBuf, bytesToConsume);
+  mIter += bytesToConsume;
 
-  virtual int Write(const int data) override
-  {
-    return Write((UINT32)data);
-  }
+  return bytesToConsume;
+}
 
-  virtual int Write(const UINT32 data) override
-  {
-    UINT32* pIter = (UINT32*)&(*mIter);
-    *pIter = swap_endian<uint32_t>(data);
-    mIter += sizeof(UINT32);
-    return sizeof(UINT32);
-  }
+int Packet::Write(const Byte data)
+{
+  *mIter = data;
+  mIter += sizeof(Byte);
+  return sizeof(Byte);
+}
 
-  virtual int Write(const std::string data) override
-  {
-    UINT32 len = data.length();
-    Write(len);
-    memcpy(&(*mIter), data.data(), len);
-    mIter += len;
-    return len + sizeof(UINT32);
-  }
+int Packet::Write(const int data)
+{
+  return Write((UINT32)data);
+}
 
-  virtual int Write(const Byte* pBuf, const int numBytes) override
-  {
-    Write(numBytes);
-    memcpy(&(*mIter), pBuf, numBytes);
-    mIter += numBytes;
-    return numBytes + sizeof(UINT32);
-  }
-};
+int Packet::Write(const UINT32 data)
+{
+  UINT32* pIter = (UINT32*)mIter;
+  *pIter = swap_endian<uint32_t>(data);
+  mIter += sizeof(UINT32);
+  return sizeof(UINT32);
+}
+
+int Packet::Write(const std::string data)
+{
+  UINT32 len = data.length();
+  Write(len);
+  memcpy(mIter, data.data(), len);
+  mIter += len;
+  return len + sizeof(UINT32);
+}
+
+int Packet::Write(const Byte* pBuf, const int numBytes)
+{
+  Write(numBytes);
+  memcpy(mIter, pBuf, numBytes);
+  mIter += numBytes;
+  return numBytes + sizeof(UINT32);
+}
 
 using TPacketVec = std::vector<IPacket*>;
 using TPacketMap = std::map<int, TPacketVec>;

@@ -6,47 +6,78 @@
 namespace SSH
 {
   /*
-    Interface class to hide away the size of the underlying packets,
-    and provide a consistent interface for users.
+    Packet manages a buffer for reads/writes and should be used
+    for the binary message protocol.
+    Packets are sized so that the payload is always a multiple of 16 bytes, with
+    enough extra space for header and MAC information.
   */
-  class IPacket
+  class Packet
   {
+  private:
+    Byte* mPacket;
+    Byte* mIter;
+
+    int mPacketLen;
+    int mPayloadLen;
+    Byte mPaddingLen;
+
   public:
-    virtual const Byte* const Payload() const = 0;
-    virtual int PayloadLen() const = 0;
+    Packet(int packetSize);
 
-    virtual int PaddingLen() const = 0;
+    //Pointer to the beginning of the packet
+    const Byte* const Data() const;
+    int DataLen() const;
 
-    virtual bool Ready() const = 0;
+    //Pointer to the beginning of the payload
+    const Byte* const Payload() const;
+    int PayloadLen() const;
 
-    virtual bool InitFromBuffer(const Byte* pBuf, const int numBytes) = 0;
-    virtual int Consume(const Byte* pBuf, const int numBytes) = 0;
+    int PaddingLen() const;
 
-    virtual int Write(const Byte data) = 0;
-    virtual int Write(const int data) = 0;
-    virtual int Write(const UINT32 data) = 0;
-    virtual int Write(const std::string data) = 0;
-    virtual int Write(const Byte* pBuf, const int numBytes) = 0;
+    bool Ready() const;
+
+    bool InitFromBuffer(const Byte* pBuf, const int numBytes);
+    int Consume(const Byte* pBuf, const int numBytes);
+
+    //Will copy the data from the pBuf into the underlying packet buffer
+    int Read(const Byte* pBuf, const int numBytes);
+
+    int Write(const Byte data);
+    int Write(const int data); //Will be treated as a UINT32 when writing
+    int Write(const UINT32 data);
+    int Write(const std::string data);
+    int Write(const Byte* pBuf, const int numBytes);
   };
 
-  /*
-    Returns a packet which is capable of fitting the given size.
-    Users are responsible for returning the packets to this system through a ReturnPacket call.
-    May allocate new resources for the packet.
-    May return nullptr.
-  */
-  IPacket* GetPacket(size_t size);
+  namespace Packets
+  {
 
-  /*
-    Returns a packet to the pool.
-    Does not free the packet's resources.
-  */
-  void ReturnPacket(IPacket* oldPacket);
+    /*
+      Returns a packet which is capable of fitting the given size.
+      Users are responsible for returning the packets to this system through a ReturnPacket call.
+      May allocate new resources for the packet.
+      May return nullptr.
+    */
+    Packet* Get(size_t size);
 
-  /*
-    Gets the 4 byte packet length from the beginning of SSH binary packet data.
-  */
-  UINT32 GetPacketLength(const Byte* pBuf);
+    /*
+      Returns a packet to the pool.
+      Does not free the packet's resources.
+    */
+    void Return(Packet *oldPacket);
+
+    /*
+      Gets the 4 byte packet length from the beginning of SSH binary packet data.
+    */
+    UINT32 GetLength(const Byte* pBuf);
+
+    /*
+      Releases all packet un-used packet resources.
+      If a client is currently using any packets, they must be returned BEFORE calling this
+      to ensure the packet buffers are correctly freed.
+    */
+    void Cleanup();
+  }
 }
 
 #endif //~__PACKETS_H__
