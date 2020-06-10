@@ -2,6 +2,7 @@
 #define __PACKETS_H__
 
 #include "ssh.h"
+#include <vector>
 
 namespace SSH
 {
@@ -14,30 +15,29 @@ namespace SSH
   class Packet
   {
   private:
-    Byte* mPacket;
-    Byte* mIter;
+    using TPacketBytes = std::vector<Byte>;
+    using TPacketIter = TPacketBytes::iterator;
+    TPacketBytes mPacket;
+    TPacketIter mIter = mPacket.begin();
 
-    int mPacketLen;
-    int mPayloadLen;
-    Byte mPaddingLen;
+    int mPacketLen = 0;
+    int mPayloadLen = 0;
+    Byte mPaddingLen = 0;
 
+    Packet();
+
+    static int GetLength(const Byte* pBuf);
   public:
-    Packet(int packetSize);
 
-    //Pointer to the beginning of the packet
-    const Byte* const Data() const;
-    int DataLen() const;
+    //Factory functions
+    static std::shared_ptr<Packet> Create(int packetSize);
+    static std::shared_ptr<Packet> Create(const Byte* pBuf, const int numBytes);
 
     //Pointer to the beginning of the payload
     const Byte* const Payload() const;
     int PayloadLen() const;
 
-    int PaddingLen() const;
-
     bool Ready() const;
-
-    bool InitFromBuffer(const Byte* pBuf, const int numBytes);
-    int Consume(const Byte* pBuf, const int numBytes);
 
     //Will copy the data from the pBuf into the underlying packet buffer
     int Read(const Byte* pBuf, const int numBytes);
@@ -47,37 +47,13 @@ namespace SSH
     int Write(const UINT32 data);
     int Write(const std::string data);
     int Write(const Byte* pBuf, const int numBytes);
+
+    /*
+      Prepares the packet for sending, writing any additional header
+      information such as packet/padding length, MAC, and padding data.
+    */
+    void Prepare();
   };
-
-  namespace Packets
-  {
-
-    /*
-      Returns a packet which is capable of fitting the given size.
-      Users are responsible for returning the packets to this system through a ReturnPacket call.
-      May allocate new resources for the packet.
-      May return nullptr.
-    */
-    Packet* Get(size_t size);
-
-    /*
-      Returns a packet to the pool.
-      Does not free the packet's resources.
-    */
-    void Return(Packet *oldPacket);
-
-    /*
-      Gets the 4 byte packet length from the beginning of SSH binary packet data.
-    */
-    UINT32 GetLength(const Byte* pBuf);
-
-    /*
-      Releases all packet un-used packet resources.
-      If a client is currently using any packets, they must be returned BEFORE calling this
-      to ensure the packet buffers are correctly freed.
-    */
-    void Cleanup();
-  }
 }
 
 #endif //~__PACKETS_H__
