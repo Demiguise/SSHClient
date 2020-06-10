@@ -317,16 +317,16 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       KEXData clientData;
       int requiredSize =  sizeof(Byte) +
                           cKexCookieLength +
-                          clientData.mAlgorithms.mKex.Len() +
-                          clientData.mAlgorithms.mServerHost.Len() +
-                          clientData.mAlgorithms.mEncryption.mClientToServer.Len() +
-                          clientData.mAlgorithms.mEncryption.mServerToClient.Len() +
-                          clientData.mAlgorithms.mMAC.mClientToServer.Len() +
-                          clientData.mAlgorithms.mMAC.mServerToClient.Len() +
-                          clientData.mAlgorithms.mCompression.mClientToServer.Len() +
-                          clientData.mAlgorithms.mCompression.mServerToClient.Len() +
-                          clientData.mAlgorithms.mLanguages.mClientToServer.Len() +
-                          clientData.mAlgorithms.mLanguages.mServerToClient.Len() +
+                          clientData.mAlgorithms.mKex.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mServerHost.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mEncryption.mClientToServer.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mEncryption.mServerToClient.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mMAC.mClientToServer.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mMAC.mServerToClient.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mCompression.mClientToServer.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mCompression.mServerToClient.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mLanguages.mClientToServer.Len() + sizeof(UINT32) +
+                          clientData.mAlgorithms.mLanguages.mServerToClient.Len() + sizeof(UINT32) +
                           sizeof(Byte) +
                           sizeof(UINT32);
 
