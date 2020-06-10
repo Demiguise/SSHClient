@@ -13,6 +13,8 @@ using namespace SSH;
 
 constexpr static int payloadOffset = sizeof(UINT32) + sizeof(Byte);
 
+Packet::Packet(Token t) {}
+
 std::shared_ptr<Packet> Packet::Create(int packetSize)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
