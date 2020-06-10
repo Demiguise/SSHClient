@@ -61,7 +61,8 @@ namespace SSH
     TLogFunc mLogFunc;
     LogLevel mLogLevel;
 
-    TPacketQueue mQueue;
+    TPacketQueue mRecvQueue;
+    TPacketQueue mSendQueue;
 
     KEXData mKex;
 
@@ -81,6 +82,7 @@ namespace SSH
     ~Impl();
 
     TResult Send(const Byte* pBuf, const int bufLen);
+    TResult Send(std::shared_ptr<Packet> pPacket);
 
     void Poll();
 

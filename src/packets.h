@@ -56,6 +56,7 @@ namespace SSH
     /*
       Prepares the packet for sending, writing any additional header
       information such as packet/padding length, MAC, and padding data.
+      Also resets the iterator to the beginning, preparing for sending.
     */
     void Prepare();
   };

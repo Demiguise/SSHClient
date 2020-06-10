@@ -124,8 +124,21 @@ TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
     return {};
   }
 
-  Log(LogLevel::Debug, "Successfully sent %d/%d bytes", sentBytes, bufLen);
+  Log(LogLevel::Debug, "Successfully sent %d/%d raw bytes", sentBytes, bufLen);
   return sentBytes;
+}
+
+TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
+{
+  pPacket->Prepare();
+
+  if (!mSendQueue.empty())
+  {
+    mSendQueue.push(pPacket);
+    return {};
+  }
+
+  return {};
 }
 
 void Client::Impl::Poll()
@@ -243,9 +256,9 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
   int bytesRemaining = bufLen;
 
   std::shared_ptr<Packet> pPacket = nullptr;
-  if (!mQueue.empty())
+  if (!mRecvQueue.empty())
   {
-    pPacket = mQueue.back();
+    pPacket = mRecvQueue.back();
     int bytesConsumed = pPacket->Read(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
     Log(LogLevel::Info, "Packet consumed an additional [%d] bytes", bytesConsumed);
@@ -276,7 +289,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
     {
       //We have to wait for more data, pop this packet into the queue
       Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", bytesNeeded);
-      mQueue.push(pPacket);
+      mRecvQueue.push(pPacket);
       return;
     }
   }
