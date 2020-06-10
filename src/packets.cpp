@@ -21,6 +21,7 @@ std::shared_ptr<Packet> Packet::Create(int packetSize)
 
   pPacket->mPacketLen = packetSize;
   pPacket->mPacket.reserve(packetSize);
+  pPacket->mIter = pPacket->mPacket.begin();
 
   return pPacket;
 }
@@ -39,6 +40,7 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
   UINT32 packetLen = GetLength(pIter);
   pPacket->mPacketLen = packetLen;
   pPacket->mPacket.reserve(packetLen);
+  pPacket->mIter = pPacket->mPacket.begin();
 
   pIter += sizeof(UINT32);
   UINT32 paddingLen = *(pIter);
