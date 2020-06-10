@@ -6,6 +6,7 @@
 #include <map>
 #include <vector>
 #include <cmath>
+#include <cstring>
 #include <algorithm>
 
 using namespace SSH;
@@ -14,7 +15,7 @@ constexpr static int payloadOffset = sizeof(UINT32) + sizeof(Byte);
 
 std::shared_ptr<Packet> Packet::Create(int packetSize)
 {
-  auto pPacket = std::make_shared<Packet>();
+  auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
   pPacket->mPacketLen = packetSize;
   pPacket->mPacket.reserve(packetSize);
@@ -30,7 +31,7 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
     return nullptr;
   }
 
-  auto pPacket = std::make_shared<Packet>();
+  auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
   const Byte* pIter = pBuf;
   UINT32 packetLen = GetLength(pIter);
@@ -43,7 +44,7 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
   pPacket->mPayloadLen = (packetLen - paddingLen - 1);
 
   UINT32 bytesToConsume = std::min(packetLen, (UINT32)numBytes);
-  memcpy(pBuf, pPacket->mPacket.data(), bytesToConsume);
+  std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
 
   return pPacket;
 }
@@ -58,9 +59,9 @@ int Packet::PayloadLen() const
   return mPayloadLen;
 }
 
-bool Packet::Ready() const
+UINT32 Packet::Remaining() const
 {
-  return mPayloadLen == (mIter - mPacket.begin());
+  return mPacketLen == (mIter - mPacket.begin());
 }
 
 int Packet::Read(const Byte* pBuf, const int numBytes)
@@ -73,7 +74,7 @@ int Packet::Read(const Byte* pBuf, const int numBytes)
   }
 
   int bytesToConsume = std::min(bytesLeft, numBytes);
-  memcpy(&(*mIter), pBuf, bytesToConsume);
+  std::memcpy(&(*mIter), pBuf, bytesToConsume);
   mIter += bytesToConsume;
 
   return bytesToConsume;
@@ -103,7 +104,7 @@ int Packet::Write(const std::string data)
 {
   UINT32 len = data.length();
   Write(len);
-  memcpy(&(*mIter), data.data(), len);
+  std::memcpy(&(*mIter), data.data(), len);
   mIter += len;
   return len + sizeof(UINT32);
 }
@@ -111,13 +112,12 @@ int Packet::Write(const std::string data)
 int Packet::Write(const Byte* pBuf, const int numBytes)
 {
   Write(numBytes);
-  memcpy(&(*mIter), pBuf, numBytes);
+  std::memcpy(&(*mIter), pBuf, numBytes);
   mIter += numBytes;
   return numBytes + sizeof(UINT32);
 }
 
-
-UINT32 Packet::GetPacketLength(const Byte* pBuf)
+UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);
   return swap_endian<uint32_t>(nLen);

@@ -14,6 +14,9 @@ namespace SSH
   */
   class Packet
   {
+  protected:
+    class Token {};
+
   private:
     using TPacketBytes = std::vector<Byte>;
     using TPacketIter = TPacketBytes::iterator;
@@ -24,10 +27,10 @@ namespace SSH
     int mPayloadLen = 0;
     Byte mPaddingLen = 0;
 
-    Packet();
+    static UINT32 GetLength(const Byte* pBuf);
 
-    static int GetLength(const Byte* pBuf);
   public:
+    explicit Packet(Token);
 
     //Factory functions
     static std::shared_ptr<Packet> Create(int packetSize);
@@ -37,7 +40,8 @@ namespace SSH
     const Byte* const Payload() const;
     int PayloadLen() const;
 
-    bool Ready() const;
+    //Number of bytes remaining to send/receive
+    UINT32 Remaining() const;
 
     //Will copy the data from the pBuf into the underlying packet buffer
     int Read(const Byte* pBuf, const int numBytes);

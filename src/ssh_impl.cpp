@@ -242,52 +242,48 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 {
   int bytesRemaining = bufLen;
 
-  IPacket* pPacket = nullptr;
+  std::shared_ptr<Packet> pPacket = nullptr;
   if (!mQueue.empty())
   {
     pPacket = mQueue.back();
-    int bytesConsumed = pPacket->Consume(pBuf, bufLen);
+    int bytesConsumed = pPacket->Read(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
     Log(LogLevel::Info, "Packet consumed an additional [%d] bytes", bytesConsumed);
 
-    if (pPacket->Ready())
+    UINT32 bytesNeeded = pPacket->Remaining();
+    if (bytesNeeded == 0)
     {
       Log(LogLevel::Info, "Queued packet is now ready!");
     }
     else
     {
-      Log(LogLevel::Info, "Still waiting on more bytes for this packet");
+      Log(LogLevel::Info, "Still waiting on [%d] more bytes for this packet", bytesNeeded);
       return;
     }
   }
-  else
-  {
-    if (bytesRemaining < 4)
-    {
-      Log(LogLevel::Error, "Not enough bytes for packet");
-      return;
-    }
 
-    UINT32 packetLen = GetPacketLength(pBuf);
-    IPacket *pPacket = GetPacket(packetLen);
+  if (bytesRemaining >= 4)
+  {
+    auto pPacket = Packet::Create(pBuf, bufLen);
     if (!pPacket)
     {
       Log(LogLevel::Error, "Failed to allocate a packet!");
       return;
     }
 
-    if (!pPacket->InitFromBuffer(pBuf, std::min(bytesRemaining, (int)packetLen)))
-    {
-      Log(LogLevel::Error, "Failed to initalise packet");
-    }
-
-    if (bytesRemaining < packetLen)
+    UINT32 bytesNeeded = pPacket->Remaining();
+    if (bytesNeeded)
     {
       //We have to wait for more data, pop this packet into the queue
-      Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", (packetLen - bytesRemaining));
+      Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", bytesNeeded);
       mQueue.push(pPacket);
       return;
     }
+  }
+  else
+  {
+    Log(LogLevel::Error, "Not enough bytes for packet");
+    return;
   }
 
   switch (mStage)
@@ -334,7 +330,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
                           sizeof(Byte) +
                           sizeof(UINT32);
 
-      IPacket* pClientDataPacket = GetPacket(requiredSize);
+      auto pClientDataPacket = Packet::Create(requiredSize);
 
       pPacket->Write((Byte)SSH_MSG::KEXINIT);
 

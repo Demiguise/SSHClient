@@ -41,11 +41,13 @@ namespace SSH
     } mAlgorithms;
   };
 
+  class Packet;
+
   class Client::Impl
   {
   private:
     static const int sMaxLogLength = 256;
-    using TPacketQueue = std::queue<IPacket*>;
+    using TPacketQueue = std::queue<std::shared_ptr<Packet>>;
 
   protected:
     TSendFunc mSendFunc;
