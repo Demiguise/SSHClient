@@ -16,7 +16,7 @@ constexpr static int minPaddingSize = 4; //RFC states there should be a minimum 
 
 Packet::Packet(Token t) {}
 
-std::shared_ptr<Packet> Packet::Create(int payloadLen)
+std::shared_ptr<Packet> Packet::Create(int payloadLen, const UINT32 seqNumber)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
@@ -53,10 +53,12 @@ std::shared_ptr<Packet> Packet::Create(int payloadLen)
   pPacket->Write(pPacket->mPacketLen);
   pPacket->Write((Byte)pPacket->mPaddingLen);
 
+  pPacket->mSequenceNumber = seqNumber;
+
   return pPacket;
 }
 
-std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
+std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber)
 {
   if (numBytes < payloadOffset)
   {
@@ -87,6 +89,8 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes)
   std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
 
   pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
+
+  pPacket->mSequenceNumber = seqNumber;
 
   return pPacket;
 }

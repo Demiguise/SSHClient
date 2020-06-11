@@ -66,6 +66,8 @@ namespace SSH
 
     KEXData mKex;
 
+    UINT32 mSequenceNumber;
+
     void Log(LogLevel level, std::string frmt, ...);
     void LogBuffer(LogLevel level, std::string bufferName, const Byte* pBuf, const int bufLen);
 

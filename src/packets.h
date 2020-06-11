@@ -28,6 +28,8 @@ namespace SSH
     int mPayloadLen = 0; //Calculated value based on packet_length and padding_length
     Byte mPaddingLen = 0; //Value of the padding_length field
 
+    UINT32 mSequenceNumber = 0;
+
     static UINT32 GetLength(const Byte* pBuf);
 
   public:
@@ -42,8 +44,8 @@ namespace SSH
     explicit Packet(Token);
 
     //Factory functions
-    static std::shared_ptr<Packet> Create(int payloadLen);
-    static std::shared_ptr<Packet> Create(const Byte* pBuf, const int numBytes);
+    static std::shared_ptr<Packet> Create(int payloadLen, const UINT32 seqNumber);
+    static std::shared_ptr<Packet> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
 
     //Pointer to the beginning of the payload
     const Byte* const Payload() const;
@@ -51,6 +53,8 @@ namespace SSH
 
     //Number of bytes remaining to send/receive
     UINT32 Remaining() const;
+
+    UINT32 GetSequenceNumber() const { return mSequenceNumber; }
 
     //Will copy the data from the pBuf into the underlying packet buffer
     int Read(const Byte* pBuf, const int numBytes);

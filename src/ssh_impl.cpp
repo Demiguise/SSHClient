@@ -47,6 +47,7 @@ Client::Impl::Impl(ClientOptions options, TCtx ctx)
   , mStage(Stage::Null)
   , mLogFunc(options.log)
   , mLogLevel(options.logLevel)
+  , mSequenceNumber(0)
 {
 }
 
@@ -138,6 +139,7 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
       return 0;
     }
 
+    Log(LogLevel::Debug, "Packet (%d) sent %d bytes", pPacket->GetSequenceNumber(), sentBytes.value());
     return sentBytes.value();
   });
 }
@@ -146,6 +148,7 @@ void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)
 {
   pPacket->Prepare();
   mSendQueue.push(pPacket);
+  Log(LogLevel::Debug, "Packet (%d) has been queued for sending", pPacket->GetSequenceNumber());
 }
 
 void Client::Impl::Poll()
@@ -158,13 +161,17 @@ void Client::Impl::Poll()
     if (!mSendQueue.empty())
     {
       auto pPacket = mSendQueue.front();
-      auto bytesSent = Send(pPacket);
+      Send(pPacket);
 
-      Log(LogLevel::Debug, "Sent [%d] bytes", bytesSent);
-      if (pPacket->Remaining() == 0)
+      UINT32 bytesRemaining = pPacket->Remaining();
+      if (bytesRemaining == 0)
       {
-        Log(LogLevel::Debug, "Finished sending bytes for packet");
+        Log(LogLevel::Debug, "Finished sending bytes for packet (%d)", pPacket->GetSequenceNumber());
         mSendQueue.pop();
+      }
+      else
+      {
+        Log(LogLevel::Debug, "Packet (%d) has [%d] bytes left to send", pPacket->GetSequenceNumber(), bytesRemaining);
       }
     }
 
@@ -282,41 +289,43 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
     pPacket = mRecvQueue.back();
     int bytesConsumed = pPacket->Read(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
-    Log(LogLevel::Info, "Packet consumed an additional [%d] bytes", bytesConsumed);
+    Log(LogLevel::Info, "Packet (%d) consumed an additional [%d] bytes", pPacket->GetSequenceNumber(), bytesConsumed);
 
     UINT32 bytesNeeded = pPacket->Remaining();
     if (bytesNeeded == 0)
     {
-      Log(LogLevel::Info, "Queued packet is now ready!");
+      Log(LogLevel::Info, "Queued packet (%d) is now ready!", pPacket->GetSequenceNumber());
     }
     else
     {
-      Log(LogLevel::Info, "Still waiting on [%d] more bytes for this packet", bytesNeeded);
+      Log(LogLevel::Info, "Queued packet (%d) is waiting for [%d] more bytes", pPacket->GetSequenceNumber(), bytesNeeded);
       return;
     }
   }
 
   if (bytesRemaining >= 4)
   {
-    pPacket = Packet::Create(pBuf, bufLen);
+    pPacket = Packet::Create(pBuf, bufLen, mSequenceNumber);
     if (!pPacket)
     {
-      Log(LogLevel::Error, "Failed to allocate a packet!");
+      Log(LogLevel::Error, "Failed to allocate packet (%d)!", mSequenceNumber);
       return;
     }
+
+    mSequenceNumber++;
 
     UINT32 bytesNeeded = pPacket->Remaining();
     if (bytesNeeded)
     {
       //We have to wait for more data, pop this packet into the queue
-      Log(LogLevel::Debug, "Queuing packet as we are waiting on [%d] bytes.", bytesNeeded);
+      Log(LogLevel::Debug, "Queuing packet (%d) as we are waiting on [%d] bytes.", pPacket->GetSequenceNumber(), bytesNeeded);
       mRecvQueue.push(pPacket);
       return;
     }
   }
   else if (pPacket == nullptr)
   {
-    Log(LogLevel::Error, "Not enough bytes for packet");
+    Log(LogLevel::Error, "Not enough bytes for new packet");
     return;
   }
 
@@ -399,7 +408,7 @@ void Client::Impl::SendClientKEX()
                      sizeof(Byte) +
                      sizeof(UINT32);
 
-  auto pClientDataPacket = Packet::Create(requiredSize);
+  auto pClientDataPacket = Packet::Create(requiredSize, mSequenceNumber++);
 
   pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
 
