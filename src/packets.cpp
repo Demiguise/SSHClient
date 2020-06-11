@@ -15,15 +15,21 @@ constexpr static int payloadOffset = sizeof(UINT32) + sizeof(Byte);
 
 Packet::Packet(Token t) {}
 
-std::shared_ptr<Packet> Packet::Create(int packetSize)
+std::shared_ptr<Packet> Packet::Create(int payloadLen)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
-  pPacket->mTotalPacketLen = packetSize + sizeof(UINT32);
-  pPacket->mPacketLen = packetSize;
+  //PacketLen is payload + padding + 1 byte for the padding_length field
+  pPacket->mPacketLen = payloadLen + pPacket->mPaddingLen + sizeof(Byte);
+  pPacket->mTotalPacketLen = pPacket->mPacketLen + sizeof(UINT32);
   pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
   pPacket->mPacket.resize(pPacket->mTotalPacketLen);
+
   pPacket->mIter = pPacket->mPacket.begin();
+
+  //We can immediately write the packet and padding length here
+  pPacket->Write(pPacket->mPacketLen);
+  pPacket->Write((Byte)pPacket->mPaddingLen);
 
   return pPacket;
 }
@@ -135,4 +141,16 @@ UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);
   return swap_endian<uint32_t>(nLen);
+}
+
+void Packet::Prepare()
+{
+  mIter = mPacket.begin();
+}
+
+int Packet::Send(TSendFunc sendFunc)
+{
+  auto bytesSent = sendFunc(&(*mIter), Remaining());
+  mIter += bytesSent;
+  return bytesSent;
 }

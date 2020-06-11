@@ -138,7 +138,16 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
     return {};
   }
 
-  return {};
+  return pPacket->Send([&](const Byte* pBuf, const int numBytes) -> int
+  {
+    auto sentBytes = Send(pBuf, numBytes);
+    if (!sentBytes.has_value())
+    {
+      return 0;
+    }
+
+    return sentBytes.value();
+  });
 }
 
 void Client::Impl::Poll()
@@ -147,9 +156,22 @@ void Client::Impl::Poll()
   {
     //Populate our buffer with data from the underlying transport
     SecureBuffer<unsigned char, 1024> buf;
+    if (!mSendQueue.empty())
+    {
+      auto pPacket = mSendQueue.front();
+      auto bytesSent = Send(pPacket);
+
+      Log(LogLevel::Debug, "Sent [%d] bytes", bytesSent);
+      if (pPacket->Remaining() == 0)
+      {
+        Log(LogLevel::Debug, "Finished sending bytes for packet");
+        mSendQueue.pop();
+      }
+    }
+
     auto recievedBytes = mRecvFunc(mCtx, buf.Buffer(), buf.Length());
 
-    if (!recievedBytes.has_value())
+    if (!recievedBytes.has_value() || recievedBytes.value() == 0)
     {
       //No data received, nothing to do.
       continue;

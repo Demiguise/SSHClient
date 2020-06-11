@@ -26,15 +26,17 @@ namespace SSH
     int mPacketLen = 0; //Value of the packet_length field
     int mTotalPacketLen = 0; //Size of the whole packet include packet_length and MAC
     int mPayloadLen = 0; //Calculated value based on packet_length and padding_length
-    Byte mPaddingLen = 0; //Value of the padding_length field
+    Byte mPaddingLen = 4; //Value of the padding_length field
 
     static UINT32 GetLength(const Byte* pBuf);
 
   public:
+    using TSendFunc = std::function<int (const Byte*, const int)>;
+
     explicit Packet(Token);
 
     //Factory functions
-    static std::shared_ptr<Packet> Create(int packetSize);
+    static std::shared_ptr<Packet> Create(int payloadLen);
     static std::shared_ptr<Packet> Create(const Byte* pBuf, const int numBytes);
 
     //Pointer to the beginning of the payload
@@ -59,6 +61,8 @@ namespace SSH
       Also resets the iterator to the beginning, preparing for sending.
     */
     void Prepare();
+
+    int Send(TSendFunc sendFunc);
   };
 }
 
