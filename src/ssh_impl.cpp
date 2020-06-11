@@ -130,14 +130,6 @@ TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
 
 TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
 {
-  pPacket->Prepare();
-
-  if (!mSendQueue.empty())
-  {
-    mSendQueue.push(pPacket);
-    return {};
-  }
-
   return pPacket->Send([&](const Byte* pBuf, const int numBytes) -> int
   {
     auto sentBytes = Send(pBuf, numBytes);
@@ -150,12 +142,19 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
   });
 }
 
+void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)
+{
+  pPacket->Prepare();
+  mSendQueue.push(pPacket);
+}
+
 void Client::Impl::Poll()
 {
   while (mState != State::Disconnected)
   {
-    //Populate our buffer with data from the underlying transport
     SecureBuffer<unsigned char, 1024> buf;
+
+    //If we have any packets ready to send, attempt to send them now
     if (!mSendQueue.empty())
     {
       auto pPacket = mSendQueue.front();
@@ -422,7 +421,7 @@ void Client::Impl::SendClientKEX()
   pClientDataPacket->Write((Byte) false); //first_kex_packet_follows
   pClientDataPacket->Write(0);            //Reserved UINT32
 
-  Send(pClientDataPacket);
+  Queue(pClientDataPacket);
 }
 
 void Client::Impl::Connect(const std::string pszUser)
