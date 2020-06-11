@@ -31,6 +31,12 @@ namespace SSH
     static UINT32 GetLength(const Byte* pBuf);
 
   public:
+    enum class WriteMethod
+    {
+      WithLength,
+      WithoutLength
+    };
+
     using TSendFunc = std::function<int (const Byte*, const int)>;
 
     explicit Packet(Token);
@@ -53,7 +59,7 @@ namespace SSH
     int Write(const int data); //Will be treated as a UINT32 when writing
     int Write(const UINT32 data);
     int Write(const std::string data);
-    int Write(const Byte* pBuf, const int numBytes);
+    int Write(const Byte* pBuf, const int numBytes, const WriteMethod method = WriteMethod::WithLength);
 
     /*
       Prepares the packet for sending, writing any additional header

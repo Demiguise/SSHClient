@@ -129,9 +129,13 @@ int Packet::Write(const std::string data)
   return len + sizeof(UINT32);
 }
 
-int Packet::Write(const Byte* pBuf, const int numBytes)
+int Packet::Write(const Byte* pBuf, const int numBytes, const WriteMethod method /*=::WithLength*/)
 {
-  Write(numBytes);
+  if (method == WriteMethod::WithLength)
+  {
+    Write(numBytes);
+  }
+
   std::memcpy(&(*mIter), pBuf, numBytes);
   mIter += numBytes;
   return numBytes + sizeof(UINT32);

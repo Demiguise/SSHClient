@@ -390,7 +390,8 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
 
       Byte cookie[cKexCookieLength]; //TODO: Randomize this
-      pClientDataPacket->Write(cookie, sizeof(cookie));
+      memset(cookie, 0xBE, cKexCookieLength);
+      pClientDataPacket->Write(cookie, sizeof(cookie), Packet::WriteMethod::WithoutLength);
 
       pClientDataPacket->Write(clientData.mAlgorithms.mKex.Str());
       pClientDataPacket->Write(clientData.mAlgorithms.mServerHost.Str());
