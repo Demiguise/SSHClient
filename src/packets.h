@@ -26,7 +26,7 @@ namespace SSH
     int mPacketLen = 0; //Value of the packet_length field
     int mTotalPacketLen = 0; //Size of the whole packet include packet_length and MAC
     int mPayloadLen = 0; //Calculated value based on packet_length and padding_length
-    Byte mPaddingLen = 4; //Value of the padding_length field
+    Byte mPaddingLen = 0; //Value of the padding_length field
 
     static UINT32 GetLength(const Byte* pBuf);
 

@@ -12,6 +12,7 @@
 using namespace SSH;
 
 constexpr static int payloadOffset = sizeof(UINT32) + sizeof(Byte);
+constexpr static int minPaddingSize = 4; //RFC states there should be a minimum of 4 bytes
 
 Packet::Packet(Token t) {}
 
@@ -19,9 +20,30 @@ std::shared_ptr<Packet> Packet::Create(int payloadLen)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
+  /*
+    Figure out how much padding we need.
+    TODO: Take into account the MAC length here
+  */
+  pPacket->mTotalPacketLen =  sizeof(UINT32) +  //packet_length
+                              sizeof(Byte) +    //padding_length
+                              payloadLen;       //payload
+
+  /*
+    Now figure out how much padding we need.
+    Forcing multiple of 8 until we have block ciphers.
+  */
+  UINT32 padding = (8 - (pPacket->mTotalPacketLen % 8));
+  if (padding < minPaddingSize)
+  {
+    //Simple way to ensure we have our minimum
+    padding += 8;
+  }
+
+  pPacket->mTotalPacketLen += padding;
+  pPacket->mPaddingLen = padding;
+
   //PacketLen is payload + padding + 1 byte for the padding_length field
   pPacket->mPacketLen = payloadLen + pPacket->mPaddingLen + sizeof(Byte);
-  pPacket->mTotalPacketLen = pPacket->mPacketLen + sizeof(UINT32);
   pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
   pPacket->mPacket.resize(pPacket->mTotalPacketLen);
 
@@ -149,6 +171,8 @@ UINT32 Packet::GetLength(const Byte* pBuf)
 
 void Packet::Prepare()
 {
+  //TODO: Write random bytes into the padding string
+  memset(&(*mIter), 0xAD, mPaddingLen);
   mIter = mPacket.begin();
 }
 
