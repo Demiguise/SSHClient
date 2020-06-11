@@ -348,66 +348,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
 
-      //Now we can send the client KEXData
-      KEXData clientData;
-
-      clientData.mAlgorithms.mKex.Add("diffie-hellman-group14-sha1");
-
-      clientData.mAlgorithms.mServerHost.Add("ssh-rsa");
-
-      //Forcing only aes128-ctr for the moment
-      clientData.mAlgorithms.mEncryption.mClientToServer.Add("aes128-ctr");
-      clientData.mAlgorithms.mEncryption.mServerToClient.Add("aes128-ctr");
-
-      //Forcing only hmac-sha2-256 for the moment
-      clientData.mAlgorithms.mMAC.mClientToServer.Add("hmac-sha2-256");
-      clientData.mAlgorithms.mMAC.mServerToClient.Add("hmac-sha2-256");
-
-      //We aren't going to allow compression for the moment
-      clientData.mAlgorithms.mCompression.mClientToServer.Add("none");
-      clientData.mAlgorithms.mCompression.mServerToClient.Add("none");
-
-      //Languages settings are intentionally left empty
-
-      //Figure out the correct size of the packet
-      int requiredSize =  sizeof(Byte) +
-                          cKexCookieLength +
-                          clientData.mAlgorithms.mKex.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mServerHost.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mEncryption.mClientToServer.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mEncryption.mServerToClient.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mMAC.mClientToServer.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mMAC.mServerToClient.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mCompression.mClientToServer.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mCompression.mServerToClient.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mLanguages.mClientToServer.Len() + sizeof(UINT32) +
-                          clientData.mAlgorithms.mLanguages.mServerToClient.Len() + sizeof(UINT32) +
-                          sizeof(Byte) +
-                          sizeof(UINT32);
-
-      auto pClientDataPacket = Packet::Create(requiredSize);
-
-      pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
-
-      Byte cookie[cKexCookieLength]; //TODO: Randomize this
-      memset(cookie, 0xBE, cKexCookieLength);
-      pClientDataPacket->Write(cookie, sizeof(cookie), Packet::WriteMethod::WithoutLength);
-
-      pClientDataPacket->Write(clientData.mAlgorithms.mKex.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mServerHost.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mClientToServer.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mServerToClient.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mClientToServer.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mServerToClient.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
-      pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
-
-      pClientDataPacket->Write((Byte)false); //first_kex_packet_follows
-      pClientDataPacket->Write(0); //Reserved UINT32
-
-      Send(pClientDataPacket);
+      SendClientKEX();
 
       return;
     }
@@ -418,6 +359,70 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       return;
     }
   }
+}
+
+void Client::Impl::SendClientKEX()
+{
+  //Now we can send the client KEXData
+  KEXData clientData;
+
+  clientData.mAlgorithms.mKex.Add("diffie-hellman-group14-sha1");
+
+  clientData.mAlgorithms.mServerHost.Add("ssh-rsa");
+
+  //Forcing only aes128-ctr for the moment
+  clientData.mAlgorithms.mEncryption.mClientToServer.Add("aes128-ctr");
+  clientData.mAlgorithms.mEncryption.mServerToClient.Add("aes128-ctr");
+
+  //Forcing only hmac-sha2-256 for the moment
+  clientData.mAlgorithms.mMAC.mClientToServer.Add("hmac-sha2-256");
+  clientData.mAlgorithms.mMAC.mServerToClient.Add("hmac-sha2-256");
+
+  //We aren't going to allow compression for the moment
+  clientData.mAlgorithms.mCompression.mClientToServer.Add("none");
+  clientData.mAlgorithms.mCompression.mServerToClient.Add("none");
+
+  //Languages settings are intentionally left empty
+
+  //Figure out the correct size of the packet
+  int requiredSize = sizeof(Byte) +
+                     cKexCookieLength +
+                     clientData.mAlgorithms.mKex.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mServerHost.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mEncryption.mClientToServer.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mEncryption.mServerToClient.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mMAC.mClientToServer.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mMAC.mServerToClient.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mCompression.mClientToServer.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mCompression.mServerToClient.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mLanguages.mClientToServer.Len() + sizeof(UINT32) +
+                     clientData.mAlgorithms.mLanguages.mServerToClient.Len() + sizeof(UINT32) +
+                     sizeof(Byte) +
+                     sizeof(UINT32);
+
+  auto pClientDataPacket = Packet::Create(requiredSize);
+
+  pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
+
+  Byte cookie[cKexCookieLength]; //TODO: Randomize this
+  memset(cookie, 0xBE, cKexCookieLength);
+  pClientDataPacket->Write(cookie, sizeof(cookie), Packet::WriteMethod::WithoutLength);
+
+  pClientDataPacket->Write(clientData.mAlgorithms.mKex.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mServerHost.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mClientToServer.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mServerToClient.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mClientToServer.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mServerToClient.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
+  pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
+
+  pClientDataPacket->Write((Byte) false); //first_kex_packet_follows
+  pClientDataPacket->Write(0);            //Reserved UINT32
+
+  Send(pClientDataPacket);
 }
 
 void Client::Impl::Connect(const std::string pszUser)

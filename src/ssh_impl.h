@@ -75,7 +75,9 @@ namespace SSH
     int ParseNameList(NameList& list, const Byte* pBuf);
 
     void HandleServerIdent(const Byte* pBuf, const int bufLen);
+
     void PerformKEX(const Byte* pBuf, const int bufLen);
+    void SendClientKEX();
 
   public:
     Impl(ClientOptions options, TCtx ctx);
