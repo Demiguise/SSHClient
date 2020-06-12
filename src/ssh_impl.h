@@ -14,6 +14,8 @@ namespace SSH
     //Handshake Stages
     SentClientID,
     ReceivedServerID,
+
+    SendClientKEXInit,
     SentClientKEXInit,
     ReceivedServerKEXInit,
 

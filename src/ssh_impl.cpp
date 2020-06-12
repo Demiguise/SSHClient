@@ -218,7 +218,13 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         return;
       }
 
+      [[fallthrough]];
+    }
+    case ConStage::SendClientKEXInit:
+    {
       SendClientKEXInit();
+
+      //Returning to allow for new data to populate our recv buffer
       return;
     }
     case ConStage::SentClientKEXInit:
