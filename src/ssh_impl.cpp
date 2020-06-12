@@ -396,7 +396,7 @@ void Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
   pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
   pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
 
-  //TODO: Do some processing here to pick the write algorithms to initialise
+  //TODO: Do some processing here to pick the right algorithms to initialise
 
   SetStage(ConStage::ReceivedServerKEXInit);
 }
