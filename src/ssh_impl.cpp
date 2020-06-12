@@ -235,7 +235,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     case ConStage::SentClientID:
     {
       //Now expecting that we're going to recieve the server's ID
-      if (!HandleServerIdent(pBuf, bufLen))
+      if (!ReceiveServerIdent(pBuf, bufLen))
       {
         Disconnect();
         return;
@@ -273,7 +273,7 @@ int Client::Impl::ParseNameList(NameList& list, const Byte* pBuf)
   return nameLen + sizeof(UINT32);
 }
 
-bool Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
+bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
 {
   std::string serverIdent;
   constexpr int minBufLen = 5;   //SSH-\LF

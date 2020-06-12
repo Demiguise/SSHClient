@@ -87,7 +87,7 @@ namespace SSH
     //Returns number of bytes consumed
     int ParseNameList(NameList& list, const Byte* pBuf);
 
-    bool HandleServerIdent(const Byte* pBuf, const int bufLen);
+    bool ReceiveServerIdent(const Byte* pBuf, const int bufLen);
 
     void PerformKEX(const Byte* pBuf, const int bufLen);
     void SendClientKEXInit();
