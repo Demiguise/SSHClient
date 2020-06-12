@@ -16,7 +16,7 @@ constexpr static int minPaddingSize = 4; //RFC states there should be a minimum 
 
 Packet::Packet(Token t) {}
 
-std::shared_ptr<Packet> Packet::Create(int payloadLen, const UINT32 seqNumber)
+std::shared_ptr<Packet> Packet::Create(int payloadLen)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
@@ -52,8 +52,6 @@ std::shared_ptr<Packet> Packet::Create(int payloadLen, const UINT32 seqNumber)
   //We can immediately write the packet and padding length here
   pPacket->Write(pPacket->mPacketLen);
   pPacket->Write((Byte)pPacket->mPaddingLen);
-
-  pPacket->mSequenceNumber = seqNumber;
 
   return pPacket;
 }
@@ -173,10 +171,11 @@ UINT32 Packet::GetLength(const Byte* pBuf)
   return swap_endian<uint32_t>(nLen);
 }
 
-void Packet::Prepare()
+void Packet::Prepare(const UINT32 seqNumber)
 {
   //TODO: Write random bytes into the padding string
   memset(&(*mIter), 0xAD, mPaddingLen);
+  mSequenceNumber = seqNumber;
   mIter = mPacket.begin();
 }
 

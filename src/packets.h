@@ -44,7 +44,7 @@ namespace SSH
     explicit Packet(Token);
 
     //Factory functions
-    static std::shared_ptr<Packet> Create(int payloadLen, const UINT32 seqNumber);
+    static std::shared_ptr<Packet> Create(int payloadLen);
     static std::shared_ptr<Packet> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
 
     //Pointer to the beginning of the payload
@@ -70,7 +70,7 @@ namespace SSH
       information such as packet/padding length, MAC, and padding data.
       Also resets the iterator to the beginning, preparing for sending.
     */
-    void Prepare();
+    void Prepare(const UINT32 seqNumber);
 
     int Send(TSendFunc sendFunc);
   };

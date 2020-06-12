@@ -146,7 +146,7 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
 
 void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)
 {
-  pPacket->Prepare();
+  pPacket->Prepare(mSequenceNumber++);
   mSendQueue.push(pPacket);
   Log(LogLevel::Debug, "Packet (%d) has been queued for sending", pPacket->GetSequenceNumber());
 }
@@ -408,7 +408,7 @@ void Client::Impl::SendClientKEX()
                      sizeof(Byte) +
                      sizeof(UINT32);
 
-  auto pClientDataPacket = Packet::Create(requiredSize, mSequenceNumber++);
+  auto pClientDataPacket = Packet::Create(requiredSize);
 
   pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
 
