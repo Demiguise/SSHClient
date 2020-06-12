@@ -38,6 +38,23 @@ public:
   size_t Length() { return size; }
 };
 
+std::string SSH::StageToString(ConStage stage)
+{
+  switch (stage)
+  {
+    case ConStage::Null: return "Null";
+    case ConStage::SentClientID: return "SentClientID";
+    case ConStage::ReceivedServerID: return "ReceivedServerID";
+    case ConStage::SendClientKEXInit: return "SendClientKEXInit";
+    case ConStage::SentClientKEXInit: return "SentClientKEXInit";
+    case ConStage::ReceivedServerKEXInit: return "ReceivedServerKEXInit";
+    case ConStage::SentClientDHInit: return "SentClientDHInit";
+    case ConStage::ReceivedNewKeys: return "ReceivedNewKeys";
+    case ConStage::SentServiceRequest: return "SentServiceRequest";
+    default: return "Unknown";
+  }
+}
+
 Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   : mSendFunc(options.send)
   , mRecvFunc(options.recv)
@@ -114,6 +131,12 @@ void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const
   pLogBuf[bytesWritten++] = '\0';
 
   mLogFunc(pLogBuf.get());
+}
+
+void Client::Impl::SetStage(ConStage newStage)
+{
+  Log(LogLevel::Info, "ConStage: (%s) -> (%s)", StageToString(mStage).c_str(), StageToString(newStage).c_str());
+  mStage = newStage;
 }
 
 TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
