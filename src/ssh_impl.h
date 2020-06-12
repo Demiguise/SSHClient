@@ -95,6 +95,7 @@ namespace SSH
     void SendClientKEXInit();
 
     bool ReceiveServerKEXInit(TPacket pPacket);
+    void SendClientDHInit();
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

@@ -273,6 +273,12 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           Disconnect();
           return;
         }
+
+        SetStage(ConStage::ReceivedServerKEXInit);
+        [[fallthrough]];
+      }
+      case ConStage::ReceivedServerKEXInit:
+      {
         return;
       }
       default:
@@ -417,7 +423,6 @@ bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
 
   //TODO: Do some processing here to pick the right algorithms to initialise
 
-  SetStage(ConStage::ReceivedServerKEXInit);
 
   return true;
 }
@@ -486,6 +491,12 @@ void Client::Impl::SendClientKEXInit()
   Queue(pClientDataPacket);
 
   SetStage(ConStage::SentClientKEXInit);
+}
+
+
+void Client::Impl::SendClientDHInit()
+{
+
 }
 
 void Client::Impl::Connect(const std::string pszUser)
