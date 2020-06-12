@@ -241,6 +241,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         return;
       }
 
+      SetStage(ConStage::SendClientKEXInit);
       [[fallthrough]];
     }
     case ConStage::SendClientKEXInit:
@@ -316,7 +317,7 @@ bool Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
   }
 
   Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
-  mStage = ConStage::ReceivedServerID;
+  SetStage(ConStage::ReceivedServerID);
 
   return true;
 }
@@ -399,6 +400,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
 
+      SetStage(ConStage::ReceivedServerKEXInit);
 
       return;
     }
@@ -474,7 +476,7 @@ void Client::Impl::SendClientKEXInit()
 
   Queue(pClientDataPacket);
 
-  mStage = ConStage::SentClientKEXInit;
+  SetStage(ConStage::SentClientKEXInit);
 }
 
 void Client::Impl::Connect(const std::string pszUser)
@@ -491,14 +493,13 @@ void Client::Impl::Connect(const std::string pszUser)
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 
-  mStage = ConStage::SentClientID;
-
   Send(buf, bytesWritten);
+  SetStage(ConStage::SentClientID);
 }
 
 void Client::Impl::Disconnect()
 {
   Log(LogLevel::Info, "Disconnecting client");
   mState = State::Disconnected;
-  mStage = ConStage::Null;
+  SetStage(ConStage::Null);
 }
