@@ -212,7 +212,12 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     case ConStage::SentClientID:
     {
       //Now expecting that we're going to recieve the server's ID
-      HandleServerIdent(pBuf, bufLen);
+      if (!HandleServerIdent(pBuf, bufLen))
+      {
+        Disconnect();
+        return;
+      }
+
       SendClientKEXInit();
       return;
     }
