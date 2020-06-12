@@ -243,9 +243,9 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
   std::string serverIdent;
   constexpr int minBufLen = 5;   //SSH-\LF
   constexpr int maxBufLen = 255; //RFC4253#section-4.2
-  if (bufLen < minBufLen || bufLen > maxBufLen)
+  if (bufLen < minBufLen)
   {
-    Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be > 6 && < 255", bufLen);
+    Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be > 6", bufLen);
     return;
   };
 
@@ -262,6 +262,12 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
       {
         Log(LogLevel::Warning, "ServerIdent did not use RFC standard <CR><LR> ending.");
       }
+
+      if (i > maxBufLen)
+      {
+        Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be < 255", i);
+        return;
+      };
 
       //Found the ending byte
       serverIdent.assign((char *)pBuf, i);
