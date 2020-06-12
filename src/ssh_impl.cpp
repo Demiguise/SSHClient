@@ -238,7 +238,7 @@ int Client::Impl::ParseNameList(NameList& list, const Byte* pBuf)
   return nameLen + sizeof(UINT32);
 }
 
-void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
+bool Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
 {
   std::string serverIdent;
   constexpr int minBufLen = 5;   //SSH-\LF
@@ -246,7 +246,7 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
   if (bufLen < minBufLen)
   {
     Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be > 6", bufLen);
-    return;
+    return false;
   };
 
   /*
@@ -266,7 +266,7 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
       if (i > maxBufLen)
       {
         Log(LogLevel::Error, "Malformed ServerIdent of %d bytes. MUST be < 255", i);
-        return;
+        return false;
       };
 
       //Found the ending byte
@@ -278,14 +278,13 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
   {
     Log(LogLevel::Info, "Unable to parse ServerIdent");
     LogBuffer(LogLevel::Debug, "ServerIdent", pBuf, bufLen);
-  }
-  else
-  {
-    Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
+    return false;
   }
 
+  Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
   mStage = ConStage::ReceivedServerID;
-  return;
+
+  return true
 }
 
 void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
