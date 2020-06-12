@@ -56,12 +56,12 @@ std::shared_ptr<Packet> Packet::Create(int payloadLen)
   return pPacket;
 }
 
-std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber)
+std::pair<TPacket, int> Packet::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber)
 {
   if (numBytes < payloadOffset)
   {
     //We need a minimum of 5 bytes for the packet and padding length
-    return nullptr;
+    return {nullptr, 0};
   }
 
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
@@ -90,7 +90,7 @@ std::shared_ptr<Packet> Packet::Create(const Byte* pBuf, const int numBytes, con
 
   pPacket->mSequenceNumber = seqNumber;
 
-  return pPacket;
+  return {pPacket, bytesToConsume};
 }
 
 const Byte* const Packet::Payload() const

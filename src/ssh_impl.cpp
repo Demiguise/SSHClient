@@ -329,12 +329,11 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
 int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 {
   int bytesRemaining = bufLen;
-  std::shared_ptr<Packet> pPacket = nullptr;
 
   //Packets in the rear of the recvQueue get first dibs on any new data
   if (!mRecvQueue.empty())
   {
-    pPacket = mRecvQueue.back();
+    TPacket pPacket = mRecvQueue.back();
 
     int bytesConsumed = pPacket->Read(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
@@ -348,41 +347,59 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
     else
     {
       Log(LogLevel::Info, "Queued packet (%d) is waiting for [%d] more bytes", pPacket->GetSequenceNumber(), bytesNeeded);
-      return;
     }
   }
 
   while (bytesRemaining >= 4)
   {
-    pPacket = Packet::Create(pBuf, bufLen, mSequenceNumber);
-    if (!pPacket)
+    auto [pNewPacket, bytesConsumed] = Packet::Create(pBuf, bufLen, mSequenceNumber);
+    if (!pNewPacket)
     {
       Log(LogLevel::Error, "Failed to allocate packet (%d)!", mSequenceNumber);
-      return;
+      return bytesRemaining;
     }
 
     mSequenceNumber++;
+    bytesRemaining -= bytesConsumed;
 
-    UINT32 bytesNeeded = pPacket->Remaining();
+    UINT32 bytesNeeded = pNewPacket->Remaining();
     if (bytesNeeded)
     {
       //We have to wait for more data, pop this packet into the queue
-      Log(LogLevel::Debug, "Queuing packet (%d) as we are waiting on [%d] bytes.", pPacket->GetSequenceNumber(), bytesNeeded);
-      mRecvQueue.push(pPacket);
-      return;
+      Log(LogLevel::Debug, "Queuing packet (%d) as we are waiting on [%d] bytes.", pNewPacket->GetSequenceNumber(), bytesNeeded);
+      mRecvQueue.push(pNewPacket);
+      break;
     }
   }
+
+  return bufLen - bytesRemaining;
 }
 
 bool Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
 {
   //Expecting the server's KEX init now
+  if (ConsumeBuffer(pBuf, bufLen) == 0)
+  {
+    return false;
+  }
+
+  if (mRecvQueue.empty())
+  {
+    return false;
+  }
+
+  TPacket pPacket = mRecvQueue.front();
+  if (!pPacket->Ready())
+  {
+    return false;
+  }
+
   const Byte *pKexIter = pPacket->Payload();
 
   //Verify this is a KEX packet
   if ((*pKexIter) != SSH_MSG::KEXINIT)
   {
-    return;
+    return false;
   }
   pKexIter += sizeof(Byte);
 
@@ -403,6 +420,8 @@ bool Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
   //TODO: Do some processing here to pick the right algorithms to initialise
 
   SetStage(ConStage::ReceivedServerKEXInit);
+
+  return true;
 }
 
 void Client::Impl::SendClientKEXInit()

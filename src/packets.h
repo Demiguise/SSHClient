@@ -12,6 +12,9 @@ namespace SSH
     Packets are sized so that the payload is always a multiple of 16 bytes, with
     enough extra space for header and MAC information.
   */
+  class Packet;
+  using TPacket = std::shared_ptr<Packet>;
+
   class Packet
   {
   protected:
@@ -44,8 +47,10 @@ namespace SSH
     explicit Packet(Token);
 
     //Factory functions
-    static std::shared_ptr<Packet> Create(int payloadLen);
-    static std::shared_ptr<Packet> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
+    static TPacket Create(int payloadLen);
+
+    //Returns a
+    static std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
 
     //Pointer to the beginning of the payload
     const Byte* const Payload() const;
@@ -55,7 +60,7 @@ namespace SSH
     UINT32 Remaining() const;
 
     //Convinience function for checking if the packet is ready
-    bool Ready() const { Remaining() == 0; }
+    bool Ready() const { return Remaining() == 0; }
 
     UINT32 GetSequenceNumber() const { return mSequenceNumber; }
 
