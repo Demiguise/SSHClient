@@ -3,6 +3,7 @@
 
 #include "ssh.h"
 #include "name-list.h"
+#include "packets.h"
 #include <queue>
 
 namespace SSH
@@ -51,13 +52,11 @@ namespace SSH
     } mAlgorithms;
   };
 
-  class Packet;
-
   class Client::Impl
   {
   private:
     static const int sMaxLogLength = 256;
-    using TPacketQueue = std::queue<std::shared_ptr<Packet>>;
+    using TPacketQueue = std::queue<TPacket>;
 
   protected:
     TSendFunc mSendFunc;
@@ -95,7 +94,7 @@ namespace SSH
     bool ReceiveServerIdent(const Byte* pBuf, const int bufLen);
     void SendClientKEXInit();
 
-    bool ReceiveServerKEXInit(const Byte* pBuf, const int bufLen);
+    bool ReceiveServerKEXInit(TPacket pPacket);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

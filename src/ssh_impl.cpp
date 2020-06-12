@@ -1,5 +1,4 @@
 #include "ssh_impl.h"
-#include "packets.h"
 #include "endian.h"
 #include "constants.h"
 
@@ -225,15 +224,21 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     return;
   }
 
-  switch (mStage)
+  if (mStage == ConStage::Null)
   {
-    case ConStage::Null:
-    {
-      Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
-      return;
-    }
-    case ConStage::SentClientID:
-    {
+    Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
+    return;
+  }
+
+  /*
+    Since the ServerIdent is the only stage which uses raw buffers, it is
+    handled outside of the switch statement so we can process packets for every
+    other stage normally.
+
+    I feel that this is a failure of the current architecture in this setup.
+  */
+  if (mStage == ConStage::SentClientID)
+  {
       //Now expecting that we're going to recieve the server's ID
       if (!ReceiveServerIdent(pBuf, bufLen))
       {
@@ -242,30 +247,40 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       }
 
       SetStage(ConStage::SendClientKEXInit);
-      [[fallthrough]];
-    }
-    case ConStage::SendClientKEXInit:
-    {
       SendClientKEXInit();
 
       //Returning to allow for new data to populate our recv buffer
       return;
-    }
-    case ConStage::SentClientKEXInit:
+  }
+
+  int bytesRemaining = bufLen;
+  bytesRemaining -= ConsumeBuffer(pBuf, bufLen);
+  while (!mRecvQueue.empty())
+  {
+    TPacket pPacket = mRecvQueue.front();
+    if (!pPacket->Ready())
     {
-      //Now expecting that we're going to recieve the server's KEX init
-      if (!ReceiveServerKEXInit(pBuf, bufLen))
+      break;
+    }
+
+    switch (mStage)
+    {
+      case ConStage::SentClientKEXInit:
       {
+        //Now expecting that we're going to recieve the server's KEX init
+        if (!ReceiveServerKEXInit(pPacket))
+        {
+          Disconnect();
+          return;
+        }
+        return;
+      }
+      default:
+      {
+        Log(LogLevel::Warning, "Unhandled data for (%s) state", StateToString(mState));
         Disconnect();
         return;
       }
-      return;
-    }
-    default:
-    {
-      Log(LogLevel::Warning, "Unhandled data for (%s) state", StateToString(mState));
-      Disconnect();
-      return;
     }
   }
 }
@@ -375,25 +390,8 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
   return bufLen - bytesRemaining;
 }
 
-bool Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
+bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
 {
-  //Expecting the server's KEX init now
-  if (ConsumeBuffer(pBuf, bufLen) == 0)
-  {
-    return false;
-  }
-
-  if (mRecvQueue.empty())
-  {
-    return false;
-  }
-
-  TPacket pPacket = mRecvQueue.front();
-  if (!pPacket->Ready())
-  {
-    return false;
-  }
-
   const Byte *pKexIter = pPacket->Payload();
 
   //Verify this is a KEX packet
