@@ -83,13 +83,19 @@ namespace SSH
     void SetStage(ConStage newStage);
 
     void HandleData(const Byte* pBuf, const int bufLen);
+    /*
+      Consumes as many bytes as possible from the buffer to form packets.
+      Returns number of bytes consumed.
+    */
+    int ConsumeBuffer(const Byte* pBuf, const int bufLen);
 
     //Returns number of bytes consumed
     int ParseNameList(NameList& list, const Byte* pBuf);
 
     bool ReceiveServerIdent(const Byte* pBuf, const int bufLen);
     void SendClientKEXInit();
-    void ReceiveServerKEXInit(const Byte* pBuf, const int bufLen);
+
+    bool ReceiveServerKEXInit(const Byte* pBuf, const int bufLen);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

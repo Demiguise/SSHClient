@@ -254,7 +254,11 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     case ConStage::SentClientKEXInit:
     {
       //Now expecting that we're going to recieve the server's KEX init
-      ReceiveServerKEXInit(pBuf, bufLen);
+      if (!ReceiveServerKEXInit(pBuf, bufLen))
+      {
+        Disconnect();
+        return;
+      }
       return;
     }
     default:
@@ -322,14 +326,16 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
   return true;
 }
 
-void Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
+int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 {
   int bytesRemaining = bufLen;
-
   std::shared_ptr<Packet> pPacket = nullptr;
+
+  //Packets in the rear of the recvQueue get first dibs on any new data
   if (!mRecvQueue.empty())
   {
     pPacket = mRecvQueue.back();
+
     int bytesConsumed = pPacket->Read(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
     Log(LogLevel::Info, "Packet (%d) consumed an additional [%d] bytes", pPacket->GetSequenceNumber(), bytesConsumed);
@@ -346,7 +352,7 @@ void Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
     }
   }
 
-  if (bytesRemaining >= 4)
+  while (bytesRemaining >= 4)
   {
     pPacket = Packet::Create(pBuf, bufLen, mSequenceNumber);
     if (!pPacket)
@@ -366,12 +372,10 @@ void Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
       return;
     }
   }
-  else if (pPacket == nullptr)
-  {
-    Log(LogLevel::Error, "Not enough bytes for new packet");
-    return;
-  }
+}
 
+bool Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
+{
   //Expecting the server's KEX init now
   const Byte *pKexIter = pPacket->Payload();
 
