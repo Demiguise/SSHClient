@@ -54,6 +54,9 @@ namespace SSH
     //Number of bytes remaining to send/receive
     UINT32 Remaining() const;
 
+    //Convinience function for checking if the packet is ready
+    bool Ready() const { Remaining() == 0; }
+
     UINT32 GetSequenceNumber() const { return mSequenceNumber; }
 
     //Will copy the data from the pBuf into the underlying packet buffer
