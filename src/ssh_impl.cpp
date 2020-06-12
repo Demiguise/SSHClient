@@ -254,7 +254,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     case ConStage::SentClientKEXInit:
     {
       //Now expecting that we're going to recieve the server's KEX init
-      PerformKEX(pBuf, bufLen);
+      ReceiveServerKEXInit(pBuf, bufLen);
       return;
     }
     default:
@@ -322,7 +322,7 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
   return true;
 }
 
-void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
+void Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
 {
   int bytesRemaining = bufLen;
 

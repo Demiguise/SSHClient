@@ -88,9 +88,8 @@ namespace SSH
     int ParseNameList(NameList& list, const Byte* pBuf);
 
     bool ReceiveServerIdent(const Byte* pBuf, const int bufLen);
-
-    void PerformKEX(const Byte* pBuf, const int bufLen);
     void SendClientKEXInit();
+    void ReceiveServerKEXInit(const Byte* pBuf, const int bufLen);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 
