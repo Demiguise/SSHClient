@@ -12,8 +12,14 @@ namespace SSH
     Null, //Empty stage
 
     //Handshake Stages
-    ServerIdent,
-    ServerKEX,
+    SentClientID,
+    ReceivedServerID,
+    SentClientKEXInit,
+    ReceivedServerKEXInit,
+
+    SentClientDHInit,
+    ReceivedNewKeys,
+    SentServiceRequest,
 
     //Authentication Stages
 
@@ -79,7 +85,7 @@ namespace SSH
     void HandleServerIdent(const Byte* pBuf, const int bufLen);
 
     void PerformKEX(const Byte* pBuf, const int bufLen);
-    void SendClientKEX();
+    void SendClientKEXInit();
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

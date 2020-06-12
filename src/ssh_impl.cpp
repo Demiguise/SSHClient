@@ -209,13 +209,16 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
       return;
     }
-    case ConStage::ServerIdent:
+    case ConStage::SentClientID:
     {
+      //Now expecting that we're going to recieve the server's ID
       HandleServerIdent(pBuf, bufLen);
+      SendClientKEXInit();
       return;
     }
-    case ConStage::ServerKEX:
+    case ConStage::SentClientKEXInit:
     {
+      //Now expecting that we're going to recieve the server's KEX init
       PerformKEX(pBuf, bufLen);
       return;
     }
@@ -275,7 +278,7 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
     Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
   }
 
-  mStage = ConStage::ServerKEX;
+  mStage = ConStage::ReceivedServerID;
   return;
 }
 
@@ -331,8 +334,9 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
   switch (mStage)
   {
-    case ConStage::ServerKEX:
+    case ConStage::SentClientKEXInit:
     {
+      //Expecting the server's KEX init now
       const Byte* pKexIter = pPacket->Payload();
 
       //Verify this is a KEX packet
@@ -356,7 +360,6 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
       pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
 
-      SendClientKEX();
 
       return;
     }
@@ -369,7 +372,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
   }
 }
 
-void Client::Impl::SendClientKEX()
+void Client::Impl::SendClientKEXInit()
 {
   //Now we can send the client KEXData
   KEXData clientData;
@@ -431,6 +434,8 @@ void Client::Impl::SendClientKEX()
   pClientDataPacket->Write(0);            //Reserved UINT32
 
   Queue(pClientDataPacket);
+
+  mStage = ConStage::SentClientKEXInit;
 }
 
 void Client::Impl::Connect(const std::string pszUser)
@@ -447,7 +452,7 @@ void Client::Impl::Connect(const std::string pszUser)
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 
-  mStage = ConStage::ServerIdent;
+  mStage = ConStage::SentClientID;
 
   Send(buf, bytesWritten);
 }
