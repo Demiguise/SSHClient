@@ -289,7 +289,7 @@ bool Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
   Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
   mStage = ConStage::ReceivedServerID;
 
-  return true
+  return true;
 }
 
 void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
