@@ -38,7 +38,7 @@ public:
   size_t Length() { return size; }
 };
 
-Client::Impl::Impl(ClientOptions options, TCtx ctx)
+Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   : mSendFunc(options.send)
   , mRecvFunc(options.recv)
   , mOnRecvFunc(options.onRecv)

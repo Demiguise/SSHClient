@@ -44,7 +44,7 @@ void SSH::Cleanup()
   gInitialised = false;
 }
 
-Client::Client(ClientOptions options, TCtx ctx)
+Client::Client(ClientOptions& options, TCtx& ctx)
 {
   //TODO: Handle NullPtr
   mImpl = std::make_unique<Client::Impl>(options, ctx);

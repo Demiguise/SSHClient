@@ -58,7 +58,7 @@ namespace SSH
     std::unique_ptr<Impl> mImpl;
 
   public:
-    Client(ClientOptions options, TCtx ctx);
+    Client(ClientOptions& options, TCtx& ctx);
     ~Client();
 
     TResult Send(const Byte* pBuf, const int bufLen);

@@ -84,7 +84,7 @@ namespace SSH
     TResult Send(std::shared_ptr<Packet> pPacket);
 
   public:
-    Impl(ClientOptions options, TCtx ctx);
+    Impl(ClientOptions& options, TCtx& ctx);
     ~Impl();
 
     TResult Send(const Byte* pBuf, const int bufLen);
