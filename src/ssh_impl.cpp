@@ -372,45 +372,33 @@ void Client::Impl::ReceiveServerKEXInit(const Byte* pBuf, const int bufLen)
     return;
   }
 
-  switch (mStage)
+  //Expecting the server's KEX init now
+  const Byte *pKexIter = pPacket->Payload();
+
+  //Verify this is a KEX packet
+  if ((*pKexIter) != SSH_MSG::KEXINIT)
   {
-    case ConStage::SentClientKEXInit:
-    {
-      //Expecting the server's KEX init now
-      const Byte* pKexIter = pPacket->Payload();
-
-      //Verify this is a KEX packet
-      if ((*pKexIter) != SSH_MSG::KEXINIT)
-      {
-        return;
-      }
-      pKexIter += sizeof(Byte);
-
-      //Skip 16 bytes of random data
-      pKexIter += cKexCookieLength;
-
-      pKexIter += ParseNameList(mKex.mAlgorithms.mKex, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mServerHost, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mClientToServer, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mServerToClient, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mClientToServer, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mServerToClient, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mClientToServer, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mServerToClient, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
-      pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
-
-      SetStage(ConStage::ReceivedServerKEXInit);
-
-      return;
-    }
-    default:
-    {
-      Log(LogLevel::Error, "Unhandled stage");
-      Disconnect();
-      return;
-    }
+    return;
   }
+  pKexIter += sizeof(Byte);
+
+  //Skip 16 bytes of random data
+  pKexIter += cKexCookieLength;
+
+  pKexIter += ParseNameList(mKex.mAlgorithms.mKex, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mServerHost, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mClientToServer, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mServerToClient, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mClientToServer, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mServerToClient, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mClientToServer, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mServerToClient, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
+  pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
+
+  //TODO: Do some processing here to pick the write algorithms to initialise
+
+  SetStage(ConStage::ReceivedServerKEXInit);
 }
 
 void Client::Impl::SendClientKEXInit()
