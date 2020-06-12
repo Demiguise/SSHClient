@@ -44,7 +44,7 @@ Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   , mOnRecvFunc(options.onRecv)
   , mCtx(ctx)
   , mState(State::Idle)
-  , mStage(Stage::Null)
+  , mStage(ConStage::Null)
   , mLogFunc(options.log)
   , mLogLevel(options.logLevel)
   , mSequenceNumber(0)
@@ -204,17 +204,17 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
 
   switch (mStage)
   {
-    case Stage::Null:
+    case ConStage::Null:
     {
       Log(LogLevel::Error, "Attempted to perform handshake for a NULL stage.");
       return;
     }
-    case Stage::ServerIdent:
+    case ConStage::ServerIdent:
     {
       HandleServerIdent(pBuf, bufLen);
       return;
     }
-    case Stage::ServerKEX:
+    case ConStage::ServerKEX:
     {
       PerformKEX(pBuf, bufLen);
       return;
@@ -275,7 +275,7 @@ void Client::Impl::HandleServerIdent(const Byte* pBuf, const int bufLen)
     Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
   }
 
-  mStage = Stage::ServerKEX;
+  mStage = ConStage::ServerKEX;
   return;
 }
 
@@ -331,7 +331,7 @@ void Client::Impl::PerformKEX(const Byte* pBuf, const int bufLen)
 
   switch (mStage)
   {
-    case Stage::ServerKEX:
+    case ConStage::ServerKEX:
     {
       const Byte* pKexIter = pPacket->Payload();
 
@@ -447,7 +447,7 @@ void Client::Impl::Connect(const std::string pszUser)
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 
-  mStage = Stage::ServerIdent;
+  mStage = ConStage::ServerIdent;
 
   Send(buf, bytesWritten);
 }
@@ -456,5 +456,5 @@ void Client::Impl::Disconnect()
 {
   Log(LogLevel::Info, "Disconnecting client");
   mState = State::Disconnected;
-  mStage = Stage::Null;
+  mStage = ConStage::Null;
 }

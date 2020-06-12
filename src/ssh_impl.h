@@ -7,7 +7,7 @@
 
 namespace SSH
 {
-  enum class Stage
+  enum class ConStage
   {
     Null, //Empty stage
 
@@ -56,7 +56,7 @@ namespace SSH
 
     TCtx mCtx;
     State mState;
-    Stage mStage;
+    ConStage mStage;
 
     TLogFunc mLogFunc;
     LogLevel mLogLevel;
