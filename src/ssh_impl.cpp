@@ -2,6 +2,8 @@
 #include "endian.h"
 #include "constants.h"
 
+#include "kex/kex.h"
+
 #include <stdarg.h>
 #include <future>
 #include <array>
@@ -279,6 +281,8 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       }
       case ConStage::ReceivedServerKEXInit:
       {
+        //Now we can send our DH init
+        SendClientDHInit();
         return;
       }
       default:
@@ -496,7 +500,17 @@ void Client::Impl::SendClientKEXInit()
 
 void Client::Impl::SendClientDHInit()
 {
+  TKEXHandler handler = KEX::CreateDH(DHGroups::G_14);
+  auto pKEXInitPacket = handler->CreateInitPacket();
+  if (!pKEXInitPacket)
+  {
+    Log(LogLevel::Error, "Failed to create DH init packet");
+    Disconnect();
+    return;
+  }
 
+  Queue(pKEXInitPacket);
+  SetStage(ConStage::SentClientDHInit);
 }
 
 void Client::Impl::Connect(const std::string pszUser)
