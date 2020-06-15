@@ -12,6 +12,7 @@ enum SSH_MSG
   KEXINIT                   =  20,
   NEWKEYS                   =  21,
   KEXDH_INIT                =  30,
+  KEXDH_REPLY               =  31,
   USERAUTH_REQUEST          =  50,
   USERAUTH_FAILURE          =  51,
   USERAUTH_SUCCESS          =  52,
