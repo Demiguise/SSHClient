@@ -3,6 +3,7 @@ set(SRCS
   ssh_impl.cpp
   packets.cpp
   name-list.cpp
+  kex/kex.cpp
 )
 
 set(SSH_Common_Defines
@@ -69,6 +70,7 @@ target_include_directories(SSH
   PUBLIC
     ${PROJECT_SOURCE_DIR}/include
   PRIVATE
+    ${PROJECT_SOURCE_DIR}/src
     ${WOLFSSL_INCLUDE_DIR}
 )
 
