@@ -2,7 +2,6 @@
 #include "endian.h"
 #include "constants.h"
 
-#include "kex/kex.h"
 
 #include <stdarg.h>
 #include <future>
@@ -497,11 +496,10 @@ void Client::Impl::SendClientKEXInit()
   SetStage(ConStage::SentClientKEXInit);
 }
 
-
 void Client::Impl::SendClientDHInit()
 {
-  TKEXHandler handler = KEX::CreateDH(DHGroups::G_14);
-  auto pKEXInitPacket = handler->CreateInitPacket();
+  mKex.handler = KEX::CreateDH(DHGroups::G_14);
+  auto pKEXInitPacket = mKex.handler->CreateInitPacket();
   if (!pKEXInitPacket)
   {
     Log(LogLevel::Error, "Failed to create DH init packet");

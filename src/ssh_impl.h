@@ -4,6 +4,7 @@
 #include "ssh.h"
 #include "name-list.h"
 #include "packets.h"
+#include "kex/kex.h"
 #include <queue>
 
 namespace SSH
@@ -50,6 +51,8 @@ namespace SSH
       ListPairs mCompression;
       ListPairs mLanguages;
     } mAlgorithms;
+
+    TKEXHandler handler;
   };
 
   class Client::Impl
