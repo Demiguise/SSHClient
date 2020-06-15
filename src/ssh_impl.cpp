@@ -282,7 +282,20 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       {
         //Now we can send our DH init
         SendClientDHInit();
+
+        //Return here so we can process any incoming packets
         return;
+      }
+      case ConStage::SentClientDHInit:
+      {
+        //Now expecting to receive the server's DH Kex Reply
+        if (!ReceiveServerDHReply(pPacket))
+        {
+          Disconnect();
+          return;
+        }
+
+        SetStage(ConStage::ReceivedServerDHReply);
       }
       default:
       {
@@ -508,7 +521,13 @@ void Client::Impl::SendClientDHInit()
   }
 
   Queue(pKEXInitPacket);
+
   SetStage(ConStage::SentClientDHInit);
+}
+
+bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
+{
+  return false;
 }
 
 void Client::Impl::Connect(const std::string pszUser)

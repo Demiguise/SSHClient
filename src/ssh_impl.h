@@ -22,6 +22,7 @@ namespace SSH
     ReceivedServerKEXInit,
 
     SentClientDHInit,
+    ReceivedServerDHReply,
     ReceivedNewKeys,
     SentServiceRequest,
 
@@ -99,6 +100,7 @@ namespace SSH
 
     bool ReceiveServerKEXInit(TPacket pPacket);
     void SendClientDHInit();
+    bool ReceiveServerDHReply(TPacket pPacket);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 
