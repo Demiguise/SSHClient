@@ -11,6 +11,7 @@ enum SSH_MSG
   SERVICE_ACCEPT            =   6,
   KEXINIT                   =  20,
   NEWKEYS                   =  21,
+  KEXDH_INIT                =  30,
   USERAUTH_REQUEST          =  50,
   USERAUTH_FAILURE          =  51,
   USERAUTH_SUCCESS          =  52,
