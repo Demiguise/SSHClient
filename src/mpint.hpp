@@ -8,6 +8,7 @@ class MPInt
 {
 private:
   using TData = std::array<SSH::Byte, size>;
+  using TIter = typename TData::iterator;
 
 public:
   TData mArr;
@@ -17,10 +18,12 @@ public:
   //Handles the padding
   void Prepare()
   {
-    typename TData::iterator iter = mArr.begin();
+    TIter iter = mArr.begin();
+    TIter iterEnd = mArr.end();
+    TIter iterBegin = mArr.begin();
 
     //Find the first non zero byte
-    for (; iter != mArr.end(); ++iter)
+    for (; iter != iterEnd; ++iter)
     {
       if (*iter != 0x00)
       {
@@ -34,16 +37,16 @@ public:
       mPadding = true;
     }
 
-    if (mPadding)
+    if (iter != iterBegin && mPadding)
     {
       iter--;
       mPadding = false;
     }
 
-    if (iter > mArr.begin())
+    if (iter > iterBegin)
     {
-      mLen -= (iter - mArr.begin());
-      std::move(iter, mArr.end(), mArr.begin());
+      mLen -= (iter - iterBegin);
+      std::move(iter, iterEnd, iterBegin);
     }
   }
 };
