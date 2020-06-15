@@ -84,7 +84,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
       auto pPacket = Packet::Create(packetLen);
 
-      pPacket->Write(SSH_MSG::KEXDH_INIT);
+      pPacket->Write((Byte)SSH_MSG::KEXDH_INIT);
       if (mHandshake.e.mPadding)
       {
         pPacket->Write((Byte)0);
