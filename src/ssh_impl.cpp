@@ -531,22 +531,12 @@ void Client::Impl::SendClientDHInit()
 
 bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
 {
-  Byte msgId;
-
-  //Verify this is a KEX packet
-  pPacket->Read(msgId);
-  if (msgId != SSH_MSG::KEXDH_REPLY)
+  if (!mKEXHandler->VerifyReply(mServerKex, mClientKex, pPacket))
   {
+    Log(LogLevel::Error, "Failed to verify ServerDHReply");
+    Disconnect();
     return false;
   }
-
-  std::string keyCerts;
-  MPInt f;
-  std::string signature;
-
-  pPacket->Read(keyCerts);
-  pPacket->Read(f);
-  pPacket->Read(signature);
 
   return false;
 }
