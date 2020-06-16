@@ -7,7 +7,6 @@
 
 using namespace SSH;
 
-#define MAX_KEX_KEY_SZ (8192 / 8)
 
 class DH_KEXHandler : public SSH::IKEXHandler
 {
@@ -17,8 +16,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
     struct
     {
-      MPInt<MAX_KEX_KEY_SZ+1> e;
-      MPInt<MAX_KEX_KEY_SZ+1> x;
+      MPInt e;
+      MPInt x;
     } mHandshake;
 
     bool mInitialised = false;

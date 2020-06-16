@@ -2,13 +2,15 @@
 #define __MPINT_H__
 
 #include "ssh.h"
+#include <array>
 
-template<size_t size>
+#define MAX_KEX_KEY_SZ (8192 / 8)
+
 class MPInt
 {
 private:
-  using TData = std::array<SSH::Byte, size>;
-  using TIter = typename TData::iterator;
+  using TData = std::array<SSH::Byte, MAX_KEX_KEY_SZ+1>; //+1 in case of padding
+  using TIter = TData::iterator;
 
 public:
   TData mArr;
