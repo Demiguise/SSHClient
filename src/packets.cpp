@@ -200,6 +200,16 @@ int Packet::Read(NameList& outData)
   return namelistLen + sizeof(UINT32);
 }
 
+int Packet::Read(MPInt& outData)
+{
+  UINT32 intLen = 0;
+  Read(intLen);
+
+  std::copy(mIter, mIter + intLen, outData.mArr.begin());
+  outData.mLen = intLen;
+  return intLen + sizeof(UINT32);
+}
+
 UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);
