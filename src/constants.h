@@ -3,6 +3,7 @@
 
 enum SSH_MSG
 {
+  NONE                      =   0, //Not defined by RFC
   DISCONNECT                =   1,
   IGNORE                    =   2,
   UNIMPLEMENTED             =   3,
