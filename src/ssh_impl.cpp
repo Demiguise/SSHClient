@@ -284,6 +284,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     }
 
     pPacket->PrepareRead();
+    mRecvQueue.pop();
 
     switch (mStage)
     {
@@ -304,8 +305,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         //Now we can send our DH init
         SendClientDHInit();
 
-        //Return here so we can process any incoming packets
-        return;
+        break; //Allow for more packets to be handled
       }
       case ConStage::SentClientDHInit:
       {
@@ -317,6 +317,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         }
 
         SetStage(ConStage::ReceivedServerDHReply);
+        break; //Allow for more packets to be handled
       }
       default:
       {
