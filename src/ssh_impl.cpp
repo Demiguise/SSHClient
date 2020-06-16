@@ -66,6 +66,25 @@ Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   , mLogLevel(options.logLevel)
   , mSequenceNumber(0)
 {
+  mClientKex.mServerIdent = "SSH-2.0-cppsshSSH_3.6.3q3";
+
+  mClientKex.mAlgorithms.mKex.Add("diffie-hellman-group14-sha1");
+
+  mClientKex.mAlgorithms.mServerHost.Add("ssh-rsa");
+
+  //Forcing only aes128-ctr for the moment
+  mClientKex.mAlgorithms.mEncryption.mClientToServer.Add("aes128-ctr");
+  mClientKex.mAlgorithms.mEncryption.mServerToClient.Add("aes128-ctr");
+
+  //Forcing only hmac-sha2-256 for the moment
+  mClientKex.mAlgorithms.mMAC.mClientToServer.Add("hmac-sha2-256");
+  mClientKex.mAlgorithms.mMAC.mServerToClient.Add("hmac-sha2-256");
+
+  //We aren't going to allow compression for the moment
+  mClientKex.mAlgorithms.mCompression.mClientToServer.Add("none");
+  mClientKex.mAlgorithms.mCompression.mServerToClient.Add("none");
+
+  //Languages settings are intentionally left empty
 }
 
 Client::Impl::~Impl()
@@ -445,40 +464,19 @@ bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
 
 void Client::Impl::SendClientKEXInit()
 {
-  //Now we can send the client KEXData
-  KEXData clientData;
-
-  clientData.mAlgorithms.mKex.Add("diffie-hellman-group14-sha1");
-
-  clientData.mAlgorithms.mServerHost.Add("ssh-rsa");
-
-  //Forcing only aes128-ctr for the moment
-  clientData.mAlgorithms.mEncryption.mClientToServer.Add("aes128-ctr");
-  clientData.mAlgorithms.mEncryption.mServerToClient.Add("aes128-ctr");
-
-  //Forcing only hmac-sha2-256 for the moment
-  clientData.mAlgorithms.mMAC.mClientToServer.Add("hmac-sha2-256");
-  clientData.mAlgorithms.mMAC.mServerToClient.Add("hmac-sha2-256");
-
-  //We aren't going to allow compression for the moment
-  clientData.mAlgorithms.mCompression.mClientToServer.Add("none");
-  clientData.mAlgorithms.mCompression.mServerToClient.Add("none");
-
-  //Languages settings are intentionally left empty
-
   //Figure out the correct size of the packet
   int requiredSize = sizeof(Byte) +
                      cKexCookieLength +
-                     clientData.mAlgorithms.mKex.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mServerHost.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mEncryption.mClientToServer.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mEncryption.mServerToClient.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mMAC.mClientToServer.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mMAC.mServerToClient.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mCompression.mClientToServer.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mCompression.mServerToClient.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mLanguages.mClientToServer.Len() + sizeof(UINT32) +
-                     clientData.mAlgorithms.mLanguages.mServerToClient.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mKex.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mServerHost.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mEncryption.mClientToServer.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mEncryption.mServerToClient.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mMAC.mClientToServer.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mMAC.mServerToClient.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mCompression.mClientToServer.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mCompression.mServerToClient.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mLanguages.mClientToServer.Len() + sizeof(UINT32) +
+                     mClientKex.mAlgorithms.mLanguages.mServerToClient.Len() + sizeof(UINT32) +
                      sizeof(Byte) +
                      sizeof(UINT32);
 
@@ -490,16 +488,16 @@ void Client::Impl::SendClientKEXInit()
   memset(cookie, 0xBE, cKexCookieLength);
   pClientDataPacket->Write(cookie, sizeof(cookie), Packet::WriteMethod::WithoutLength);
 
-  pClientDataPacket->Write(clientData.mAlgorithms.mKex.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mServerHost.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mClientToServer.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mEncryption.mServerToClient.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mClientToServer.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mMAC.mServerToClient.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mClientToServer.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mCompression.mServerToClient.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mClientToServer.Str());
-  pClientDataPacket->Write(clientData.mAlgorithms.mLanguages.mServerToClient.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mKex.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mServerHost.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mEncryption.mClientToServer.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mEncryption.mServerToClient.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mMAC.mClientToServer.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mMAC.mServerToClient.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mCompression.mClientToServer.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mCompression.mServerToClient.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mLanguages.mClientToServer.Str());
+  pClientDataPacket->Write(mClientKex.mAlgorithms.mLanguages.mServerToClient.Str());
 
   pClientDataPacket->Write((Byte) false); //first_kex_packet_follows
   pClientDataPacket->Write(0);            //Reserved UINT32
@@ -557,7 +555,7 @@ void Client::Impl::Connect(const std::string pszUser)
   auto fut = std::async(std::launch::async, &Impl::Poll, this);
 
   Byte buf[512];
-  int bytesWritten = snprintf((char*)buf, sizeof(buf), "SSH-2.0-billsSSH_3.6.3q3");
+  int bytesWritten = snprintf((char*)buf, sizeof(buf), "");
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 
