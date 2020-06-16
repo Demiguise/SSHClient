@@ -56,6 +56,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
       }
 
       wc_FreeDhKey(&mPrivKey);
+      wc_HashFree(&mHash, mHashType);
     }
 
     bool Init(DHGroups group)
