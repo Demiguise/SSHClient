@@ -210,6 +210,17 @@ int Packet::Read(MPInt& outData)
   return intLen + sizeof(UINT32);
 }
 
+int Packet::Read(Byte* pOutBuf, int bytesToRead)
+{
+  if (Remaining() < bytesToRead)
+  {
+    return -1;
+  }
+
+  memcpy(pOutBuf, &(*mIter), bytesToRead);
+  return bytesToRead;
+}
+
 UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);

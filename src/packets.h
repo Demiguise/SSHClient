@@ -80,6 +80,7 @@ namespace SSH
     int Read(std::string& outData);
     int Read(NameList& outData);
     int Read(MPInt& outData);
+    int Read(Byte* pOutBuf, int outBufLen);
 
     /*
       Prepares the packet for sending, writing any additional header
