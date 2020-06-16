@@ -3,10 +3,33 @@
 
 #include <memory>
 #include "ssh.h"
+#include "name-list.h"
 #include "packets.h"
 
 namespace SSH
 {
+  struct ListPairs
+  {
+    NameList mClientToServer;
+    NameList mServerToClient;
+  };
+
+  struct KEXData
+  {
+    struct
+    {
+      NameList mKex;
+      NameList mServerHost;
+      ListPairs mEncryption;
+      ListPairs mMAC;
+      ListPairs mCompression;
+      ListPairs mLanguages;
+    } mAlgorithms;
+
+    std::string mServerIdent;
+    TPacket mKEXInit;
+  };
+
   //For now, we're only going to do Diffie Helman
   enum class DHGroups
   {
@@ -20,6 +43,7 @@ namespace SSH
       virtual ~IKEXHandler() = default;
 
       virtual TPacket CreateInitPacket() = 0;
+      virtual bool VerifyReply(KEXData& server, KEXData& client) = 0;
   };
 
   using TKEXHandler = std::shared_ptr<IKEXHandler>;

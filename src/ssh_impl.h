@@ -35,28 +35,6 @@ namespace SSH
 
   class IPacket;
 
-  struct ListPairs
-  {
-    NameList mClientToServer;
-    NameList mServerToClient;
-  };
-
-  struct KEXData
-  {
-    struct
-    {
-      NameList mKex;
-      NameList mServerHost;
-      ListPairs mEncryption;
-      ListPairs mMAC;
-      ListPairs mCompression;
-      ListPairs mLanguages;
-    } mAlgorithms;
-
-    std::string mServerIdent;
-    TPacket mKEXInit;
-  };
-
   class Client::Impl
   {
   private:
