@@ -197,6 +197,7 @@ int Packet::Read(NameList& outData)
   Read(namelistLen);
 
   outData.Init(&(*mIter), namelistLen);
+  mIter += namelistLen;
   return namelistLen + sizeof(UINT32);
 }
 
@@ -207,6 +208,7 @@ int Packet::Read(MPInt& outData)
 
   std::copy(mIter, mIter + intLen, outData.mArr.begin());
   outData.mLen = intLen;
+  mIter += intLen;
   return intLen + sizeof(UINT32);
 }
 
