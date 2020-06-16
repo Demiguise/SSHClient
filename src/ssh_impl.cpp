@@ -423,12 +423,13 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
     mSequenceNumber++;
     bytesRemaining -= bytesConsumed;
 
+    mRecvQueue.push(pNewPacket);
+
     UINT32 bytesNeeded = pNewPacket->Remaining();
     if (bytesNeeded)
     {
       //We have to wait for more data, pop this packet into the queue
-      Log(LogLevel::Debug, "Queuing packet (%d) as we are waiting on [%d] bytes.", pNewPacket->GetSequenceNumber(), bytesNeeded);
-      mRecvQueue.push(pNewPacket);
+      Log(LogLevel::Debug, "Packet (%d) is waiting on [%d] bytes.", pNewPacket->GetSequenceNumber(), bytesNeeded);
       break;
     }
   }
