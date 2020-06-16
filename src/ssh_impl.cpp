@@ -372,7 +372,7 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
   {
     TPacket pPacket = mRecvQueue.back();
 
-    int bytesConsumed = pPacket->Read(pBuf, bufLen);
+    int bytesConsumed = pPacket->Consume(pBuf, bufLen);
     bytesRemaining -= bytesConsumed;
     Log(LogLevel::Info, "Packet (%d) consumed an additional [%d] bytes", pPacket->GetSequenceNumber(), bytesConsumed);
 
