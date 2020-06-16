@@ -4,6 +4,7 @@
 #include "mpint.hpp"
 
 #include "wolfssl/wolfcrypt/dh.h"
+#include "wolfssl/wolfcrypt/hash.h"
 
 using namespace SSH;
 
@@ -13,6 +14,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
   private:
     DhKey mPrivKey;
     WC_RNG mRNG;
+    wc_HashAlg mHash;
+    wc_HashType mHashType;
 
     struct
     {
@@ -66,7 +69,13 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      //DH Key information now ready
+      //DH Key information now ready, setup hash
+
+      ret = wc_HashInit(&mHash, mHashType);
+      if (ret != 0)
+      {
+        return false;
+      }
 
       return true;
     }
