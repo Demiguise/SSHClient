@@ -416,31 +416,29 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 
 bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
 {
-  const Byte *pKexIter = pPacket->Payload();
+  Byte msgId;
+  Byte kexCookie[cKexCookieLength];
 
   //Verify this is a KEX packet
-  if ((*pKexIter) != SSH_MSG::KEXINIT)
+  pPacket->Read(msgId);
+  if (msgId != SSH_MSG::KEXINIT)
   {
     return false;
   }
-  pKexIter += sizeof(Byte);
 
-  //Skip 16 bytes of random data
-  pKexIter += cKexCookieLength;
-
-  pKexIter += ParseNameList(mKex.mAlgorithms.mKex, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mServerHost, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mClientToServer, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mEncryption.mServerToClient, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mClientToServer, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mMAC.mServerToClient, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mClientToServer, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mCompression.mServerToClient, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mClientToServer, pKexIter);
-  pKexIter += ParseNameList(mKex.mAlgorithms.mLanguages.mServerToClient, pKexIter);
+  pPacket->Read(kexCookie, cKexCookieLength);
+  pPacket->Read(mKex.mAlgorithms.mKex);
+  pPacket->Read(mKex.mAlgorithms.mServerHost);
+  pPacket->Read(mKex.mAlgorithms.mEncryption.mClientToServer);
+  pPacket->Read(mKex.mAlgorithms.mEncryption.mServerToClient);
+  pPacket->Read(mKex.mAlgorithms.mMAC.mClientToServer);
+  pPacket->Read(mKex.mAlgorithms.mMAC.mServerToClient);
+  pPacket->Read(mKex.mAlgorithms.mCompression.mClientToServer);
+  pPacket->Read(mKex.mAlgorithms.mCompression.mServerToClient);
+  pPacket->Read(mKex.mAlgorithms.mLanguages.mClientToServer);
+  pPacket->Read(mKex.mAlgorithms.mLanguages.mServerToClient);
 
   //TODO: Do some processing here to pick the right algorithms to initialise
-
 
   return true;
 }
