@@ -70,6 +70,15 @@ class DH_KEXHandler : public SSH::IKEXHandler
       }
 
       //DH Key information now ready, setup hash
+      switch (group)
+      {
+        case DHGroups::G_14:
+          mHashType = WC_HASH_TYPE_SHA;
+          break;
+        default:
+          mHashType = WC_HASH_TYPE_NONE;
+          break;
+      }
 
       ret = wc_HashInit(&mHash, mHashType);
       if (ret != 0)
