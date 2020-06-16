@@ -379,6 +379,8 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
   }
 
   Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
+  mServerKex.mServerIdent = serverIdent;
+
   SetStage(ConStage::ReceivedServerID);
 
   return true;
@@ -459,6 +461,8 @@ bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
 
   //TODO: Do some processing here to pick the right algorithms to initialise
 
+  mServerKex.mKEXInit = Packet::Copy(pPacket);
+
   return true;
 }
 
@@ -503,6 +507,8 @@ void Client::Impl::SendClientKEXInit()
   pClientDataPacket->Write(0);            //Reserved UINT32
 
   Queue(pClientDataPacket);
+
+  mClientKex.mKEXInit = Packet::Copy(pClientDataPacket);
 
   SetStage(ConStage::SentClientKEXInit);
 }
