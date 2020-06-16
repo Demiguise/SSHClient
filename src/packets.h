@@ -50,9 +50,8 @@ namespace SSH
 
     //Factory functions
     static TPacket Create(int payloadLen);
-
-    //Returns a
     static std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
+    static TPacket Copy(TPacket pPacket);
 
     //Pointer to the beginning of the payload
     const Byte* const Payload() const;
