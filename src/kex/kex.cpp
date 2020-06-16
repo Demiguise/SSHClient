@@ -92,6 +92,46 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
       return pPacket;
     }
+
+    bool VerifyReply(KEXData& server, KEXData& client, TPacket pDHReply) override
+    {
+      Byte msgId;
+
+      //Verify this is a KEX packet
+      pDHReply->Read(msgId);
+      if (msgId != SSH_MSG::KEXDH_REPLY)
+      {
+        return false;
+      }
+
+      std::string keyCerts;
+      MPInt f;
+      std::string signature;
+
+      pDHReply->Read(keyCerts);
+      pDHReply->Read(f);
+      pDHReply->Read(signature);
+
+      //Get a buffer of the correct size to hold our pre-hash data
+      int hashDataLen = client.mIdent.length() +
+                        server.mIdent.length() +
+                        client.mKEXInit->PayloadLen() +
+                        server.mKEXInit->PayloadLen() +
+                        0 + //HostKeyLen
+                        mHandshake.e.mLen +
+                        f.mLen +
+                        0; //Shared secret
+
+      auto hashData = std::vector<Byte>(hashDataLen);
+
+      //Now fill the hashData with our values
+
+      //Now hash the hashData
+
+      //Validate the signature from the server
+
+      return false;
+    }
 };
 
 TKEXHandler KEX::CreateDH(DHGroups group)
