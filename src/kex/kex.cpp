@@ -2,6 +2,7 @@
 #include "dh_groups.h"
 #include "constants.h"
 #include "mpint.hpp"
+#include "endian.h"
 
 #include "wolfssl/wolfcrypt/dh.h"
 #include "wolfssl/wolfcrypt/hash.h"
@@ -148,23 +149,20 @@ class DH_KEXHandler : public SSH::IKEXHandler
       pDHReply->Read(f);
       pDHReply->Read(signature);
 
-      //Get a buffer of the correct size to hold our pre-hash data
-      int hashDataLen = client.mIdent.length() +
-                        server.mIdent.length() +
-                        client.mKEXInit->PayloadLen() +
-                        server.mKEXInit->PayloadLen() +
-                        0 + //HostKeyLen
-                        mHandshake.e.mLen +
-                        f.mLen +
-                        0; //Shared secret
+      HashBuffer((Byte*)client.mIdent.c_str(), client.mIdent.length());
+      HashBuffer((Byte*)server.mIdent.c_str(), server.mIdent.length());
 
-      auto hashData = std::vector<Byte>(hashDataLen);
+      //Hash KEXInit packets
+      HashBuffer(client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
+      HashBuffer(server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
-      //Now fill the hashData with our values
+      //Hash server's HostKey
 
-      //Now hash the hashData
+      //Hash MPInts e (client's) and f (server's)
+      HashBuffer(mHandshake.e.mArr.data(), mHandshake.e.mLen);
+      HashBuffer(f.mArr.data(), f.mLen);
 
-      //Validate the signature from the server
+      //Hash shared secret
 
       return false;
     }
