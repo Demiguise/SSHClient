@@ -93,6 +93,13 @@ std::pair<TPacket, int> Packet::Create(const Byte* pBuf, const int numBytes, con
   return {pPacket, bytesToConsume};
 }
 
+TPacket Packet::Copy(TPacket pPacket)
+{
+  TPacket pNewPacket = Create(pPacket->mPayloadLen);
+  std::copy(pPacket->mPacket.begin(), pPacket->mPacket.end(), pNewPacket->mPacket.begin());
+  return pNewPacket;
+}
+
 const Byte* const Packet::Payload() const
 {
   return &mPacket[payloadOffset];
