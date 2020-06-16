@@ -43,7 +43,7 @@ namespace SSH
       virtual ~IKEXHandler() = default;
 
       virtual TPacket CreateInitPacket() = 0;
-      virtual bool VerifyReply(KEXData& server, KEXData& client) = 0;
+      virtual bool VerifyReply(KEXData& server, KEXData& client, TPacket DHReply) = 0;
   };
 
   using TKEXHandler = std::shared_ptr<IKEXHandler>;
