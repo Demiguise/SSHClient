@@ -5,6 +5,7 @@
 #include "endian.h"
 
 #include "wolfssl/wolfcrypt/dh.h"
+#include <wolfssl/wolfcrypt/rsa.h>
 #include "wolfssl/wolfcrypt/hash.h"
 
 using namespace SSH;
@@ -154,6 +155,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
       pDHReply->Read(f);
       pDHReply->Read(signature);
 
+      //Hash identifiers
       HashBuffer((Byte*)client.mIdent.c_str(), client.mIdent.length());
       HashBuffer((Byte*)server.mIdent.c_str(), server.mIdent.length());
 
@@ -162,6 +164,47 @@ class DH_KEXHandler : public SSH::IKEXHandler
       HashBuffer(server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
       //Hash server's HostKey
+      {
+        RsaKey key;
+        int ret = wc_InitRsaKey(&key, nullptr);
+        if (ret != 0)
+        {
+          return false;
+        }
+
+        auto iter = keyCerts.begin();
+
+        UINT32 hostKeyTypeLen = 0;
+        hostKeyTypeLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        iter += sizeof(UINT32);
+
+        std::string hostKeyType;
+        hostKeyType.assign((char*)&(*iter), hostKeyTypeLen);
+        iter += hostKeyTypeLen;
+
+        MPInt e;
+        MPInt n;
+
+        UINT32 eLen = 0;
+        hostKeyTypeLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        iter += sizeof(UINT32);
+
+        std::copy(iter, iter+eLen, e.mArr.begin());
+        iter += eLen;
+
+        UINT32 nLen = 0;
+        hostKeyTypeLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        iter += sizeof(UINT32);
+
+        std::copy(iter, iter+eLen, n.mArr.begin());
+        iter += nLen;
+
+        ret = wc_RsaPublicKeyDecodeRaw(n.mArr.data(), n.mLen, e.mArr.data(), e.mLen, &key);
+        if (ret != 0)
+        {
+          return false;
+        }
+      }
 
       //Hash MPInts e (client's) and f (server's)
       HashBuffer(mHandshake.e.mArr.data(), mHandshake.e.mLen);
