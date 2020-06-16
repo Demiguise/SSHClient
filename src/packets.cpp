@@ -165,6 +165,32 @@ int Packet::Write(const Byte* pBuf, const int numBytes, const WriteMethod method
   return numBytes + sizeof(UINT32);
 }
 
+int Packet::Read(Byte& outData)
+{
+  outData = *mIter;
+  mIter += sizeof(Byte);
+  return sizeof(Byte);
+}
+
+int Packet::Read(UINT32& outData)
+{
+  UINT32* pIter = (UINT32*)&(*mIter);
+  outData = swap_endian<uint32_t>(*pIter);
+
+  mIter += sizeof(UINT32);
+  return sizeof(UINT32);
+}
+
+int Packet::Read(std::string& outData)
+{
+  UINT32 stringLen = 0;
+  Read(stringLen);
+
+  outData.assign((char*)&(*mIter), stringLen);
+  mIter += stringLen;
+  return stringLen;
+}
+
 UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);

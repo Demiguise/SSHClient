@@ -73,6 +73,10 @@ namespace SSH
     int Write(const std::string data);
     int Write(const Byte* pBuf, const int numBytes, const WriteMethod method = WriteMethod::WithLength);
 
+    int Read(Byte& outData);
+    int Read(UINT32& data);
+    int Read(std::string& outData);
+
     /*
       Prepares the packet for sending, writing any additional header
       information such as packet/padding length, MAC, and padding data.
