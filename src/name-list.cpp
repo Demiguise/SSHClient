@@ -11,7 +11,14 @@ NameList::NameList()
 void NameList::Init(const Byte* pBuf, const int numBytes)
 {
   mList.assign((char*)pBuf, numBytes);
-  mNumNames = std::count(mList.begin(), mList.end(), ',') + 1;
+  if (!mList.empty())
+  {
+    mNumNames = std::count(mList.begin(), mList.end(), ',') + 1;
+  }
+  else
+  {
+    mNumNames = 0;
+  }
 }
 
 NameList& NameList::operator+= (std::string newName)
