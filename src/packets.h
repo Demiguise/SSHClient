@@ -65,7 +65,7 @@ namespace SSH
     UINT32 GetSequenceNumber() const { return mSequenceNumber; }
 
     //Will copy the data from the pBuf into the underlying packet buffer
-    int Read(const Byte* pBuf, const int numBytes);
+    int Consume(const Byte* pBuf, const int numBytes);
 
     int Write(const Byte data);
     int Write(const int data); //Will be treated as a UINT32 when writing

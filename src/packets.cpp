@@ -108,7 +108,7 @@ UINT32 Packet::Remaining() const
   return mTotalPacketLen - (mIter - mPacket.begin());
 }
 
-int Packet::Read(const Byte* pBuf, const int numBytes)
+int Packet::Consume(const Byte* pBuf, const int numBytes)
 {
   //Get the number of bytes needed by this packet
   int bytesLeft = Remaining();
