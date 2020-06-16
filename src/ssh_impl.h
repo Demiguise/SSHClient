@@ -52,6 +52,8 @@ namespace SSH
       ListPairs mCompression;
       ListPairs mLanguages;
     } mAlgorithms;
+
+    std::string serverIdent;
   };
 
   class Client::Impl
