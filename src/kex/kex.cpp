@@ -142,11 +142,15 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      std::string keyCerts;
+      UINT32 keyCertLen;
+      std::vector<Byte> keyCerts;
       MPInt f;
       std::string signature;
 
-      pDHReply->Read(keyCerts);
+      pDHReply->Read(keyCertLen);
+      keyCerts.resize(keyCertLen);
+      pDHReply->Read(keyCerts.data(), keyCertLen);
+
       pDHReply->Read(f);
       pDHReply->Read(signature);
 
