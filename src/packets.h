@@ -2,6 +2,8 @@
 #define __PACKETS_H__
 
 #include "ssh.h"
+#include "name-list.h"
+#include "mpint.hpp"
 #include <vector>
 
 namespace SSH
@@ -76,6 +78,7 @@ namespace SSH
     int Read(Byte& outData);
     int Read(UINT32& data);
     int Read(std::string& outData);
+    int Read(NameList& outData);
 
     /*
       Prepares the packet for sending, writing any additional header

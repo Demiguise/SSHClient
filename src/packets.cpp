@@ -188,7 +188,16 @@ int Packet::Read(std::string& outData)
 
   outData.assign((char*)&(*mIter), stringLen);
   mIter += stringLen;
-  return stringLen;
+  return stringLen + sizeof(UINT32);
+}
+
+int Packet::Read(NameList& outData)
+{
+  UINT32 namelistLen = 0;
+  Read(namelistLen);
+
+  outData.Init(&(*mIter), namelistLen);
+  return namelistLen + sizeof(UINT32);
 }
 
 UINT32 Packet::GetLength(const Byte* pBuf)
