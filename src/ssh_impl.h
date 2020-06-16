@@ -52,8 +52,6 @@ namespace SSH
       ListPairs mCompression;
       ListPairs mLanguages;
     } mAlgorithms;
-
-    TKEXHandler handler;
   };
 
   class Client::Impl
@@ -78,6 +76,7 @@ namespace SSH
     TPacketQueue mSendQueue;
 
     KEXData mKex;
+    TKEXHandler mKEXHandler;
 
     UINT32 mSequenceNumber;
 

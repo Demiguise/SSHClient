@@ -511,8 +511,8 @@ void Client::Impl::SendClientKEXInit()
 
 void Client::Impl::SendClientDHInit()
 {
-  mKex.handler = KEX::CreateDH(DHGroups::G_14);
-  auto pKEXInitPacket = mKex.handler->CreateInitPacket();
+  mKEXHandler = KEX::CreateDH(DHGroups::G_14);
+  auto pKEXInitPacket = mKEXHandler->CreateInitPacket();
   if (!pKEXInitPacket)
   {
     Log(LogLevel::Error, "Failed to create DH init packet");
