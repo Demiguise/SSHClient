@@ -218,6 +218,7 @@ int Packet::Read(Byte* pOutBuf, int bytesToRead)
   }
 
   memcpy(pOutBuf, &(*mIter), bytesToRead);
+  mIter += bytesToRead;
   return bytesToRead;
 }
 
