@@ -551,7 +551,7 @@ void Client::Impl::Connect(const std::string pszUser)
   auto fut = std::async(std::launch::async, &Impl::Poll, this);
 
   Byte buf[512];
-  int bytesWritten = snprintf((char*)buf, sizeof(buf), "");
+  int bytesWritten = snprintf((char*)buf, sizeof(buf), "%s", mClientKex.mIdent.c_str());
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 
