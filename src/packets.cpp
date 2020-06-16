@@ -41,6 +41,7 @@ std::shared_ptr<Packet> Packet::Create(int payloadLen)
 
   pPacket->mTotalPacketLen += padding;
   pPacket->mPaddingLen = padding;
+  pPacket->mPayloadLen = payloadLen;
 
   //PacketLen is payload + padding + 1 byte for the padding_length field
   pPacket->mPacketLen = payloadLen + pPacket->mPaddingLen + sizeof(Byte);
@@ -97,6 +98,8 @@ TPacket Packet::Copy(TPacket pPacket)
 {
   TPacket pNewPacket = Create(pPacket->mPayloadLen);
   std::copy(pPacket->mPacket.begin(), pPacket->mPacket.end(), pNewPacket->mPacket.begin());
+  pNewPacket->mIter = pNewPacket->mPacket.begin() + (pPacket->mIter - pPacket->mPacket.begin());
+  pNewPacket->mSequenceNumber = pPacket->mSequenceNumber;
   return pNewPacket;
 }
 
