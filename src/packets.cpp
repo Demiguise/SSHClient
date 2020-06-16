@@ -76,8 +76,8 @@ std::pair<TPacket, int> Packet::Create(const Byte* pBuf, const int numBytes, con
   UINT32 packetLen = GetLength(pIter);
   pPacket->mTotalPacketLen = packetLen + sizeof(UINT32);
   pPacket->mPacketLen = packetLen;
-  pPacket->mPacket.reserve(packetLen + pPacket->mTotalPacketLen);
-  pPacket->mPacket.resize(packetLen + pPacket->mTotalPacketLen);
+  pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
+  pPacket->mPacket.resize(pPacket->mTotalPacketLen);
 
   pIter += sizeof(UINT32);
   UINT32 paddingLen = *(pIter);
