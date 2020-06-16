@@ -427,16 +427,16 @@ bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
   }
 
   pPacket->Read(kexCookie, cKexCookieLength);
-  pPacket->Read(mKex.mAlgorithms.mKex);
-  pPacket->Read(mKex.mAlgorithms.mServerHost);
-  pPacket->Read(mKex.mAlgorithms.mEncryption.mClientToServer);
-  pPacket->Read(mKex.mAlgorithms.mEncryption.mServerToClient);
-  pPacket->Read(mKex.mAlgorithms.mMAC.mClientToServer);
-  pPacket->Read(mKex.mAlgorithms.mMAC.mServerToClient);
-  pPacket->Read(mKex.mAlgorithms.mCompression.mClientToServer);
-  pPacket->Read(mKex.mAlgorithms.mCompression.mServerToClient);
-  pPacket->Read(mKex.mAlgorithms.mLanguages.mClientToServer);
-  pPacket->Read(mKex.mAlgorithms.mLanguages.mServerToClient);
+  pPacket->Read(mServerKex.mAlgorithms.mKex);
+  pPacket->Read(mServerKex.mAlgorithms.mServerHost);
+  pPacket->Read(mServerKex.mAlgorithms.mEncryption.mClientToServer);
+  pPacket->Read(mServerKex.mAlgorithms.mEncryption.mServerToClient);
+  pPacket->Read(mServerKex.mAlgorithms.mMAC.mClientToServer);
+  pPacket->Read(mServerKex.mAlgorithms.mMAC.mServerToClient);
+  pPacket->Read(mServerKex.mAlgorithms.mCompression.mClientToServer);
+  pPacket->Read(mServerKex.mAlgorithms.mCompression.mServerToClient);
+  pPacket->Read(mServerKex.mAlgorithms.mLanguages.mClientToServer);
+  pPacket->Read(mServerKex.mAlgorithms.mLanguages.mServerToClient);
 
   //TODO: Do some processing here to pick the right algorithms to initialise
 

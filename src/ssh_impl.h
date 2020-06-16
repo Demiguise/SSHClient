@@ -75,7 +75,7 @@ namespace SSH
     TPacketQueue mRecvQueue;
     TPacketQueue mSendQueue;
 
-    KEXData mKex;
+    KEXData mServerKex;
     TKEXHandler mKEXHandler;
 
     UINT32 mSequenceNumber;
