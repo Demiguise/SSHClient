@@ -227,7 +227,7 @@ UINT32 Packet::GetLength(const Byte* pBuf)
   return swap_endian<uint32_t>(nLen);
 }
 
-void Packet::Prepare(const UINT32 seqNumber)
+void Packet::PrepareWrite(const UINT32 seqNumber)
 {
   //TODO: Write random bytes into the padding string
   memset(&(*mIter), 0xAD, mPaddingLen);

@@ -87,7 +87,7 @@ namespace SSH
       information such as packet/padding length, MAC, and padding data.
       Also resets the iterator to the beginning, preparing for sending.
     */
-    void Prepare(const UINT32 seqNumber);
+    void PrepareWrite(const UINT32 seqNumber);
 
     int Send(TSendFunc sendFunc);
   };

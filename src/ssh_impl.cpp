@@ -169,7 +169,7 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
 
 void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)
 {
-  pPacket->Prepare(mSequenceNumber++);
+  pPacket->PrepareWrite(mSequenceNumber++);
   mSendQueue.push(pPacket);
   Log(LogLevel::Debug, "Packet (%d) has been queued for sending", pPacket->GetSequenceNumber());
 }
