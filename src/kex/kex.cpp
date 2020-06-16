@@ -25,6 +25,24 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
     bool mInitialised = false;
 
+    bool HashBuffer(const Byte* pBuf, const UINT32 bufLen)
+    {
+      UINT32 tmpLen = swap_endian<uint32_t>(bufLen);
+      int ret = wc_HashUpdate(&mHash, mHashType, (Byte*)&tmpLen, sizeof(UINT32));
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&mHash, mHashType, pBuf, bufLen);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      return true;
+    }
+
   public:
     DH_KEXHandler()
     {}
