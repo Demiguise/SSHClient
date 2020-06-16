@@ -53,7 +53,8 @@ namespace SSH
       ListPairs mLanguages;
     } mAlgorithms;
 
-    std::string serverIdent;
+    std::string mServerIdent;
+    TPacket mKEXInit;
   };
 
   class Client::Impl
