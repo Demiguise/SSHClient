@@ -264,6 +264,8 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       break;
     }
 
+    pPacket->PrepareRead();
+
     switch (mStage)
     {
       case ConStage::SentClientKEXInit:

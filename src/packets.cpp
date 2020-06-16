@@ -235,6 +235,11 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   mIter = mPacket.begin();
 }
 
+void Packet::PrepareRead()
+{
+  mIter = mPacket.begin() + payloadOffset;
+}
+
 int Packet::Send(TSendFunc sendFunc)
 {
   auto bytesSent = sendFunc(&(*mIter), Remaining());

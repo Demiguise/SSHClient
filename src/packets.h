@@ -89,6 +89,12 @@ namespace SSH
     */
     void PrepareWrite(const UINT32 seqNumber);
 
+    /*
+      Prepares the packet for reading, setting the iterator to the beginning
+      of the payload.
+    */
+    void PrepareRead();
+
     int Send(TSendFunc sendFunc);
   };
 }
