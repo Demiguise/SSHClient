@@ -66,7 +66,7 @@ Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   , mLogLevel(options.logLevel)
   , mSequenceNumber(0)
 {
-  mClientKex.mServerIdent = "SSH-2.0-cppsshSSH_3.6.3q3";
+  mClientKex.mIdent = "SSH-2.0-cppsshSSH_3.6.3q3";
 
   mClientKex.mAlgorithms.mKex.Add("diffie-hellman-group14-sha1");
 
@@ -379,7 +379,7 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
   }
 
   Log(LogLevel::Info, "ServerIdent [%d]: %s", serverIdent.length(), serverIdent.c_str());
-  mServerKex.mServerIdent = serverIdent;
+  mServerKex.mIdent = serverIdent;
 
   SetStage(ConStage::ReceivedServerID);
 

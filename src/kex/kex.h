@@ -26,7 +26,7 @@ namespace SSH
       ListPairs mLanguages;
     } mAlgorithms;
 
-    std::string mServerIdent;
+    std::string mIdent;
     TPacket mKEXInit;
   };
 
