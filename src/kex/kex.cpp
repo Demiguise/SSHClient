@@ -117,16 +117,11 @@ class DH_KEXHandler : public SSH::IKEXHandler
       //Calculate the length of the packet
       int packetLen = sizeof(Byte) + //MSG_ID
                       sizeof(UINT32) + //Length
-                      mHandshake.e.mLen +
-                      ((mHandshake.e.mPadding) ? 1 : 0);
+                      mHandshake.e.mLen;
 
       auto pPacket = Packet::Create(packetLen);
 
       pPacket->Write((Byte)SSH_MSG::KEXDH_INIT);
-      if (mHandshake.e.mPadding)
-      {
-        pPacket->Write((Byte)0);
-      }
       pPacket->Write(mHandshake.e.mArr.data(), mHandshake.e.mLen);
 
       return pPacket;
