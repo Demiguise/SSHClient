@@ -4,9 +4,12 @@
 #include "mpint.hpp"
 #include "endian.h"
 
-#include "wolfssl/wolfcrypt/dh.h"
+//Temporarily include this win10 user settings, otherwise we encounter stack smashing
+#include <IDE/WIN10/user_settings.h>
+#include <wolfssl/wolfcrypt/dh.h>
 #include <wolfssl/wolfcrypt/rsa.h>
-#include "wolfssl/wolfcrypt/hash.h"
+#include <wolfssl/wolfcrypt/hash.h>
+#include <wolfssl/wolfcrypt/signature.h>
 
 using namespace SSH;
 
@@ -141,14 +144,18 @@ class DH_KEXHandler : public SSH::IKEXHandler
       UINT32 keyCertLen;
       std::vector<Byte> keyCerts;
       MPInt f;
-      std::string signature;
+      UINT32 signatureLen;
+      std::vector<Byte> signature;
 
       pDHReply->Read(keyCertLen);
       keyCerts.resize(keyCertLen);
       pDHReply->Read(keyCerts.data(), keyCertLen);
 
       pDHReply->Read(f);
-      pDHReply->Read(signature);
+
+      pDHReply->Read(signatureLen);
+      signature.resize(signatureLen);
+      pDHReply->Read(signature.data(), signatureLen);
 
       //Hash identifiers
       HashBuffer((Byte*)client.mIdent.c_str(), client.mIdent.length());
@@ -168,7 +175,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
       //Decode server's host key
       RsaKey key;
       {
-        int ret = wc_InitRsaKey(&key, nullptr);
+        int ret = wc_InitRsaKey(&key, NULL);
         if (ret != 0)
         {
           return false;
@@ -227,6 +234,28 @@ class DH_KEXHandler : public SSH::IKEXHandler
       if (ret != 0)
       {
         return false;
+      }
+
+      //Now we can verify our exchange hash with the server's signature
+      {
+        auto iter = signature.begin();
+
+        //Size of signature name
+        UINT32 sigNameLen = 0;
+        sigNameLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        iter += sizeof(UINT32);
+
+        std::string sigName;
+        sigName.assign((char*)&(*iter), sigNameLen);
+        iter += sigNameLen;
+
+        ret = wc_SignatureVerify( mHashType, WC_SIGNATURE_TYPE_RSA_W_ENC,
+                                  h.data(), hLen, (Byte*)&(*iter), (signature.end() - iter),
+                                  &key, sizeof(key));
+        if (ret != 0)
+        {
+          return false;
+        }
       }
 
       return false;
