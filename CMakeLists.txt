@@ -11,6 +11,11 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
 include(ExternalProject)
-enable_testing();
+enable_testing()
+
+add_subdirectory(thirdparty/Catch2)
+list(APPEND CMAKE_MODULE_PATH "thirdparty/Catch2/contrib")
+include (CTest)
+include(Catch)
 
 add_subdirectory(src)
