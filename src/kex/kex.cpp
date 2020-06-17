@@ -158,9 +158,16 @@ class DH_KEXHandler : public SSH::IKEXHandler
       HashBuffer(client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
       HashBuffer(server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
-      //Hash server's HostKey
+      //Hash server's HostKey data (The entire buffer)
+      HashBuffer(keyCerts.data(), keyCertLen);
+
+      //Hash MPInts e (client's) and f (server's)
+      HashBuffer(mHandshake.e.mArr.data(), mHandshake.e.mLen);
+      HashBuffer(f.mArr.data(), f.mLen);
+
+      //Decode server's host key
+      RsaKey key;
       {
-        RsaKey key;
         int ret = wc_InitRsaKey(&key, nullptr);
         if (ret != 0)
         {
@@ -200,12 +207,27 @@ class DH_KEXHandler : public SSH::IKEXHandler
           return false;
         }
       }
-
-      //Hash MPInts e (client's) and f (server's)
-      HashBuffer(mHandshake.e.mArr.data(), mHandshake.e.mLen);
-      HashBuffer(f.mArr.data(), f.mLen);
+      //Generate shared secret
+      MPInt k;
+      int ret = wc_DhAgree( &mPrivKey, k.mArr.data(), &k.mLen,
+                            mHandshake.x.mArr.data(), mHandshake.x.mLen,
+                            f.mArr.data(), f.mLen);
+      if (ret != 0)
+      {
+        return false;
+      }
 
       //Hash shared secret
+      HashBuffer(k.mArr.data(), k.mLen);
+
+      //Get the result which should be the exchange hash value H
+      UINT32 hLen = wc_HashGetDigestSize(mHashType);
+      std::vector<Byte> h(hLen);
+      ret = wc_HashFinal(&mHash, mHashType, h.data());
+      if (ret != 0)
+      {
+        return false;
+      }
 
       return false;
     }
