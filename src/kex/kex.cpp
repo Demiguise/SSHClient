@@ -181,14 +181,14 @@ class DH_KEXHandler : public SSH::IKEXHandler
         MPInt n;
 
         UINT32 eLen = 0;
-        hostKeyTypeLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        eLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
         iter += sizeof(UINT32);
 
         std::copy(iter, iter+eLen, e.mArr.begin());
         iter += eLen;
 
         UINT32 nLen = 0;
-        hostKeyTypeLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        nLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
         iter += sizeof(UINT32);
 
         std::copy(iter, iter+eLen, n.mArr.begin());
