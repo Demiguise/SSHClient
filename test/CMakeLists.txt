@@ -4,6 +4,8 @@ set(TEST_TARGET test)
 
 add_executable(${TEST_TARGET}
   main.cpp
+
+  #All tests go below here
   mpint.test.cpp
 )
 
