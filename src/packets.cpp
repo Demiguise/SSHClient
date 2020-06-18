@@ -169,6 +169,11 @@ int Packet::Write(const std::string data)
   return len + sizeof(UINT32);
 }
 
+int Packet::Write(const NameList data)
+{
+  return Write(data.Str());
+}
+
 int Packet::Write(const MPInt data)
 {
   UINT32 len = data.Len();

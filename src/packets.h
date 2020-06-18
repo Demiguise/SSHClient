@@ -75,6 +75,7 @@ namespace SSH
     int Write(const int data); //Will be treated as a UINT32 when writing
     int Write(const UINT32 data);
     int Write(const std::string data);
+    int Write(const NameList outData);
     int Write(const MPInt data);
     int Write(const Byte* pBuf, const int numBytes, const WriteMethod method = WriteMethod::WithLength);
 

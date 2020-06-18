@@ -25,7 +25,9 @@ namespace SSH
     std::string_view Get (const int n);
 
     std::string Str() { return mList; }
-    size_t Len() { return mList.length(); }
+    const std::string Str() const { return mList; }
+    
+    size_t Len() const { return mList.length(); }
   };
 
   std::string SelectBestMatch(const NameList& client, const NameList& server);
