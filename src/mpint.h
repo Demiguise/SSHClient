@@ -16,7 +16,6 @@ namespace SSH
 
     TData mArr;
     UINT32 mLen = 0;
-    bool mPadding = false;
 
   public:
     MPInt() = default;

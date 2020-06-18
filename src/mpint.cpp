@@ -16,10 +16,17 @@ void MPInt::Init(const Byte* pBuf, const int bufLen)
 void MPInt::Pad()
 {
   TIter iter = mArr.begin();
-  TIter iterEnd = mArr.end();
   TIter iterBegin = mArr.begin();
+  TIter iterEnd = mArr.end();
+  bool bRequiresPadding = false;
 
-  //Find the first non zero byte
+  if (mLen == 0)
+  {
+    //A zero sized MPInt has no work to do
+    return;
+  }
+
+  //Find the first non zero byte, in case writer prepended any NULL data.
   for (; iter != iterEnd; ++iter)
   {
     if (*iter != 0x00)
@@ -28,34 +35,42 @@ void MPInt::Pad()
     }
   }
 
-  //Check for padding
+  //Check if we require padding on the first non zero byte
   if (*iter & 0x80)
   {
-    mPadding = true;
+    bRequiresPadding = true;
   }
 
-  if (iter != iterBegin && mPadding)
+  if (bRequiresPadding)
   {
-    iter--;
-    mPadding = false;
-  }
-
-  if (iter > iterBegin)
-  {
-    mLen -= (iter - iterBegin);
-    if (mPadding)
+    //We must prepend this sequence with a null byte.
+    //Increase the size by one so users don't need to care about the underlying change.
+    mLen++;
+    TIter sequenceEnd = iter + mLen;
+    if (iter > iterBegin)
     {
       /*
-          If we have padding we should increase the size of this MPInt
-          and move the begin iterator forward so we can just set the first byte to zero.
-          This saves callers from having to manage padding themselves.
-        */
-      mLen++;
+        If the iterator is past the beginning (and thus contains preceeding null bytes)
+        we can simply move the iterator back one space to accomodate the new null byte.
+      */
+      iter--;
 
-      *iterBegin = 0x00;
-      iterBegin++;
+      /*
+        If the iterator is still past the beginning of the sequence then we must move the whole sequence
+        back to the beginning.
+      */
+      if (iter > iterBegin)
+      {
+        std::move(iter, sequenceEnd, iterBegin);
+      }
     }
-
-    std::move(iter, iterEnd, iterBegin);
+    else
+    {
+      /*
+        If the iterator is at the beginning of the sequence then we must move the whole sequence ahead one byte.
+      */
+      std::move_backward(iter, sequenceEnd, sequenceEnd + 1);
+      *iterBegin = 0x00;
+    }
   }
 }
