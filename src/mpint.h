@@ -4,21 +4,39 @@
 #include "ssh.h"
 #include <array>
 
-#define MAX_KEX_KEY_SZ (8192 / 8)
-
-class MPInt
+namespace SSH
 {
-private:
-  using TData = std::array<SSH::Byte, MAX_KEX_KEY_SZ+1>; //+1 in case of padding
-  using TIter = TData::iterator;
+  constexpr int sMAX_KEX_KEY_SIZE = (8192 / 8);
 
-public:
-  TData mArr;
-  UINT32 mLen = 0;
-  bool mPadding = false;
+  class MPInt
+  {
+  private:
+    using TData = std::array<Byte, sMAX_KEX_KEY_SIZE + 1>; //+1 in case of padding
+    using TIter = TData::iterator;
 
-  //Handles the padding
-  void Prepare();
-};
+    TData mArr;
+    UINT32 mLen = 0;
+    bool mPadding = false;
+
+  public:
+    MPInt() = default;
+    ~MPInt() = default;
+
+    /*
+      Copies data for an MPint to the internal buffer.
+      Expects that this is the raw MPInt data without the UINT32 len field preceeding it.
+    */
+    void Init(const Byte* pBuf, const int bufLen);
+
+    Byte* Data() { return mArr.data(); }
+    UINT32 Len() { return mLen; }
+    void SetLen(UINT32 newLen) { mLen = newLen; }
+
+    /*
+      Use after filling the MPInt's data to handle all padding operations
+    */
+    void Pad();
+  };
+}
 
 #endif //~__MPINT_H__

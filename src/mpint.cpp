@@ -1,6 +1,19 @@
 #include "mpint.h"
 
-void MPInt::Prepare()
+using namespace SSH;
+
+void MPInt::Init(const Byte* pBuf, const int bufLen)
+{
+  if (bufLen > sMAX_KEX_KEY_SIZE)
+  {
+    return;
+  }
+
+  memcpy(mArr.data(), pBuf, bufLen);
+  mLen = bufLen;
+}
+
+void MPInt::Pad()
 {
   TIter iter = mArr.begin();
   TIter iterEnd = mArr.end();

@@ -216,8 +216,8 @@ int Packet::Read(MPInt& outData)
   UINT32 intLen = 0;
   Read(intLen);
 
-  std::copy(mIter, mIter + intLen, outData.mArr.begin());
-  outData.mLen = intLen;
+  outData.Init(&(*mIter), intLen);
+
   mIter += intLen;
   return intLen + sizeof(UINT32);
 }

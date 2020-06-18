@@ -85,13 +85,19 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
+      UINT32 xLen = 0;
+      UINT32 eLen = 0;
+
       ret = wc_DhGenerateKeyPair(&mPrivKey, &mRNG,
-                                 mHandshake.x.mArr.data(), &mHandshake.x.mLen,
-                                 mHandshake.e.mArr.data(), &mHandshake.e.mLen);
+                                 mHandshake.x.Data(), &xLen,
+                                 mHandshake.e.Data(), &eLen);
       if (ret != 0)
       {
         return false;
       }
+
+      mHandshake.x.SetLen(xLen);
+      mHandshake.e.SetLen(eLen);
 
       //DH Key information now ready, setup hash
       switch (group)
@@ -115,17 +121,17 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
     TPacket CreateInitPacket() override
     {
-      mHandshake.e.Prepare();
+      mHandshake.e.Pad();
 
       //Calculate the length of the packet
       int packetLen = sizeof(Byte) + //MSG_ID
                       sizeof(UINT32) + //Length
-                      mHandshake.e.mLen;
+                      mHandshake.e.Len();
 
       auto pPacket = Packet::Create(packetLen);
 
       pPacket->Write((Byte)SSH_MSG::KEXDH_INIT);
-      pPacket->Write(mHandshake.e.mArr.data(), mHandshake.e.mLen);
+      pPacket->Write(mHandshake.e.Data(), mHandshake.e.Len());
 
       return pPacket;
     }
@@ -169,8 +175,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
       HashBuffer(keyCerts.data(), keyCertLen);
 
       //Hash MPInts e (client's) and f (server's)
-      HashBuffer(mHandshake.e.mArr.data(), mHandshake.e.mLen);
-      HashBuffer(f.mArr.data(), f.mLen);
+      HashBuffer(mHandshake.e.Data(), mHandshake.e.Len());
+      HashBuffer(f.Data(), f.Len());
 
       //Decode server's host key
       RsaKey key;
@@ -198,17 +204,17 @@ class DH_KEXHandler : public SSH::IKEXHandler
         eLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
         iter += sizeof(UINT32);
 
-        std::copy(iter, iter+eLen, e.mArr.begin());
+        e.Init(&(*iter), eLen);
         iter += eLen;
 
         UINT32 nLen = 0;
         nLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
         iter += sizeof(UINT32);
 
-        std::copy(iter, iter+eLen, n.mArr.begin());
+        n.Init(&(*iter), nLen);
         iter += nLen;
 
-        ret = wc_RsaPublicKeyDecodeRaw(n.mArr.data(), n.mLen, e.mArr.data(), e.mLen, &key);
+        ret = wc_RsaPublicKeyDecodeRaw(n.Data(), n.Len(), e.Data(), e.Len(), &key);
         if (ret != 0)
         {
           return false;
@@ -216,16 +222,18 @@ class DH_KEXHandler : public SSH::IKEXHandler
       }
       //Generate shared secret
       MPInt k;
-      int ret = wc_DhAgree( &mPrivKey, k.mArr.data(), &k.mLen,
-                            mHandshake.x.mArr.data(), mHandshake.x.mLen,
-                            f.mArr.data(), f.mLen);
+      UINT32 kLen = 0;
+      int ret = wc_DhAgree( &mPrivKey, k.Data(), &kLen,
+                            mHandshake.x.Data(), mHandshake.x.Len(),
+                            f.Data(), f.Len());
       if (ret != 0)
       {
         return false;
       }
 
       //Hash shared secret
-      HashBuffer(k.mArr.data(), k.mLen);
+      k.SetLen(kLen);
+      HashBuffer(k.Data(), k.Len());
 
       //Get the result which should be the exchange hash value H
       UINT32 hLen = wc_HashGetDigestSize(mHashType);
