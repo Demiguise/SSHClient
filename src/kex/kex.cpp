@@ -1,7 +1,7 @@
 #include "kex.h"
 #include "dh_groups.h"
 #include "constants.h"
-#include "mpint.hpp"
+#include "mpint.h"
 #include "endian.h"
 
 //Temporarily include this win10 user settings, otherwise we encounter stack smashing

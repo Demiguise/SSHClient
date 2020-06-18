@@ -2,6 +2,7 @@ set(SRCS
   ssh.cpp
   ssh_impl.cpp
   packets.cpp
+  mpint.cpp
   name-list.cpp
   kex/kex.cpp
 )

@@ -3,7 +3,7 @@
 
 #include "ssh.h"
 #include "name-list.h"
-#include "mpint.hpp"
+#include "mpint.h"
 #include <vector>
 
 namespace SSH
