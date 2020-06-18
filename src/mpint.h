@@ -29,7 +29,9 @@ namespace SSH
     void Init(const Byte* pBuf, const int bufLen);
 
     Byte* Data() { return mArr.data(); }
-    UINT32 Len() { return mLen; }
+    const Byte* Data() const { return mArr.data(); }
+
+    UINT32 Len() const { return mLen; }
     void SetLen(UINT32 newLen) { mLen = newLen; }
 
     /*

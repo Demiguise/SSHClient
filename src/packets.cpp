@@ -118,6 +118,12 @@ UINT32 Packet::Remaining() const
   return mTotalPacketLen - (mIter - mPacket.begin());
 }
 
+void Packet::Reset()
+{
+  mIter = mPacket.begin();
+  std::fill(mIter, mPacket.end(), 0x00);
+}
+
 int Packet::Consume(const Byte* pBuf, const int numBytes)
 {
   //Get the number of bytes needed by this packet
@@ -159,6 +165,16 @@ int Packet::Write(const std::string data)
   UINT32 len = data.length();
   Write(len);
   std::memcpy(&(*mIter), data.data(), len);
+  mIter += len;
+  return len + sizeof(UINT32);
+}
+
+int Packet::Write(const MPInt data)
+{
+  UINT32 len = data.Len();
+  Write(len);
+
+  std::memcpy(&(*mIter), data.Data(), len);
   mIter += len;
   return len + sizeof(UINT32);
 }

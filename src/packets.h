@@ -63,6 +63,9 @@ namespace SSH
     //Convinience function for checking if the packet is ready
     bool Ready() const { return Remaining() == 0; }
 
+    //Clears the packet's payload and resets the iterator back to the beginning
+    void Reset();
+
     UINT32 GetSequenceNumber() const { return mSequenceNumber; }
 
     //Will copy the data from the pBuf into the underlying packet buffer
@@ -72,6 +75,7 @@ namespace SSH
     int Write(const int data); //Will be treated as a UINT32 when writing
     int Write(const UINT32 data);
     int Write(const std::string data);
+    int Write(const MPInt data);
     int Write(const Byte* pBuf, const int numBytes, const WriteMethod method = WriteMethod::WithLength);
 
     int Read(Byte& outData);
