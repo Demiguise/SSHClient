@@ -33,7 +33,8 @@ namespace SSH
     void SetLen(UINT32 newLen) { mLen = newLen; }
 
     /*
-      Use after filling the MPInt's data to handle all padding operations
+      Use after filling the MPInt's data to handle all padding operations.
+      Should be used when generating MPInts and not when reading them from buffers.
     */
     void Pad();
   };
