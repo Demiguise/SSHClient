@@ -7,6 +7,7 @@ add_executable(${TEST_TARGET}
 
   #All tests go below here
   mpint.test.cpp
+  name-list.test.cpp
 )
 
 add_test(
