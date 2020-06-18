@@ -43,7 +43,7 @@ TEST_CASE("MPInts handle RFC Test cases", "[MPInt]")
     //Make sure the packet wrote the whole field
     REQUIRE( pPacket->Write(testInt) == expectedSize + sizeof(UINT32) );
 
-    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize) == 0 );
+    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize + sizeof(UINT32)) == 0 );
   }
 
   SECTION("Padded MPint")
@@ -65,7 +65,7 @@ TEST_CASE("MPInts handle RFC Test cases", "[MPInt]")
     //Make sure the packet wrote the whole field
     REQUIRE( pPacket->Write(testInt) == expectedSize + sizeof(UINT32) );
 
-    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize) == 0 );
+    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize + sizeof(UINT32)) == 0 );
   }
 
   SECTION("Short negative MPint")
@@ -87,7 +87,7 @@ TEST_CASE("MPInts handle RFC Test cases", "[MPInt]")
     //Make sure the packet wrote the whole field
     REQUIRE( pPacket->Write(testInt) == expectedSize + sizeof(UINT32) );
 
-    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize) == 0 );
+    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize + sizeof(UINT32)) == 0 );
   }
 
   SECTION("Long negative MPint")
@@ -109,6 +109,6 @@ TEST_CASE("MPInts handle RFC Test cases", "[MPInt]")
     //Make sure the packet wrote the whole field
     REQUIRE( pPacket->Write(testInt) == expectedSize + sizeof(UINT32) );
 
-    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize) == 0 );
+    REQUIRE ( memcmp(expectedOut, pPacket->Payload(), expectedSize + sizeof(UINT32)) == 0 );
   }
 }
