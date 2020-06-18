@@ -1,7 +1,6 @@
 #include <catch2/catch.hpp>
 #include "mpint.h"
 #include "packets.h"
-#include "endian.h"
 
 using namespace SSH;
 
