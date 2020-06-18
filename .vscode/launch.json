@@ -8,7 +8,17 @@
           "name": "x64",
           "type": "cppvsdbg",
           "request": "launch",
-          "program": "${workspaceFolder}/bin/ssh.exe",
+          "program": "${workspaceFolder}/bin/ssh_harness.exe",
+          "args": [],
+          "stopAtEntry": false,
+          "environment": [],
+          "externalConsole": true
+      },
+      {
+          "name": "tests",
+          "type": "cppvsdbg",
+          "request": "launch",
+          "program": "${workspaceFolder}/bin/ssh_tests.exe",
           "args": [],
           "stopAtEntry": false,
           "environment": [],

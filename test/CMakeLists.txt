@@ -18,3 +18,8 @@ target_include_directories(${TEST_TARGET}
     ${PROJECT_SOURCE_DIR}/thirdparty/Catch2/single_include
     ${PROJECT_SOURCE_DIR}/src
 )
+
+set_target_properties(${TEST_TARGET} PROPERTIES
+  OUTPUT_NAME "ssh_tests"
+  RUNTIME_OUTPUT_DIRECTORY "${PROJECT_SOURCE_DIR}/bin"
+)
