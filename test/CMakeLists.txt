@@ -4,11 +4,12 @@ set(TEST_TARGET test)
 
 add_executable(${TEST_TARGET}
   main.cpp
+  mpint.test.cpp
 )
 
 add_test(
   NAME ${TEST_TARGET}
-  COMMAND ${TEST_TARGET}
+  COMMAND ${TEST_TARGET} -r console
 )
 
 target_link_libraries(${TEST_TARGET} SSH)
