@@ -260,7 +260,7 @@ int Packet::Read(TByteString& outData)
   UINT32 len = 0;
   Read(len);
   outData.resize(len);
-  Read(outData.data(), len);
+  return Read(outData.data(), len) + sizeof(UINT32);
 }
 
 UINT32 Packet::GetLength(const Byte* pBuf)
