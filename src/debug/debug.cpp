@@ -10,6 +10,7 @@ void SSH::DumpBufferToDisk(std::string fileName, const Byte* pBuf, const int buf
   std::ofstream ofs("dump/" + fileName);
 
   constexpr int columnLimit = 16;
+  ofs << "Name: " << fileName << std::endl;
   ofs << "Len: " << bufLen << std::endl;
   ofs << "Bytes : [" << std::endl << '\t' << std::hex;
 
