@@ -2,6 +2,11 @@
 
 using namespace SSH;
 
+MPInt::MPInt()
+{
+  std::fill(mArr.begin(), mArr.end(), 0);
+}
+
 void MPInt::Init(const Byte* pBuf, const int bufLen)
 {
   if (bufLen > sMAX_KEX_KEY_SIZE)

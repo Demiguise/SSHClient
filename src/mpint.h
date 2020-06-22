@@ -18,7 +18,7 @@ namespace SSH
     UINT32 mLen = 0;
 
   public:
-    MPInt() = default;
+    MPInt();
     ~MPInt() = default;
 
     /*
