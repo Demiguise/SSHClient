@@ -65,7 +65,13 @@ int main()
     SSH::Init();
 
     TSharedSock pSock = std::make_shared<WinSock>();
-    pSock->Connect("127.0.0.1", 22);
+    if (!pSock->Connect("127.0.0.1", 22))
+    {
+        while(true)
+        {}
+
+        return -1;
+    }
 
     SSH::TSendFunc sendFunc = [](SSH::TCtx ctx, const SSH::Byte* pBuf, const int bufLen) -> SSH::TResult {
         WinSock* pSock = (WinSock*)(ctx.lock().get());
