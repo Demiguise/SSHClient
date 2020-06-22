@@ -224,8 +224,9 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      //Hash shared secret
+      //Hash shared secret (Ensuring we make sure the data is padded)
       k.SetLen(kLen);
+      k.Pad();
       HashBuffer(k.Data(), k.Len());
 
       //Get the result which should be the exchange hash value H
