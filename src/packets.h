@@ -17,6 +17,8 @@ namespace SSH
   class Packet;
   using TPacket = std::shared_ptr<Packet>;
 
+  using TByteString = std::vector<Byte>;
+
   class Packet
   {
   protected:
@@ -85,6 +87,7 @@ namespace SSH
     int Read(NameList& outData);
     int Read(MPInt& outData);
     int Read(Byte* pOutBuf, int outBufLen);
+    int Read(TByteString& outData);
 
     /*
       Prepares the packet for sending, writing any additional header

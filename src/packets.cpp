@@ -255,6 +255,14 @@ int Packet::Read(Byte* pOutBuf, int bytesToRead)
   return bytesToRead;
 }
 
+int Packet::Read(TByteString& outData)
+{
+  UINT32 len = 0;
+  Read(len);
+  outData.resize(len);
+  Read(outData.data(), len);
+}
+
 UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);
