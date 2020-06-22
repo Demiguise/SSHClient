@@ -44,7 +44,7 @@ ExternalProject_Add(wolfSSL
   UPDATE_COMMAND ""
   INSTALL_COMMAND ""
   CONFIGURE_COMMAND ""
-  BUILD_COMMAND MSBuild /nologo /t:build wolfssl.vcxproj
+  BUILD_COMMAND MSBuild /nologo /t:build /p:Configuration=Debug /p:Platform=x64 wolfssl.vcxproj
   BUILD_IN_SOURCE TRUE
 )
 
