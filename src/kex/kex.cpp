@@ -274,8 +274,14 @@ class DH_KEXHandler : public SSH::IKEXHandler
         sigName.assign((char*)&(*iter), sigNameLen);
         iter += sigNameLen;
 
+        UINT32 sigLen = 0;
+        sigLen = swap_endian<uint32_t>(*(UINT32*)&(*iter));
+        iter += sizeof(UINT32);
+
+        UINT32 bytesRemaining = signature.end() - iter;
+
         ret = wc_SignatureVerify( mHashType, WC_SIGNATURE_TYPE_RSA_W_ENC,
-                                  h.data(), hLen, (Byte*)&(*iter), (signature.end() - iter),
+                                  h.data(), hLen, (Byte*)&(*iter), bytesRemaining,
                                   &key, sizeof(key));
         if (ret != 0)
         {
@@ -283,7 +289,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
         }
       }
 
-      return false;
+      return true;
     }
 };
 
