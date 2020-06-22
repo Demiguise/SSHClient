@@ -65,14 +65,14 @@ int main()
     SSH::Init();
 
     TSharedSock pSock = std::make_shared<WinSock>();
-    pSock->Connect("10.7.0.10", 22);
+    pSock->Connect("127.0.0.1", 22);
 
     SSH::TSendFunc sendFunc = [](SSH::TCtx ctx, const SSH::Byte* pBuf, const int bufLen) -> SSH::TResult {
         WinSock* pSock = (WinSock*)(ctx.lock().get());
         int result = send(pSock->Get(), (char*)pBuf, bufLen, 0);
         if (result == SOCKET_ERROR)
         {
-            printf("Failed to send data: %d\n", WSAGetLastError());
+            printf("Failed to send data: %u\n", WSAGetLastError());
             return {};
         }
 
@@ -84,7 +84,11 @@ int main()
         int result = recv(pSock->Get(), (char*)pBuf, bufLen, 0);
         if (result == SOCKET_ERROR)
         {
-            printf("Failed to send data: %d\n", WSAGetLastError());
+            UINT errCode = WSAGetLastError();
+            if (errCode != WSAENOTCONN)
+            {
+                printf("Failed to recv data: %u\n", errCode);
+            }
             return {};
         }
 
