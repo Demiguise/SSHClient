@@ -370,9 +370,15 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
   {
     if (pBuf[i] == LFbyte)
     {
+      std::string ident;
       if (pBuf[i - 1] != CRbyte)
       {
         Log(LogLevel::Warning, "ServerIdent did not use RFC standard <CR><LR> ending.");
+        ident.assign((char *)pBuf, i);
+      }
+      else
+      {
+        ident.assign((char *)pBuf, i-1);
       }
 
       if (i > maxBufLen)
@@ -382,7 +388,8 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
       };
 
       //Found the ending byte
-      serverIdent.assign((char *)pBuf, i);
+      serverIdent = ident;
+      break;
     }
   }
 
