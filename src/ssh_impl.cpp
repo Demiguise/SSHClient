@@ -563,9 +563,6 @@ void Client::Impl::Connect(const std::string pszUser)
 
   Log(LogLevel::Info, "Beginning to connect with user %s", pszUser.c_str());
 
-  Log(LogLevel::Debug, "Starting poll async call");
-  auto fut = std::async(std::launch::async, &Impl::Poll, this);
-
   Byte buf[512];
   int bytesWritten = snprintf((char*)buf, sizeof(buf), "%s", mClientKex.mIdent.c_str());
   buf[bytesWritten++] = CRbyte;
@@ -573,6 +570,9 @@ void Client::Impl::Connect(const std::string pszUser)
 
   Send(buf, bytesWritten);
   SetStage(ConStage::SentClientID);
+
+  Log(LogLevel::Debug, "Starting poll async call");
+  auto fut = std::async(std::launch::async, &Impl::Poll, this);
 }
 
 void Client::Impl::Disconnect()
