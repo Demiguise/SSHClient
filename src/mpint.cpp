@@ -20,6 +20,12 @@ void MPInt::Init(const Byte* pBuf, const int bufLen)
 
 void MPInt::Pad()
 {
+  if (bPadded)
+  {
+    //MPInts only need to be padded once
+    return;
+  }
+
   TIter iter = mArr.begin();
   TIter iterBegin = mArr.begin();
   TIter iterEnd = mArr.end();
@@ -78,4 +84,6 @@ void MPInt::Pad()
       *iterBegin = 0x00;
     }
   }
+
+  bPadded = true;
 }
