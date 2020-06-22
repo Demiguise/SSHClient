@@ -1,6 +1,8 @@
 #include "ssh.h"
 #include "ssh_impl.h"
 
+#define WOLFCRYPT_ONLY
+#include <IDE/WIN10/user_settings.h>
 #include <wolfssl/wolfcrypt/wc_port.h>
 
 using namespace SSH;

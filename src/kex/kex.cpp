@@ -5,6 +5,7 @@
 #include "endian.h"
 
 //Temporarily include this win10 user settings, otherwise we encounter stack smashing
+#define WOLFCRYPT_ONLY
 #include <IDE/WIN10/user_settings.h>
 #include <wolfssl/wolfcrypt/dh.h>
 #include <wolfssl/wolfcrypt/rsa.h>
