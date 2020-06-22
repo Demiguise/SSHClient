@@ -140,7 +140,7 @@
                 "clear": true
             },
             "windows": {
-                "command": "rm -rf bld/",
+                "command": "DEL /Q bld/",
             },
             "linux": {
                 "command": ""
