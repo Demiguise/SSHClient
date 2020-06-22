@@ -45,7 +45,7 @@ public:
         int result = connect(mSock, (SOCKADDR*)&srvInfo, sizeof(srvInfo));
         if (result == SOCKET_ERROR)
         {
-            printf("Failed to connect socket to remote server: %ld\n", WSAGetLastError());
+            printf("Failed to connect socket to remote server: %u\n", WSAGetLastError());
             return false;
         }
 
@@ -60,7 +60,7 @@ using TSharedSock = std::shared_ptr<WinSock>;
 int main()
 {
     WSADATA wsaData = { 0 };
-    int result = WSAStartup(MAKEWORD(2, 2), &wsaData);
+    WSAStartup(MAKEWORD(2, 2), &wsaData);
 
     SSH::Init();
 
