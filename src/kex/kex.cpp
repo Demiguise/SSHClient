@@ -176,8 +176,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
       HashBuffer(client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
       HashBuffer(server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
-      DUMP_BUFFER("client_kex", client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
-      DUMP_BUFFER("server_kex", server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
+      DUMP_BUFFER("client_kexInit", client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
+      DUMP_BUFFER("server_kexInit", server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
       //Hash server's HostKey data (The entire buffer)
       HashBuffer(keyCerts.data(), keyCerts.size());

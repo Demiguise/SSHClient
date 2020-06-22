@@ -5,7 +5,7 @@
 
 namespace SSH
 {
-  void DumpBufferToDisk(std::string fileName, const Byte* pBuf, const int bufLen);
+  void DumpBufferToDisk(std::string fileName, const Byte* pBuf, const UINT32 bufLen);
 }
 
 #ifdef DBG_DUMP_BUFFER
