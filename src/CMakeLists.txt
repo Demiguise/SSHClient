@@ -14,6 +14,16 @@ set(SSH_Debug_Defines
   _DEBUG
 )
 
+if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+  list(APPEND SRCS debug/debug.cpp)
+
+  if(SSH_DUMP_BUFFERS)
+    list(APPEND SSH_Debug_Defines DBG_DUMP_BUFFER)
+  endif()
+endif()
+
+message(${SSH_Debug_Defines})
+
 set(SSH_Common_Options
 )
 

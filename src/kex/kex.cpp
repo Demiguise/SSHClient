@@ -14,6 +14,9 @@
 
 using namespace SSH;
 
+#ifdef _DEBUG
+#include "debug/debug.h"
+#endif
 
 class DH_KEXHandler : public SSH::IKEXHandler
 {
@@ -100,6 +103,12 @@ class DH_KEXHandler : public SSH::IKEXHandler
       mHandshake.x.SetLen(xLen);
       mHandshake.e.SetLen(eLen);
 
+      mHandshake.x.Pad();
+      mHandshake.e.Pad();
+
+      DUMP_BUFFER("x", mHandshake.x.Data(), mHandshake.x.Len());
+      DUMP_BUFFER("e", mHandshake.e.Data(), mHandshake.e.Len());
+
       //DH Key information now ready, setup hash
       switch (group)
       {
@@ -160,16 +169,26 @@ class DH_KEXHandler : public SSH::IKEXHandler
       HashBuffer((Byte*)client.mIdent.c_str(), client.mIdent.length());
       HashBuffer((Byte*)server.mIdent.c_str(), server.mIdent.length());
 
+      DUMP_BUFFER("client_ident", (Byte*)client.mIdent.c_str(), client.mIdent.length());
+      DUMP_BUFFER("server_ident", (Byte*)server.mIdent.c_str(), server.mIdent.length());
+
       //Hash KEXInit packets
       HashBuffer(client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
       HashBuffer(server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
+      DUMP_BUFFER("client_kex", client.mKEXInit->Payload(), client.mKEXInit->PayloadLen());
+      DUMP_BUFFER("server_kex", server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
+
       //Hash server's HostKey data (The entire buffer)
       HashBuffer(keyCerts.data(), keyCerts.size());
+
+      DUMP_BUFFER("keyCerts", keyCerts.data(), keyCerts.size());
 
       //Hash MPInts e (client's) and f (server's)
       HashBuffer(mHandshake.e.Data(), mHandshake.e.Len());
       HashBuffer(f.Data(), f.Len());
+
+      DUMP_BUFFER("f", f.Data(), f.Len());
 
       //Decode server's host key
       RsaKey key;
@@ -229,6 +248,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
       k.Pad();
       HashBuffer(k.Data(), k.Len());
 
+      DUMP_BUFFER("k", k.Data(), k.Len());
+
       //Get the result which should be the exchange hash value H
       UINT32 hLen = wc_HashGetDigestSize(mHashType);
       std::vector<Byte> h(hLen);
@@ -237,6 +258,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
       {
         return false;
       }
+
+      DUMP_BUFFER("h", h.data(), hLen);
 
       //Now we can verify our exchange hash with the server's signature
       {
