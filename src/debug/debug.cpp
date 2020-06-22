@@ -22,7 +22,7 @@ void SSH::DumpBufferToDisk(std::string fileName, const Byte* pBuf, const int buf
       ofs << std::endl << '\t';
     }
 
-    ofs << std::setfill('0') << std::setw(2) << (int)pBuf[i] << ", ";
+    ofs << "0x" << std::setfill('0') << std::setw(2) << (int)pBuf[i] << ", ";
   }
 
   ofs << std::endl << "]" << std::endl;
