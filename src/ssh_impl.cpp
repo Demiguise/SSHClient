@@ -181,6 +181,13 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
       return 0;
     }
 
+    if (sentBytes.value() == -1)
+    {
+      //User's send function has signalled a failure to send, simply disconnect to stop all further traffic.
+      Disconnect();
+      return 0;
+    }
+
     Log(LogLevel::Debug, "Packet (%d) sent %d bytes", pPacket->GetSequenceNumber(), sentBytes.value());
     return sentBytes.value();
   });
@@ -223,6 +230,13 @@ void Client::Impl::Poll()
     {
       //No data received, nothing to do.
       continue;
+    }
+
+    if (recievedBytes.value() == -1)
+    {
+      //User's recv function has signalled a failure to recv, simply disconnect to stop all further traffic.
+      Disconnect();
+      return;
     }
 
     /*
