@@ -65,7 +65,7 @@ int main()
     SSH::Init();
 
     TSharedSock pSock = std::make_shared<WinSock>();
-    if (!pSock->Connect("127.0.0.1", 22))
+    if (!pSock->Connect("127.0.0.1", 11111))
     {
         while(true)
         {}
@@ -79,7 +79,7 @@ int main()
         if (result == SOCKET_ERROR)
         {
             printf("Failed to send data: %u\n", WSAGetLastError());
-            return {};
+            return -1;
         }
 
         return result;
@@ -95,7 +95,7 @@ int main()
             {
                 printf("Failed to recv data: %u\n", errCode);
             }
-            return {};
+            return -1;
         }
 
         return result;
