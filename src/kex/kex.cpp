@@ -148,21 +148,13 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      UINT32 keyCertLen;
-      std::vector<Byte> keyCerts;
+      TByteString keyCerts;
       MPInt f;
-      UINT32 signatureLen;
-      std::vector<Byte> signature;
+      TByteString signature;
 
-      pDHReply->Read(keyCertLen);
-      keyCerts.resize(keyCertLen);
-      pDHReply->Read(keyCerts.data(), keyCertLen);
-
+      pDHReply->Read(keyCerts);
       pDHReply->Read(f);
-
-      pDHReply->Read(signatureLen);
-      signature.resize(signatureLen);
-      pDHReply->Read(signature.data(), signatureLen);
+      pDHReply->Read(signature);
 
       //Hash identifiers
       HashBuffer((Byte*)client.mIdent.c_str(), client.mIdent.length());
@@ -173,7 +165,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
       HashBuffer(server.mKEXInit->Payload(), server.mKEXInit->PayloadLen());
 
       //Hash server's HostKey data (The entire buffer)
-      HashBuffer(keyCerts.data(), keyCertLen);
+      HashBuffer(keyCerts.data(), keyCerts.size());
 
       //Hash MPInts e (client's) and f (server's)
       HashBuffer(mHandshake.e.Data(), mHandshake.e.Len());
