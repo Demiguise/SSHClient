@@ -615,7 +615,7 @@ bool Client::Impl::ReceiveNewKeys(TPacket pPacket)
 
 void Client::Impl::SendNewKeys()
 {
-  TPacket pPacket = Packet::Create(1);
+  TPacket pPacket = mPacketStore.Create(1);
   pPacket->Write(SSH_MSG::NEWKEYS);
   Queue(pPacket);
 }
