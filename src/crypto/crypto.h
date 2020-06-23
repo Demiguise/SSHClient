@@ -12,10 +12,22 @@ namespace SSH
     AES128_CTR
   };
 
+  class IEncryptionHandler
+  {
+  public:
+    virtual ~IEncryptionHandler() {}
+    virtual void SetKey(const Byte* pBuf, const int bufLen) = 0;
+    virtual bool Encrypt(const Byte* pBuf, const int bufLen) = 0;
+    virtual bool Decrypt(const Byte* pBuf, const int bufLen) = 0;
+  };
+
+  using TEncryptHandler = std::shared_ptr<IEncryptionHandler>;
 
   namespace Crypto
   {
     void PopulateNamelist(NameList& list);
+
+    TEncryptHandler Create(EncryptionHandlers handler);
   }
 }
 
