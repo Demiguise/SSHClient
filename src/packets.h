@@ -26,6 +26,8 @@ namespace SSH
     class Token {};
 
   private:
+    friend class PacketStore;
+
     using TPacketBytes = std::vector<Byte>;
     using TPacketIter = TPacketBytes::iterator;
     TPacketBytes mPacket;
@@ -50,11 +52,6 @@ namespace SSH
     using TSendFunc = std::function<int (const Byte*, const int)>;
 
     explicit Packet(Token);
-
-    //Factory functions
-    static TPacket Create(int payloadLen);
-    static std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
-    static TPacket Copy(TPacket pPacket);
 
     //Pointer to the beginning of the payload
     const Byte* const Payload() const;
@@ -105,6 +102,19 @@ namespace SSH
     void PrepareRead();
 
     int Send(TSendFunc sendFunc);
+  };
+
+  /*
+    Handles all aspects of creating, copying, freeing packets for a given SSH connection.
+    In addition, users must set the encryption/mac handlers on the packetstore so packets may
+    be correctly encrypted after the newkeys message.
+  */
+  class PacketStore
+  {
+  public:
+    TPacket Create(int payloadLen);
+    std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
+    TPacket Copy(TPacket pPacket);
   };
 }
 

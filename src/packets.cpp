@@ -16,93 +16,6 @@ constexpr static int minPaddingSize = 4; //RFC states there should be a minimum 
 
 Packet::Packet(Token t) {}
 
-std::shared_ptr<Packet> Packet::Create(int payloadLen)
-{
-  auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
-
-  /*
-    Figure out how much padding we need.
-    TODO: Take into account the MAC length here
-  */
-  pPacket->mTotalPacketLen =  sizeof(UINT32) +  //packet_length
-                              sizeof(Byte) +    //padding_length
-                              payloadLen;       //payload
-
-  /*
-    Now figure out how much padding we need.
-    Forcing multiple of 8 until we have block ciphers.
-  */
-  UINT32 padding = (8 - (pPacket->mTotalPacketLen % 8));
-  if (padding < minPaddingSize)
-  {
-    //Simple way to ensure we have our minimum
-    padding += 8;
-  }
-
-  pPacket->mTotalPacketLen += padding;
-  pPacket->mPaddingLen = padding;
-  pPacket->mPayloadLen = payloadLen;
-
-  //PacketLen is payload + padding + 1 byte for the padding_length field
-  pPacket->mPacketLen = payloadLen + pPacket->mPaddingLen + sizeof(Byte);
-  pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
-  pPacket->mPacket.resize(pPacket->mTotalPacketLen);
-
-  pPacket->mIter = pPacket->mPacket.begin();
-
-  //We can immediately write the packet and padding length here
-  pPacket->Write(pPacket->mPacketLen);
-  pPacket->Write((Byte)pPacket->mPaddingLen);
-
-  return pPacket;
-}
-
-std::pair<TPacket, int> Packet::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber)
-{
-  if (numBytes < payloadOffset)
-  {
-    //We need a minimum of 5 bytes for the packet and padding length
-    return {nullptr, 0};
-  }
-
-  auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
-
-  /*
-    packetLen does NOT include the MAC or the packetLen field itself.
-    When copying the buffer data into our packet, we will want to take this into account
-    via the fullPacketLen field.
-  */
-  const Byte* pIter = pBuf;
-  UINT32 packetLen = GetLength(pIter);
-  pPacket->mTotalPacketLen = packetLen + sizeof(UINT32);
-  pPacket->mPacketLen = packetLen;
-  pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
-  pPacket->mPacket.resize(pPacket->mTotalPacketLen);
-
-  pIter += sizeof(UINT32);
-  UINT32 paddingLen = *(pIter);
-  pPacket->mPaddingLen = paddingLen;
-  pPacket->mPayloadLen = (packetLen - paddingLen - sizeof(Byte));
-
-  UINT32 bytesToConsume = std::min(pPacket->mTotalPacketLen, numBytes);
-  std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
-
-  pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
-
-  pPacket->mSequenceNumber = seqNumber;
-
-  return {pPacket, bytesToConsume};
-}
-
-TPacket Packet::Copy(TPacket pPacket)
-{
-  TPacket pNewPacket = Create(pPacket->mPayloadLen);
-  std::copy(pPacket->mPacket.begin(), pPacket->mPacket.end(), pNewPacket->mPacket.begin());
-  pNewPacket->mIter = pNewPacket->mPacket.begin() + (pPacket->mIter - pPacket->mPacket.begin());
-  pNewPacket->mSequenceNumber = pPacket->mSequenceNumber;
-  return pNewPacket;
-}
-
 const Byte* const Packet::Payload() const
 {
   return &mPacket[payloadOffset];
@@ -292,4 +205,91 @@ int Packet::Send(TSendFunc sendFunc)
   auto bytesSent = sendFunc(&(*mIter), Remaining());
   mIter += bytesSent;
   return bytesSent;
+}
+
+std::shared_ptr<Packet> PacketStore::Create(int payloadLen)
+{
+  auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
+
+  /*
+    Figure out how much padding we need.
+    TODO: Take into account the MAC length here
+  */
+  pPacket->mTotalPacketLen =  sizeof(UINT32) +  //packet_length
+                              sizeof(Byte) +    //padding_length
+                              payloadLen;       //payload
+
+  /*
+    Now figure out how much padding we need.
+    Forcing multiple of 8 until we have block ciphers.
+  */
+  UINT32 padding = (8 - (pPacket->mTotalPacketLen % 8));
+  if (padding < minPaddingSize)
+  {
+    //Simple way to ensure we have our minimum
+    padding += 8;
+  }
+
+  pPacket->mTotalPacketLen += padding;
+  pPacket->mPaddingLen = padding;
+  pPacket->mPayloadLen = payloadLen;
+
+  //PacketLen is payload + padding + 1 byte for the padding_length field
+  pPacket->mPacketLen = payloadLen + pPacket->mPaddingLen + sizeof(Byte);
+  pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
+  pPacket->mPacket.resize(pPacket->mTotalPacketLen);
+
+  pPacket->mIter = pPacket->mPacket.begin();
+
+  //We can immediately write the packet and padding length here
+  pPacket->Write(pPacket->mPacketLen);
+  pPacket->Write((Byte)pPacket->mPaddingLen);
+
+  return pPacket;
+}
+
+std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber)
+{
+  if (numBytes < payloadOffset)
+  {
+    //We need a minimum of 5 bytes for the packet and padding length
+    return {nullptr, 0};
+  }
+
+  auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
+
+  /*
+    packetLen does NOT include the MAC or the packetLen field itself.
+    When copying the buffer data into our packet, we will want to take this into account
+    via the fullPacketLen field.
+  */
+  const Byte* pIter = pBuf;
+  UINT32 packetLen = Packet::GetLength(pIter);
+  pPacket->mTotalPacketLen = packetLen + sizeof(UINT32);
+  pPacket->mPacketLen = packetLen;
+  pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
+  pPacket->mPacket.resize(pPacket->mTotalPacketLen);
+
+  pIter += sizeof(UINT32);
+  UINT32 paddingLen = *(pIter);
+  pPacket->mPaddingLen = paddingLen;
+  pPacket->mPayloadLen = (packetLen - paddingLen - sizeof(Byte));
+
+  UINT32 bytesToConsume = std::min(pPacket->mTotalPacketLen, numBytes);
+  std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
+
+  pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
+
+  pPacket->mSequenceNumber = seqNumber;
+
+  return {pPacket, bytesToConsume};
+}
+
+TPacket PacketStore::Copy(TPacket pPacket)
+{
+  TPacket pNewPacket = Create(pPacket->mPayloadLen);
+  std::copy(pPacket->mPacket.begin(), pPacket->mPacket.end(), pNewPacket->mPacket.begin());
+  pNewPacket->mIter = pNewPacket->mPacket.begin() + (pPacket->mIter - pPacket->mPacket.begin());
+  pNewPacket->mSequenceNumber = pPacket->mSequenceNumber;
+  return pNewPacket;
 }

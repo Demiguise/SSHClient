@@ -462,7 +462,7 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 
   while (bytesRemaining >= 4)
   {
-    auto [pNewPacket, bytesConsumed] = Packet::Create(pIter, bytesRemaining, mSequenceNumber);
+    auto [pNewPacket, bytesConsumed] = mPacketStore.Create(pIter, bytesRemaining, mSequenceNumber);
     if (!pNewPacket)
     {
       Log(LogLevel::Error, "Failed to allocate packet (%d)!", mSequenceNumber);
@@ -515,7 +515,7 @@ bool Client::Impl::ReceiveServerKEXInit(TPacket pPacket)
 
   //TODO: Do some processing here to pick the right algorithms to initialise
 
-  mServerKex.mKEXInit = Packet::Copy(pPacket);
+  mServerKex.mKEXInit = mPacketStore.Copy(pPacket);
 
   return true;
 }
@@ -538,7 +538,7 @@ void Client::Impl::SendClientKEXInit()
                      sizeof(Byte) +
                      sizeof(UINT32);
 
-  auto pClientDataPacket = Packet::Create(requiredSize);
+  auto pClientDataPacket = mPacketStore.Create(requiredSize);
 
   pClientDataPacket->Write(SSH_MSG::KEXINIT);
 
@@ -562,7 +562,7 @@ void Client::Impl::SendClientKEXInit()
 
   Queue(pClientDataPacket);
 
-  mClientKex.mKEXInit = Packet::Copy(pClientDataPacket);
+  mClientKex.mKEXInit = mPacketStore.Copy(pClientDataPacket);
 
   SetStage(ConStage::SentClientKEXInit);
 }
@@ -570,7 +570,7 @@ void Client::Impl::SendClientKEXInit()
 void Client::Impl::SendClientDHInit()
 {
   mKEXHandler = KEX::CreateDH(DHGroups::G_14);
-  auto pKEXInitPacket = mKEXHandler->CreateInitPacket();
+  auto pKEXInitPacket = mKEXHandler->CreateInitPacket(mPacketStore);
   if (!pKEXInitPacket)
   {
     Log(LogLevel::Error, "Failed to create DH init packet");

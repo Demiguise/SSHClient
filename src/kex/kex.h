@@ -42,7 +42,7 @@ namespace SSH
       IKEXHandler() = default;
       virtual ~IKEXHandler() = default;
 
-      virtual TPacket CreateInitPacket() = 0;
+      virtual TPacket CreateInitPacket(PacketStore& store) = 0;
       virtual bool VerifyReply(KEXData& server, KEXData& client, TPacket pDHReply) = 0;
   };
 

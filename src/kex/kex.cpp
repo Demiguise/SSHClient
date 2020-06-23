@@ -129,7 +129,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
       return true;
     }
 
-    TPacket CreateInitPacket() override
+    TPacket CreateInitPacket(PacketStore& store) override
     {
       mHandshake.e.Pad();
 
@@ -138,7 +138,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
                       sizeof(UINT32) + //Length
                       mHandshake.e.Len();
 
-      auto pPacket = Packet::Create(packetLen);
+      TPacket pPacket = store.Create(packetLen);
 
       pPacket->Write((Byte)SSH_MSG::KEXDH_INIT);
       pPacket->Write(mHandshake.e.Data(), mHandshake.e.Len());

@@ -7,7 +7,8 @@ using namespace SSH;
 TEST_CASE("Namelists handle RFC Test cases", "[NameLists]")
 {
   constexpr int packetLen = 128;
-  TPacket pPacket = Packet::Create(packetLen);
+  PacketStore store;
+  TPacket pPacket = store.Create(packetLen);
 
   SECTION("Empty List")
   {

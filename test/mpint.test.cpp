@@ -8,7 +8,8 @@ TEST_CASE("MPInts handle RFC Test cases", "[MPInt]")
 {
   MPInt testInt;
   constexpr int packetLen = 128;
-  TPacket pPacket = Packet::Create(packetLen);
+  PacketStore store;
+  TPacket pPacket = store.Create(packetLen);
 
   SECTION("Zero sized MPInt")
   {
