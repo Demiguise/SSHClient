@@ -22,8 +22,6 @@ if (${CMAKE_BUILD_TYPE} STREQUAL "Debug")
   endif()
 endif()
 
-message(${SSH_Debug_Defines})
-
 set(SSH_Common_Options
 )
 
