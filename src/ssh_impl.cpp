@@ -452,7 +452,7 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
     UINT32 bytesNeeded = pPacket->Remaining();
     if (bytesNeeded == 0)
     {
-      Log(LogLevel::Info, "Queued packet (%d) is now ready!", pPacket->GetSequenceNumber());
+      Log(LogLevel::Info, "Queued packet (%d) [Payload: %u] is now ready!", pPacket->GetSequenceNumber(), pPacket->PayloadLen());
     }
     else
     {
