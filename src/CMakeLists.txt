@@ -5,6 +5,7 @@ set(SRCS
   mpint.cpp
   name-list.cpp
   kex/kex.cpp
+  crypto/crypto.cpp
 )
 
 set(SSH_Common_Defines

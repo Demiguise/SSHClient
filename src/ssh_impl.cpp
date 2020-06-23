@@ -1,7 +1,7 @@
 #include "ssh_impl.h"
 #include "endian.h"
 #include "constants.h"
-
+#include "crypto/crypto.h"
 
 #include <stdarg.h>
 #include <future>
@@ -75,8 +75,8 @@ Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   mClientKex.mAlgorithms.mServerHost.Add("ssh-rsa");
 
   //Forcing only aes128-ctr for the moment
-  mClientKex.mAlgorithms.mEncryption.mClientToServer.Add("aes128-ctr");
-  mClientKex.mAlgorithms.mEncryption.mServerToClient.Add("aes128-ctr");
+  Crypto::PopulateNamelist(mClientKex.mAlgorithms.mEncryption.mClientToServer);
+  Crypto::PopulateNamelist(mClientKex.mAlgorithms.mEncryption.mServerToClient);
 
   //Forcing only hmac-sha2-256 for the moment
   mClientKex.mAlgorithms.mMAC.mClientToServer.Add("hmac-sha2-256");
