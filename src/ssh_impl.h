@@ -24,6 +24,7 @@ namespace SSH
     SentClientDHInit,
     ReceivedServerDHReply,
     ReceivedNewKeys,
+    SentNewKeys,
     SentServiceRequest,
 
     //Authentication Stages
@@ -82,6 +83,8 @@ namespace SSH
     bool ReceiveServerKEXInit(TPacket pPacket);
     void SendClientDHInit();
     bool ReceiveServerDHReply(TPacket pPacket);
+    bool ReceiveNewKeys(TPacket pPacket);
+    void SendNewKeys();
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

@@ -49,7 +49,9 @@ std::string SSH::StageToString(ConStage stage)
     case ConStage::SentClientKEXInit: return "SentClientKEXInit";
     case ConStage::ReceivedServerKEXInit: return "ReceivedServerKEXInit";
     case ConStage::SentClientDHInit: return "SentClientDHInit";
+    case ConStage::ReceivedServerDHReply: return "RecievedServerDHReply";
     case ConStage::ReceivedNewKeys: return "ReceivedNewKeys";
+    case ConStage::SentNewKeys: return "SentNewKeys";
     case ConStage::SentServiceRequest: return "SentServiceRequest";
     default: return "Unknown";
   }
@@ -333,6 +335,30 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         SetStage(ConStage::ReceivedServerDHReply);
         break; //Allow for more packets to be handled
       }
+      case ConStage::ReceivedServerDHReply:
+      {
+        //Now expecting to recieve a NewKeys message
+        if (!ReceiveNewKeys(pPacket))
+        {
+          Disconnect();
+          return;
+        }
+
+        SetStage(ConStage::ReceivedNewKeys);
+        [[fallthrough]];
+      }
+      case ConStage::ReceivedNewKeys:
+      {
+        //Send our new keys message
+        SendNewKeys();
+        SetStage(ConStage::SentNewKeys);
+        [[fallthrough]];
+      }
+      case ConStage::SentNewKeys:
+      {
+        //Send the service request
+        break;
+      }
       default:
       {
         Log(LogLevel::Warning, "Unhandled data for (%s) state", StateToString(mState));
@@ -561,7 +587,32 @@ bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
     return false;
   }
 
-  return false;
+  Log(LogLevel::Info, "Verified ServerDHReply");
+  return true;
+}
+
+bool Client::Impl::ReceiveNewKeys(TPacket pPacket)
+{
+  Byte msgId;
+
+  //Verify this is a NewKeys packet
+  pPacket->Read(msgId);
+  if (msgId != SSH_MSG::NEWKEYS)
+  {
+    Log(LogLevel::Error, "Expected NEWKEYS message ID but got %u instead", msgId);
+    return false;
+  }
+
+  Log(LogLevel::Info, "Received NewKeys message");
+
+  return true;
+}
+
+void Client::Impl::SendNewKeys()
+{
+  TPacket pPacket = Packet::Create(1);
+  pPacket->Write(SSH_MSG::NEWKEYS);
+  Queue(pPacket);
 }
 
 void Client::Impl::Connect(const std::string pszUser)
