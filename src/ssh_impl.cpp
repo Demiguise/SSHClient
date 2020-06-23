@@ -437,14 +437,16 @@ bool Client::Impl::ReceiveServerIdent(const Byte* pBuf, const int bufLen)
 int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 {
   int bytesRemaining = bufLen;
+  const Byte* pIter = pBuf;
 
   //Packets in the rear of the recvQueue get first dibs on any new data
   if (!mRecvQueue.empty())
   {
     TPacket pPacket = mRecvQueue.back();
 
-    int bytesConsumed = pPacket->Consume(pBuf, bufLen);
+    int bytesConsumed = pPacket->Consume(pIter, bufLen);
     bytesRemaining -= bytesConsumed;
+    pIter += bytesConsumed;
     Log(LogLevel::Info, "Packet (%d) consumed an additional [%d] bytes", pPacket->GetSequenceNumber(), bytesConsumed);
 
     UINT32 bytesNeeded = pPacket->Remaining();
@@ -460,7 +462,7 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 
   while (bytesRemaining >= 4)
   {
-    auto [pNewPacket, bytesConsumed] = Packet::Create(pBuf, bufLen, mSequenceNumber);
+    auto [pNewPacket, bytesConsumed] = Packet::Create(pIter, bytesRemaining, mSequenceNumber);
     if (!pNewPacket)
     {
       Log(LogLevel::Error, "Failed to allocate packet (%d)!", mSequenceNumber);
@@ -469,6 +471,7 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 
     mSequenceNumber++;
     bytesRemaining -= bytesConsumed;
+    pIter += bytesConsumed;
 
     mRecvQueue.push(pNewPacket);
 
@@ -479,6 +482,8 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
       Log(LogLevel::Debug, "Packet (%d) is waiting on [%d] bytes.", pNewPacket->GetSequenceNumber(), bytesNeeded);
       break;
     }
+
+    Log(LogLevel::Info, "Packet (%d) [Payload: %u] now ready", pNewPacket->GetSequenceNumber(), pNewPacket->PayloadLen());
   }
 
   return bufLen - bytesRemaining;
