@@ -1,5 +1,13 @@
 #include "crypto.h"
 
+#define WOLFCRYPT_ONLY
+#define WOLFSSL_LIB
+#define WOLFSSL_AES_COUNTER
+#include <IDE/WIN10/user_settings.h>
+#include <wolfssl/wolfcrypt/aes.h>
+
+#include <string.h> //memset
+
 using namespace SSH;
 
 void Crypto::PopulateNamelist(NameList& list)
@@ -12,15 +20,17 @@ class NoneHandler : public IEncryptionHandler
 public:
   NoneHandler() = default;
 
-  virtual void SetKey(const Byte* pBuf, const int bufLen) override
-  {}
-
-  virtual bool Encrypt(const Byte* pBuf, const int bufLen) override
+  virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) override
   {
     return true;
   }
 
-  virtual bool Decrypt(const Byte* pBuf, const int bufLen) override
+  virtual bool Encrypt(Byte* pBuf, const int bufLen) override
+  {
+    return true;
+  }
+
+  virtual bool Decrypt(Byte* pBuf, const int bufLen) override
   {
     return true;
   }
@@ -28,21 +38,52 @@ public:
 
 class AES128_CTRHandler : public IEncryptionHandler
 {
+private:
+  Aes mKey;
+
 public:
-  AES128_CTRHandler() = default;
-
-  virtual void SetKey(const Byte* pBuf, const int bufLen) override
+  AES128_CTRHandler()
   {
-
+    memset(&mKey, 0, sizeof(Aes));
   }
 
-  virtual bool Encrypt(const Byte* pBuf, const int bufLen) override
+  ~AES128_CTRHandler()
   {
+    memset(&mKey, 0, sizeof(Aes));
+  }
+
+  virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) override
+  {
+    int ret = wc_AesGcmSetKey(&mKey, pKeyBuf, keyLen);
+    if (ret != 0)
+    {
+      return false;
+    }
+
     return true;
   }
 
-  virtual bool Decrypt(const Byte* pBuf, const int bufLen) override
+  virtual bool Encrypt(Byte* pBuf, const int bufLen) override
   {
+    //AES uses encrypt call for both encryption and decryption
+    int ret = wc_AesCtrEncrypt(&mKey, pBuf, pBuf, bufLen);
+    if (ret != 0)
+    {
+      return false;
+    }
+
+    return true;
+  }
+
+  virtual bool Decrypt(Byte* pBuf, const int bufLen) override
+  {
+    //AES uses encrypt call for both encryption and decryption
+    int ret = wc_AesCtrEncrypt(&mKey, pBuf, pBuf, bufLen);
+    if (ret != 0)
+    {
+      return false;
+    }
+
     return true;
   }
 };

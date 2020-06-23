@@ -16,9 +16,9 @@ namespace SSH
   {
   public:
     virtual ~IEncryptionHandler() {}
-    virtual void SetKey(const Byte* pBuf, const int bufLen) = 0;
-    virtual bool Encrypt(const Byte* pBuf, const int bufLen) = 0;
-    virtual bool Decrypt(const Byte* pBuf, const int bufLen) = 0;
+    virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) = 0;
+    virtual bool Encrypt(Byte* pBuf, const int bufLen) = 0;
+    virtual bool Decrypt(Byte* pBuf, const int bufLen) = 0;
   };
 
   using TEncryptHandler = std::shared_ptr<IEncryptionHandler>;
