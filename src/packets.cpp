@@ -147,6 +147,11 @@ int Packet::Write(const Byte data)
   return sizeof(Byte);
 }
 
+int Packet::Write(const SSH_MSG data)
+{
+  return Write((Byte)data);
+}
+
 int Packet::Write(const int data)
 {
   return Write((UINT32)data);

@@ -540,7 +540,7 @@ void Client::Impl::SendClientKEXInit()
 
   auto pClientDataPacket = Packet::Create(requiredSize);
 
-  pClientDataPacket->Write((Byte)SSH_MSG::KEXINIT);
+  pClientDataPacket->Write(SSH_MSG::KEXINIT);
 
   Byte cookie[cKexCookieLength]; //TODO: Randomize this
   memset(cookie, 0xBE, cKexCookieLength);

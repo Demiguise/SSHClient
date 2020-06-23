@@ -4,6 +4,7 @@
 #include "ssh.h"
 #include "name-list.h"
 #include "mpint.h"
+#include "constants.h"
 #include <vector>
 
 namespace SSH
@@ -74,6 +75,7 @@ namespace SSH
     int Consume(const Byte* pBuf, const int numBytes);
 
     int Write(const Byte data);
+    int Write(const SSH_MSG data);
     int Write(const int data); //Will be treated as a UINT32 when writing
     int Write(const UINT32 data);
     int Write(const std::string data);
