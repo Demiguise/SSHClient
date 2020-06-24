@@ -106,6 +106,7 @@ namespace SSH
     bool ReceiveServerDHReply(TPacket pPacket);
     bool ReceiveNewKeys(TPacket pPacket);
     void SendNewKeys();
+    void SendServiceRequest();
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

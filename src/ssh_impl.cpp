@@ -357,6 +357,8 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       case ConStage::SentNewKeys:
       {
         //Send the service request
+        SendServiceRequest();
+        SetStage(ConStage::SentServiceRequest);
         break;
       }
       default:
@@ -704,6 +706,17 @@ void Client::Impl::SendNewKeys()
 
   mPacketStore.SetEncryptionHandler(newHandler);
   Log(LogLevel::Info, "Set new Encryption Handler");
+}
+
+void Client::Impl::SendServiceRequest()
+{
+  std::string userAuth = "ssh-userauth";
+  TPacket pPacket = mPacketStore.Create(userAuth.length() + sizeof(Byte), PacketType::Write);
+
+  pPacket->Write(SSH_MSG::SERVICE_REQUEST);
+  pPacket->Write(userAuth);
+
+  Queue(pPacket);
 }
 
 void Client::Impl::Connect(const std::string pszUser)
