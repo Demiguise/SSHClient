@@ -5,6 +5,7 @@
 #include "name-list.h"
 #include "mpint.h"
 #include "constants.h"
+#include "crypto/crypto.h"
 #include <vector>
 
 namespace SSH
@@ -41,6 +42,10 @@ namespace SSH
     UINT32 mSequenceNumber = 0;
 
     static UINT32 GetLength(const Byte* pBuf);
+
+    //Set by the packet store on creation
+    TCryptoHandler mEncryptor;
+    TCryptoHandler mDecryptor;
 
   public:
     enum class WriteMethod
@@ -111,10 +116,20 @@ namespace SSH
   */
   class PacketStore
   {
+  private:
+    TCryptoHandler mEncryptor;
+    TCryptoHandler mDecryptor;
+
   public:
+    PacketStore();
+
     TPacket Create(int payloadLen);
     std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
     TPacket Copy(TPacket pPacket);
+
+    //Crypto handlers are expected to be fully setup by the time they are passed here
+    void SetEncryptionHandler(TCryptoHandler handler);
+    void SetDecryptionHandler(TCryptoHandler handler);
   };
 }
 

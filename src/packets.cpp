@@ -1,5 +1,5 @@
 #include "packets.h"
-
+#include "crypto/crypto.h"
 #include "endian.h"
 
 #include <array>
@@ -207,6 +207,13 @@ int Packet::Send(TSendFunc sendFunc)
   return bytesSent;
 }
 
+PacketStore::PacketStore()
+{
+  //Ensure we have blank encryption/decryption ready
+  mEncryptor = Crypto::Create(CryptoHandlers::None);
+  mDecryptor = Crypto::Create(CryptoHandlers::None);
+}
+
 std::shared_ptr<Packet> PacketStore::Create(int payloadLen)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
@@ -245,6 +252,9 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen)
   pPacket->Write(pPacket->mPacketLen);
   pPacket->Write((Byte)pPacket->mPaddingLen);
 
+  pPacket->mEncryptor = mEncryptor;
+  pPacket->mDecryptor = mDecryptor;
+
   return pPacket;
 }
 
@@ -282,6 +292,9 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
 
   pPacket->mSequenceNumber = seqNumber;
 
+  pPacket->mEncryptor = mEncryptor;
+  pPacket->mDecryptor = mDecryptor;
+
   return {pPacket, bytesToConsume};
 }
 
@@ -291,5 +304,9 @@ TPacket PacketStore::Copy(TPacket pPacket)
   std::copy(pPacket->mPacket.begin(), pPacket->mPacket.end(), pNewPacket->mPacket.begin());
   pNewPacket->mIter = pNewPacket->mPacket.begin() + (pPacket->mIter - pPacket->mPacket.begin());
   pNewPacket->mSequenceNumber = pPacket->mSequenceNumber;
+
+  pNewPacket->mEncryptor = pPacket->mEncryptor;
+  pNewPacket->mDecryptor = pPacket->mDecryptor;
+
   return pNewPacket;
 }
