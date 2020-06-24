@@ -610,6 +610,15 @@ bool Client::Impl::ReceiveNewKeys(TPacket pPacket)
 
   Log(LogLevel::Info, "Received NewKeys message");
 
+  //We can now activate decryption for our packets
+  TCryptoHandler newHandler = Crypto::Create(CryptoHandlers::AES128_CTR);
+  if (!newHandler->SetKey(mRemoteKeys.mEnc, mRemoteKeys.mIV))
+  {
+    Log(LogLevel::Error, "Unable to set keys for Decryption Handler");
+  }
+
+  mPacketStore.SetDecryptionHandler(newHandler);
+
   return true;
 }
 
@@ -618,6 +627,15 @@ void Client::Impl::SendNewKeys()
   TPacket pPacket = mPacketStore.Create(1, PacketType::Write);
   pPacket->Write(SSH_MSG::NEWKEYS);
   Queue(pPacket);
+
+  //We can now activate encryption for our packets
+  TCryptoHandler newHandler = Crypto::Create(CryptoHandlers::AES128_CTR);
+  if (!newHandler->SetKey(mLocalKeys.mEnc, mLocalKeys.mIV))
+  {
+    Log(LogLevel::Error, "Unable to set keys for Encryption Handler");
+  }
+
+  mPacketStore.SetEncryptionHandler(newHandler);
 }
 
 void Client::Impl::Connect(const std::string pszUser)
