@@ -632,9 +632,11 @@ bool Client::Impl::ReceiveNewKeys(TPacket pPacket)
   if (!newHandler->SetKey(mRemoteKeys.mEnc, mRemoteKeys.mIV))
   {
     Log(LogLevel::Error, "Unable to set keys for Decryption Handler");
+    return false;
   }
 
   mPacketStore.SetDecryptionHandler(newHandler);
+  Log(LogLevel::Info, "Set new Decryption Handler");
 
   return true;
 }
@@ -650,9 +652,11 @@ void Client::Impl::SendNewKeys()
   if (!newHandler->SetKey(mLocalKeys.mEnc, mLocalKeys.mIV))
   {
     Log(LogLevel::Error, "Unable to set keys for Encryption Handler");
+    return;
   }
 
   mPacketStore.SetEncryptionHandler(newHandler);
+  Log(LogLevel::Info, "Set new Encryption Handler");
 }
 
 void Client::Impl::Connect(const std::string pszUser)
