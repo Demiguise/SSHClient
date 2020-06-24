@@ -347,6 +347,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
       {
         return false;
       }
+
+      return true;
     }
 };
 
