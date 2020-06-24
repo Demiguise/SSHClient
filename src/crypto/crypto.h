@@ -12,15 +12,22 @@ namespace SSH
     AES128_CTR
   };
 
-  struct Key
+  class Key
   {
+    using TKeyData = std::vector<Byte>;
+    TKeyData mData;
+    UINT32 mLen = 0;
   public:
     Key() = default;
     ~Key();
 
-    using TKeyData = std::vector<Byte>;
-    TKeyData mData;
-    UINT32 mLen = 0;
+    Byte* Data() { return &mData[0]; }
+    UINT32 Len() { return mLen; }
+    void SetLen(UINT32 newLen)
+    {
+      mData.resize(newLen);
+      mLen = newLen;
+    }
   };
 
   class ICryptoHandler
