@@ -593,6 +593,23 @@ bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
   }
 
   Log(LogLevel::Info, "Verified ServerDHReply");
+
+  //If we don't already have a session ID, grab it from the KEX handler
+  if (mSessionID.mLen == 0)
+  {
+    mSessionID = mKEXHandler->GetSessionID();
+  }
+
+  //Generate RemoteKeys
+  mRemoteKeys.mIV = mKEXHandler->GenerateKey(mSessionID, 'B');
+  mRemoteKeys.mEnc = mKEXHandler->GenerateKey(mSessionID, 'D');
+  mRemoteKeys.mMac = mKEXHandler->GenerateKey(mSessionID, 'F');
+
+  //Generate LocalKeys
+  mLocalKeys.mIV = mKEXHandler->GenerateKey(mSessionID, 'A');
+  mLocalKeys.mEnc = mKEXHandler->GenerateKey(mSessionID, 'C');
+  mLocalKeys.mMac = mKEXHandler->GenerateKey(mSessionID, 'E');
+
   return true;
 }
 
