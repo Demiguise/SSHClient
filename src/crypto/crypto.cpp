@@ -10,6 +10,13 @@
 
 using namespace SSH;
 
+Key::~Key()
+{
+  //Ensure the key is nuked from memory.
+  //TODO: Check this is not removed via optimisation
+  std::fill(mData.begin(), mData.end(), 0);
+}
+
 void Crypto::PopulateNamelist(NameList& list)
 {
   list.Add("aes128-ctr");
@@ -20,7 +27,7 @@ class NoneHandler : public ICryptoHandler
 public:
   NoneHandler() = default;
 
-  virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) override
+  virtual bool SetKey(const Key& key) override
   {
     return true;
   }
@@ -53,9 +60,9 @@ public:
     memset(&mKey, 0, sizeof(Aes));
   }
 
-  virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) override
+  virtual bool SetKey(const Key& key) override
   {
-    int ret = wc_AesGcmSetKey(&mKey, pKeyBuf, keyLen);
+    int ret = wc_AesSetKey(&mKey, pKeyBuf, keyLen);
     if (ret != 0)
     {
       return false;

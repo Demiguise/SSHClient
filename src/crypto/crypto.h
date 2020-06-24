@@ -12,11 +12,22 @@ namespace SSH
     AES128_CTR
   };
 
+  struct Key
+  {
+  public:
+    Key() = default;
+    ~Key();
+
+    using TKeyData = std::vector<Byte>;
+    TKeyData mData;
+    UINT32 mLen;
+  };
+
   class ICryptoHandler
   {
   public:
     virtual ~ICryptoHandler() {}
-    virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) = 0;
+    virtual bool SetKey(const Key& key) = 0;
     virtual bool Encrypt(Byte* pBuf, const int bufLen) = 0;
     virtual bool Decrypt(Byte* pBuf, const int bufLen) = 0;
     virtual CryptoHandlers Type() = 0;
