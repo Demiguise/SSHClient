@@ -600,15 +600,50 @@ bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
     mSessionID = mKEXHandler->GetSessionID();
   }
 
+  bool bSuccess = false;
   //Generate RemoteKeys
-  mRemoteKeys.mIV = mKEXHandler->GenerateKey(mSessionID, 'B');
-  mRemoteKeys.mEnc = mKEXHandler->GenerateKey(mSessionID, 'D');
-  mRemoteKeys.mMac = mKEXHandler->GenerateKey(mSessionID, 'F');
+  bSuccess = mKEXHandler->GenerateKey(mRemoteKeys.mIV, mSessionID, 'B');
+  if (!bSuccess)
+  {
+    Log(LogLevel::Error, "Failed to generate Remote IV key");
+    return false;
+  }
+
+  bSuccess = mKEXHandler->GenerateKey(mRemoteKeys.mEnc, mSessionID, 'D');
+  if (!bSuccess)
+  {
+    Log(LogLevel::Error, "Failed to generate Remote encryption key");
+    return false;
+  }
+
+  bSuccess = mKEXHandler->GenerateKey(mRemoteKeys.mMac, mSessionID, 'F');
+  if (!bSuccess)
+  {
+    Log(LogLevel::Error, "Failed to generate Remote MAC key");
+    return false;
+  }
 
   //Generate LocalKeys
-  mLocalKeys.mIV = mKEXHandler->GenerateKey(mSessionID, 'A');
-  mLocalKeys.mEnc = mKEXHandler->GenerateKey(mSessionID, 'C');
-  mLocalKeys.mMac = mKEXHandler->GenerateKey(mSessionID, 'E');
+  bSuccess = mKEXHandler->GenerateKey(mLocalKeys.mIV, mSessionID, 'A');
+  if (!bSuccess)
+  {
+    Log(LogLevel::Error, "Failed to generate Local IV key");
+    return false;
+  }
+
+  bSuccess = mKEXHandler->GenerateKey(mLocalKeys.mEnc, mSessionID, 'C');
+  if (!bSuccess)
+  {
+    Log(LogLevel::Error, "Failed to generate Local encryption key");
+    return false;
+  }
+
+  bSuccess = mKEXHandler->GenerateKey(mLocalKeys.mMac, mSessionID, 'E');
+  if (!bSuccess)
+  {
+    Log(LogLevel::Error, "Failed to generate Local MAC key");
+    return false;
+  }
 
   return true;
 }
