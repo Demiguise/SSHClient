@@ -5,6 +5,7 @@
 #include "name-list.h"
 #include "packets.h"
 #include "kex/kex.h"
+#include "crypto/crypto.h"
 #include <queue>
 
 namespace SSH
@@ -64,6 +65,22 @@ namespace SSH
     UINT32 mSequenceNumber;
 
     PacketStore mPacketStore;
+
+    //These are the Server to Client keys
+    struct
+    {
+      Key mIV;
+      Key mEnc;
+      Key mMac;
+    } mRemoteKeys;
+
+    //These are the Client to Server keys
+    struct
+    {
+      Key mIV;
+      Key mEnc;
+      Key mMac;
+    } mLocalKeys;
 
     void Log(LogLevel level, std::string frmt, ...);
     void LogBuffer(LogLevel level, std::string bufferName, const Byte* pBuf, const int bufLen);
