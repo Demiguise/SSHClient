@@ -27,7 +27,7 @@ class NoneHandler : public ICryptoHandler
 public:
   NoneHandler() = default;
 
-  virtual bool SetKey(const Key& key) override
+  virtual bool SetKey(const Key& key, const Key& ivKey) override
   {
     return true;
   }
@@ -60,9 +60,9 @@ public:
     memset(&mKey, 0, sizeof(Aes));
   }
 
-  virtual bool SetKey(const Key& key) override
+  virtual bool SetKey(const Key& encKey, const Key& ivKey) override
   {
-    int ret = wc_AesSetKey(&mKey, pKeyBuf, keyLen);
+    int ret = wc_AesSetKey(&mKey, encKey.mData.data(), encKey.mLen, ivKey.mData.data(), AES_ENCRYPTION); //TODO check if this DIR is important
     if (ret != 0)
     {
       return false;

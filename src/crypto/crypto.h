@@ -27,7 +27,7 @@ namespace SSH
   {
   public:
     virtual ~ICryptoHandler() {}
-    virtual bool SetKey(const Key& key) = 0;
+    virtual bool SetKey(const Key& encKey, const Key& ivKey) = 0;
     virtual bool Encrypt(Byte* pBuf, const int bufLen) = 0;
     virtual bool Decrypt(Byte* pBuf, const int bufLen) = 0;
     virtual CryptoHandlers Type() = 0;
