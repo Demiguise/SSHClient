@@ -349,12 +349,12 @@ class DH_KEXHandler : public SSH::IKEXHandler
       return true;
     }
 
-    virtual UINT32 GetBlockSize()
+    virtual UINT32 GetBlockSize() override
     {
       return AES_BLOCK_SIZE;
     }
 
-    virtual UINT32 GetKeySize()
+    virtual UINT32 GetKeySize() override
     {
       return AES_BLOCK_SIZE;
     }
