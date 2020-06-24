@@ -34,6 +34,7 @@ public:
   {
     return true;
   }
+  virtual CryptoHandlers Type() override { return CryptoHandlers::None; }
 };
 
 class AES128_CTRHandler : public ICryptoHandler
@@ -86,6 +87,7 @@ public:
 
     return true;
   }
+  virtual CryptoHandlers Type() override { return CryptoHandlers::AES128_CTR; }
 };
 
 TCryptoHandler Crypto::Create(CryptoHandlers handler)
