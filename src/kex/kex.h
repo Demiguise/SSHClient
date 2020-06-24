@@ -44,6 +44,9 @@ namespace SSH
 
       virtual TPacket CreateInitPacket(PacketStore& store) = 0;
       virtual bool VerifyReply(KEXData& server, KEXData& client, TPacket pDHReply) = 0;
+
+      virtual Key GetSessionID() = 0;
+      virtual Key GenerateKey(const Key& sessionID, const char keyID) = 0;
   };
 
   using TKEXHandler = std::shared_ptr<IKEXHandler>;

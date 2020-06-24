@@ -291,6 +291,16 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
       return true;
     }
+
+    virtual Key GetSessionID() override
+    {
+
+    }
+
+    virtual Key GenerateKey(const Key& sessionID, const char keyID) override
+    {
+
+    }
 };
 
 TKEXHandler KEX::CreateDH(DHGroups group)
