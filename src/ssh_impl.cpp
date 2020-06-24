@@ -361,6 +361,17 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         SetStage(ConStage::SentServiceRequest);
         break;
       }
+      case ConStage::SentServiceRequest:
+      {
+        //Now expecting to receive a Service_Accept
+        if (!ReceiveServiceAccept(pPacket))
+        {
+          Disconnect();
+          return;
+        }
+
+        break;
+      }
       default:
       {
         Log(LogLevel::Warning, "Unhandled data for (%s) state", StateToString(mState));
@@ -742,4 +753,20 @@ void Client::Impl::Disconnect()
   Log(LogLevel::Info, "Disconnecting client");
   mState = State::Disconnected;
   SetStage(ConStage::Null);
+}
+
+bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
+{
+  Byte msgId;
+
+  //Verify this is a NewKeys packet
+  pPacket->Read(msgId);
+  if (msgId != SSH_MSG::SERVICE_ACCEPT)
+  {
+    Log(LogLevel::Error, "Expected Service Accept message ID but got %u instead", msgId);
+    return false;
+  }
+
+  Log(LogLevel::Info, "Received service accept");
+  return true;
 }
