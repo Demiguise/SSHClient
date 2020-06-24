@@ -55,6 +55,8 @@ namespace SSH
     PacketType mType;
     bool mEncrypted = false;
 
+    Byte* Payload_Unsafe();
+
   public:
     enum class WriteMethod
     {

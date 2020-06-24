@@ -21,6 +21,12 @@ const Byte* const Packet::Payload() const
   return &mPacket[payloadOffset];
 }
 
+//Private
+Byte* Packet::Payload_Unsafe()
+{
+  return &mPacket[payloadOffset];
+}
+
 int Packet::PayloadLen() const
 {
   return mPayloadLen;
@@ -189,15 +195,37 @@ UINT32 Packet::GetLength(const Byte* pBuf)
 
 void Packet::PrepareWrite(const UINT32 seqNumber)
 {
+  if (mType != PacketType::Write)
+  {
+    //This should probably raise an error
+    return;
+  }
+
   //TODO: Write random bytes into the padding string
   memset(&(*mIter), 0xAD, mPaddingLen);
   mSequenceNumber = seqNumber;
   mIter = mPacket.begin();
+
+  if (!mEncrypted && mCrypto->Encrypt(Payload_Unsafe(), PayloadLen()))
+  {
+    mEncrypted = true;
+  }
 }
 
 void Packet::PrepareRead()
 {
+  if (mType != PacketType::Read)
+  {
+    //This should probably raise an error
+    return;
+  }
+
   mIter = mPacket.begin() + payloadOffset;
+
+  if (mEncrypted && mCrypto->Decrypt(Payload_Unsafe(), PayloadLen()))
+  {
+    mEncrypted = false;
+  }
 }
 
 int Packet::Send(TSendFunc sendFunc)
@@ -255,6 +283,12 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
   pPacket->mCrypto = (type == PacketType::Write) ? mEncryptor : mDecryptor;
   pPacket->mType = type;
 
+  //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
+  if (type == PacketType::Read && (pPacket->mCrypto->Type() != CryptoHandlers::None))
+  {
+    pPacket->mEncrypted = true;
+  }
+
   return pPacket;
 }
 
@@ -294,6 +328,12 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
 
   pPacket->mCrypto = (type == PacketType::Write) ? mEncryptor : mDecryptor;
   pPacket->mType = type;
+
+  //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
+  if (type == PacketType::Read && (pPacket->mCrypto->Type() != CryptoHandlers::None))
+  {
+    pPacket->mEncrypted = true;
+  }
 
   return {pPacket, bytesToConsume};
 }
