@@ -20,7 +20,7 @@ namespace SSH
 
     using TKeyData = std::vector<Byte>;
     TKeyData mData;
-    UINT32 mLen;
+    UINT32 mLen = 0;
   };
 
   class ICryptoHandler
