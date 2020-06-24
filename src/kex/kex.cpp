@@ -138,7 +138,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
                       sizeof(UINT32) + //Length
                       mHandshake.e.Len();
 
-      TPacket pPacket = store.Create(packetLen);
+      TPacket pPacket = store.Create(packetLen, PacketType::Write);
 
       pPacket->Write((Byte)SSH_MSG::KEXDH_INIT);
       pPacket->Write(mHandshake.e.Data(), mHandshake.e.Len());

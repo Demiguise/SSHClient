@@ -462,7 +462,7 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 
   while (bytesRemaining >= 4)
   {
-    auto [pNewPacket, bytesConsumed] = mPacketStore.Create(pIter, bytesRemaining, mSequenceNumber);
+    auto [pNewPacket, bytesConsumed] = mPacketStore.Create(pIter, bytesRemaining, mSequenceNumber, PacketType::Read);
     if (!pNewPacket)
     {
       Log(LogLevel::Error, "Failed to allocate packet (%d)!", mSequenceNumber);
@@ -538,7 +538,7 @@ void Client::Impl::SendClientKEXInit()
                      sizeof(Byte) +
                      sizeof(UINT32);
 
-  auto pClientDataPacket = mPacketStore.Create(requiredSize);
+  auto pClientDataPacket = mPacketStore.Create(requiredSize, PacketType::Write);
 
   pClientDataPacket->Write(SSH_MSG::KEXINIT);
 
@@ -615,7 +615,7 @@ bool Client::Impl::ReceiveNewKeys(TPacket pPacket)
 
 void Client::Impl::SendNewKeys()
 {
-  TPacket pPacket = mPacketStore.Create(1);
+  TPacket pPacket = mPacketStore.Create(1, PacketType::Write);
   pPacket->Write(SSH_MSG::NEWKEYS);
   Queue(pPacket);
 }

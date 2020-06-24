@@ -8,7 +8,7 @@ TEST_CASE("Namelists handle RFC Test cases", "[NameLists]")
 {
   constexpr int packetLen = 128;
   PacketStore store;
-  TPacket pPacket = store.Create(packetLen);
+  TPacket pPacket = store.Create(packetLen, PacketType::Write);
 
   SECTION("Empty List")
   {
