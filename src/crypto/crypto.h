@@ -6,28 +6,28 @@
 
 namespace SSH
 {
-  enum class EncryptionHandlers
+  enum class CryptoHandlers
   {
     None,
     AES128_CTR
   };
 
-  class IEncryptionHandler
+  class ICryptoHandler
   {
   public:
-    virtual ~IEncryptionHandler() {}
+    virtual ~ICryptoHandler() {}
     virtual bool SetKey(const Byte* pKeyBuf, const int keyLen) = 0;
     virtual bool Encrypt(Byte* pBuf, const int bufLen) = 0;
     virtual bool Decrypt(Byte* pBuf, const int bufLen) = 0;
   };
 
-  using TEncryptHandler = std::shared_ptr<IEncryptionHandler>;
+  using TCryptoHandler = std::shared_ptr<ICryptoHandler>;
 
   namespace Crypto
   {
     void PopulateNamelist(NameList& list);
 
-    TEncryptHandler Create(EncryptionHandlers handler);
+    TCryptoHandler Create(CryptoHandlers handler);
   }
 }
 

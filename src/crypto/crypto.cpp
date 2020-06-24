@@ -15,7 +15,7 @@ void Crypto::PopulateNamelist(NameList& list)
   list.Add("aes128-ctr");
 }
 
-class NoneHandler : public IEncryptionHandler
+class NoneHandler : public ICryptoHandler
 {
 public:
   NoneHandler() = default;
@@ -36,7 +36,7 @@ public:
   }
 };
 
-class AES128_CTRHandler : public IEncryptionHandler
+class AES128_CTRHandler : public ICryptoHandler
 {
 private:
   Aes mKey;
@@ -88,11 +88,11 @@ public:
   }
 };
 
-TEncryptHandler Crypto::Create(EncryptionHandlers handler)
+TCryptoHandler Crypto::Create(CryptoHandlers handler)
 {
   switch(handler)
   {
-    case EncryptionHandlers::AES128_CTR:
+    case CryptoHandlers::AES128_CTR:
       return std::make_shared<AES128_CTRHandler>();
     default:
       return std::make_shared<NoneHandler>();
