@@ -223,6 +223,7 @@ void Client::Impl::Poll()
       else
       {
         Log(LogLevel::Debug, "Packet (%d) has [%d] bytes left to send", pPacket->GetSequenceNumber(), bytesRemaining);
+        break;
       }
     }
 
