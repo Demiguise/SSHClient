@@ -214,7 +214,7 @@ PacketStore::PacketStore()
   mDecryptor = Crypto::Create(CryptoHandlers::None);
 }
 
-std::shared_ptr<Packet> PacketStore::Create(int payloadLen)
+std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
@@ -252,13 +252,13 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen)
   pPacket->Write(pPacket->mPacketLen);
   pPacket->Write((Byte)pPacket->mPaddingLen);
 
-  pPacket->mEncryptor = mEncryptor;
-  pPacket->mDecryptor = mDecryptor;
+  pPacket->mCrypto = (type == PacketType::Write) ? mEncryptor : mDecryptor;
+  pPacket->mType = type;
 
   return pPacket;
 }
 
-std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber)
+std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber, PacketType type)
 {
   if (numBytes < payloadOffset)
   {
@@ -292,21 +292,20 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
 
   pPacket->mSequenceNumber = seqNumber;
 
-  pPacket->mEncryptor = mEncryptor;
-  pPacket->mDecryptor = mDecryptor;
+  pPacket->mCrypto = (type == PacketType::Write) ? mEncryptor : mDecryptor;
+  pPacket->mType = type;
 
   return {pPacket, bytesToConsume};
 }
 
 TPacket PacketStore::Copy(TPacket pPacket)
 {
-  TPacket pNewPacket = Create(pPacket->mPayloadLen);
+  TPacket pNewPacket = Create(pPacket->mPayloadLen, pPacket->mType);
   std::copy(pPacket->mPacket.begin(), pPacket->mPacket.end(), pNewPacket->mPacket.begin());
   pNewPacket->mIter = pNewPacket->mPacket.begin() + (pPacket->mIter - pPacket->mPacket.begin());
   pNewPacket->mSequenceNumber = pPacket->mSequenceNumber;
 
-  pNewPacket->mEncryptor = pPacket->mEncryptor;
-  pNewPacket->mDecryptor = pPacket->mDecryptor;
+  pNewPacket->mCrypto = pPacket->mCrypto;
 
   return pNewPacket;
 }

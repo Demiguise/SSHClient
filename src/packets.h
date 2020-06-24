@@ -21,6 +21,12 @@ namespace SSH
 
   using TByteString = std::vector<Byte>;
 
+  enum class PacketType
+  {
+    Read,
+    Write
+  };
+
   class Packet
   {
   protected:
@@ -44,8 +50,10 @@ namespace SSH
     static UINT32 GetLength(const Byte* pBuf);
 
     //Set by the packet store on creation
-    TCryptoHandler mEncryptor;
-    TCryptoHandler mDecryptor;
+    TCryptoHandler mCrypto;
+
+    PacketType mType;
+    bool mEncrypted = false;
 
   public:
     enum class WriteMethod
@@ -123,8 +131,8 @@ namespace SSH
   public:
     PacketStore();
 
-    TPacket Create(int payloadLen);
-    std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber);
+    TPacket Create(int payloadLen, PacketType type);
+    std::pair<TPacket,int> Create(const Byte* pBuf, const int numBytes, const UINT32 seqNumber, PacketType type);
     TPacket Copy(TPacket pPacket);
 
     //Crypto handlers are expected to be fully setup by the time they are passed here
