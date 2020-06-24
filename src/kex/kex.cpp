@@ -27,6 +27,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
     wc_HashType mHashType;
 
     Key mH;
+    MPInt mK;
 
     struct
     {
@@ -234,10 +235,9 @@ class DH_KEXHandler : public SSH::IKEXHandler
           return false;
         }
       }
-      //Generate shared secret
-      MPInt k;
+      //Generate shared secret K
       UINT32 kLen = 0;
-      int ret = wc_DhAgree( &mPrivKey, k.Data(), &kLen,
+      int ret = wc_DhAgree( &mPrivKey, mK.Data(), &kLen,
                             mHandshake.x.Data(), mHandshake.x.Len(),
                             f.Data(), f.Len());
       if (ret != 0)
@@ -246,11 +246,11 @@ class DH_KEXHandler : public SSH::IKEXHandler
       }
 
       //Hash shared secret (Ensuring we make sure the data is padded)
-      k.SetLen(kLen);
-      k.Pad();
-      HashBuffer(k.Data(), k.Len());
+      mK.SetLen(kLen);
+      mK.Pad();
+      HashBuffer(mK.Data(), mK.Len());
 
-      DUMP_BUFFER("k", k.Data(), k.Len());
+      DUMP_BUFFER("k", mK.Data(), mK.Len());
 
       /*
         Get the result which should be the exchange hash value H.
