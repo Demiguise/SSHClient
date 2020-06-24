@@ -304,9 +304,49 @@ class DH_KEXHandler : public SSH::IKEXHandler
       return mH;
     }
 
-    virtual Key GenerateKey(const Key& sessionID, const char keyID) override
+    virtual bool GenerateKey(Key& outKey, const Key& sessionID, const Byte keyID) override
     {
+      int ret = 0;
+      wc_HashAlg hash;
 
+      ret = wc_HashInit(&hash, mHashType);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, mK.Data(), mK.Len());
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, mH.mData.data(), mH.mLen);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, &keyID, sizeof(keyID));
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, sessionID.mData.data(), sessionID.mLen);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      int digestSize = wc_HashGetDigestSize(mHashType);
+      outKey.mLen = digestSize;
+      outKey.mData.resize(digestSize);
+      ret = wc_HashFinal(&hash, mHashType, outKey.mData.data());
+      if (ret != 0)
+      {
+        return false;
+      }
     }
 };
 
