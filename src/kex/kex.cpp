@@ -10,6 +10,7 @@
 #include <wolfssl/wolfcrypt/dh.h>
 #include <wolfssl/wolfcrypt/rsa.h>
 #include <wolfssl/wolfcrypt/hash.h>
+#include <wolfssl/wolfcrypt/aes.h>
 #include <wolfssl/wolfcrypt/signature.h>
 
 using namespace SSH;
@@ -346,6 +347,16 @@ class DH_KEXHandler : public SSH::IKEXHandler
       }
 
       return true;
+    }
+
+    virtual UINT32 GetBlockSize()
+    {
+      return AES_BLOCK_SIZE;
+    }
+
+    virtual UINT32 GetKeySize()
+    {
+      return AES_BLOCK_SIZE;
     }
 };
 

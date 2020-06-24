@@ -47,6 +47,9 @@ namespace SSH
 
       virtual Key GetSessionID() = 0;
       virtual bool GenerateKey(Key& outKey, const Key& sessionID, const Byte keyID) = 0;
+
+      virtual UINT32 GetBlockSize() = 0;
+      virtual UINT32 GetKeySize() = 0;
   };
 
   using TKEXHandler = std::shared_ptr<IKEXHandler>;
