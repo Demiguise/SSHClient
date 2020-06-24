@@ -26,6 +26,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
     wc_HashAlg mHash;
     wc_HashType mHashType;
 
+    Key mH;
+
     struct
     {
       MPInt e;
@@ -250,16 +252,21 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
       DUMP_BUFFER("k", k.Data(), k.Len());
 
-      //Get the result which should be the exchange hash value H
+      /*
+        Get the result which should be the exchange hash value H.
+        This is stored on the KEXHandler as the user may wish to
+        grab it as the "SessionID" for this connection
+      */
       UINT32 hLen = wc_HashGetDigestSize(mHashType);
-      std::vector<Byte> h(hLen);
-      ret = wc_HashFinal(&mHash, mHashType, h.data());
+      mH.mData.resize(hLen);
+      mH.mLen = hLen;
+      ret = wc_HashFinal(&mHash, mHashType, mH.mData.data());
       if (ret != 0)
       {
         return false;
       }
 
-      DUMP_BUFFER("h", h.data(), hLen);
+      DUMP_BUFFER("h", mH.mData.data(), mH.mLen);
 
       //Now we can verify our exchange hash with the server's signature
       {
@@ -281,7 +288,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
         UINT32 bytesRemaining = signature.end() - iter;
 
         ret = wc_SignatureVerify( mHashType, WC_SIGNATURE_TYPE_RSA_W_ENC,
-                                  h.data(), hLen, (Byte*)&(*iter), bytesRemaining,
+                                  mH.mData.data(), mH.mLen, (Byte*)&(*iter), bytesRemaining,
                                   &key, sizeof(key));
         if (ret != 0)
         {
@@ -294,7 +301,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
 
     virtual Key GetSessionID() override
     {
-
+      return mH;
     }
 
     virtual Key GenerateKey(const Key& sessionID, const char keyID) override
