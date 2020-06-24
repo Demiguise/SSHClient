@@ -209,7 +209,7 @@ void Client::Impl::Poll()
     SecureBuffer<unsigned char, 1024> buf;
 
     //If we have any packets ready to send, attempt to send them now
-    if (!mSendQueue.empty())
+    while (!mSendQueue.empty())
     {
       auto pPacket = mSendQueue.front();
       Send(pPacket);
