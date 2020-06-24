@@ -349,3 +349,13 @@ TPacket PacketStore::Copy(TPacket pPacket)
 
   return pNewPacket;
 }
+
+void PacketStore::SetEncryptionHandler(TCryptoHandler handler)
+{
+  mEncryptor = handler;
+}
+
+void PacketStore::SetDecryptionHandler(TCryptoHandler handler)
+{
+  mDecryptor = handler;
+}
