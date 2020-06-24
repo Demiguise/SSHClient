@@ -730,6 +730,22 @@ void Client::Impl::SendServiceRequest()
   Queue(pPacket);
 }
 
+bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
+{
+  Byte msgId;
+
+  //Verify this is a NewKeys packet
+  pPacket->Read(msgId);
+  if (msgId != SSH_MSG::SERVICE_ACCEPT)
+  {
+    Log(LogLevel::Error, "Expected Service Accept message ID but got %u instead", msgId);
+    return false;
+  }
+
+  Log(LogLevel::Info, "Received service accept");
+  return true;
+}
+
 void Client::Impl::Connect(const std::string pszUser)
 {
   mState = State::Connecting;
@@ -755,18 +771,3 @@ void Client::Impl::Disconnect()
   SetStage(ConStage::Null);
 }
 
-bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
-{
-  Byte msgId;
-
-  //Verify this is a NewKeys packet
-  pPacket->Read(msgId);
-  if (msgId != SSH_MSG::SERVICE_ACCEPT)
-  {
-    Log(LogLevel::Error, "Expected Service Accept message ID but got %u instead", msgId);
-    return false;
-  }
-
-  Log(LogLevel::Info, "Received service accept");
-  return true;
-}
