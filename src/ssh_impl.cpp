@@ -595,7 +595,7 @@ bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
   Log(LogLevel::Info, "Verified ServerDHReply");
 
   //If we don't already have a session ID, grab it from the KEX handler
-  if (mSessionID.mLen == 0)
+  if (mSessionID.Len() == 0)
   {
     mSessionID = mKEXHandler->GetSessionID();
   }

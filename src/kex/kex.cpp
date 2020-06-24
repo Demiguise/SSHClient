@@ -258,15 +258,14 @@ class DH_KEXHandler : public SSH::IKEXHandler
         grab it as the "SessionID" for this connection
       */
       UINT32 hLen = wc_HashGetDigestSize(mHashType);
-      mH.mData.resize(hLen);
-      mH.mLen = hLen;
-      ret = wc_HashFinal(&mHash, mHashType, mH.mData.data());
+      mH.SetLen(hLen);
+      ret = wc_HashFinal(&mHash, mHashType, mH.Data());
       if (ret != 0)
       {
         return false;
       }
 
-      DUMP_BUFFER("h", mH.mData.data(), mH.mLen);
+      DUMP_BUFFER("h", mH.Data(), mH.Len());
 
       //Now we can verify our exchange hash with the server's signature
       {
@@ -288,7 +287,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
         UINT32 bytesRemaining = signature.end() - iter;
 
         ret = wc_SignatureVerify( mHashType, WC_SIGNATURE_TYPE_RSA_W_ENC,
-                                  mH.mData.data(), mH.mLen, (Byte*)&(*iter), bytesRemaining,
+                                  mH.Data(), mH.Len(), (Byte*)&(*iter), bytesRemaining,
                                   &key, sizeof(key));
         if (ret != 0)
         {
@@ -321,7 +320,7 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      ret = wc_HashUpdate(&hash, mHashType, mH.mData.data(), mH.mLen);
+      ret = wc_HashUpdate(&hash, mHashType, mH.Data(), mH.Len());
       if (ret != 0)
       {
         return false;
@@ -333,16 +332,14 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      ret = wc_HashUpdate(&hash, mHashType, sessionID.mData.data(), sessionID.mLen);
+      ret = wc_HashUpdate(&hash, mHashType, sessionID.Data(), sessionID.Len());
       if (ret != 0)
       {
         return false;
       }
 
       int digestSize = wc_HashGetDigestSize(mHashType);
-      outKey.mLen = digestSize;
-      outKey.mData.resize(digestSize);
-      ret = wc_HashFinal(&hash, mHashType, outKey.mData.data());
+      ret = wc_HashFinal(&hash, mHashType, outKey.Data());
       if (ret != 0)
       {
         return false;

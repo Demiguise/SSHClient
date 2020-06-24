@@ -21,8 +21,9 @@ namespace SSH
     Key() = default;
     ~Key();
 
-    Byte* Data() { return &mData[0]; }
-    UINT32 Len() { return mLen; }
+    const Byte* Data() const { return mData.data(); }
+    Byte* Data() { return mData.data(); }
+    UINT32 Len() const { return mLen; }
     void SetLen(UINT32 newLen)
     {
       mData.resize(newLen);
