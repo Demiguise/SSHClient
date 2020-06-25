@@ -21,6 +21,7 @@ namespace SSH
     virtual bool Encrypt(Byte* pBuf, const int bufLen) = 0;
     virtual bool Decrypt(Byte* pBuf, const int bufLen) = 0;
     virtual CryptoHandlers Type() = 0;
+    virtual UINT32 BlockLen() = 0;
   };
 
   using TCryptoHandler = std::shared_ptr<ICryptoHandler>;

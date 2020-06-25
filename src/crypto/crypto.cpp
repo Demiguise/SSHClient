@@ -35,6 +35,7 @@ public:
     return true;
   }
   virtual CryptoHandlers Type() override { return CryptoHandlers::None; }
+  virtual UINT32 BlockLen() override { return 0; }
 };
 
 class AES128_CTRHandler : public ICryptoHandler
@@ -88,6 +89,7 @@ public:
     return true;
   }
   virtual CryptoHandlers Type() override { return CryptoHandlers::AES128_CTR; }
+  virtual UINT32 BlockLen() override { return AES_BLOCK_SIZE; }
 };
 
 TCryptoHandler Crypto::Create(CryptoHandlers handler)
