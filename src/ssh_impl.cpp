@@ -723,7 +723,11 @@ void Client::Impl::SendNewKeys()
 void Client::Impl::SendServiceRequest()
 {
   std::string userAuth = "ssh-userauth";
-  TPacket pPacket = mPacketStore.Create(userAuth.length() + sizeof(Byte), PacketType::Write);
+  UINT32 packetLen = sizeof(Byte) +     //SSH_MSG
+                     sizeof(UINT32) +   //Length of string
+                     userAuth.length(); //String
+
+  TPacket pPacket = mPacketStore.Create(packetLen, PacketType::Write);
 
   pPacket->Write(SSH_MSG::SERVICE_REQUEST);
   pPacket->Write(userAuth);
