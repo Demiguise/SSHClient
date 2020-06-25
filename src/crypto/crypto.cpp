@@ -15,10 +15,10 @@ void Crypto::PopulateNamelist(NameList& list)
   list.Add("aes128-ctr");
 }
 
-class NoneHandler : public ICryptoHandler
+class None_CryptoHandler : public ICryptoHandler
 {
 public:
-  NoneHandler() = default;
+  None_CryptoHandler() = default;
 
   virtual bool SetKey(const Key& key, const Key& ivKey) override
   {
@@ -38,18 +38,18 @@ public:
   virtual UINT32 BlockLen() override { return 0; }
 };
 
-class AES128_CTRHandler : public ICryptoHandler
+class AES128_CTR_CryptoHandler : public ICryptoHandler
 {
 private:
   Aes mKey;
 
 public:
-  AES128_CTRHandler()
+  AES128_CTR_CryptoHandler()
   {
     memset(&mKey, 0, sizeof(Aes));
   }
 
-  ~AES128_CTRHandler()
+  ~AES128_CTR_CryptoHandler()
   {
     memset(&mKey, 0, sizeof(Aes));
   }
@@ -97,8 +97,8 @@ TCryptoHandler Crypto::Create(CryptoHandlers handler)
   switch(handler)
   {
     case CryptoHandlers::AES128_CTR:
-      return std::make_shared<AES128_CTRHandler>();
+      return std::make_shared<AES128_CTR_CryptoHandler>();
     default:
-      return std::make_shared<NoneHandler>();
+      return std::make_shared<None_CryptoHandler>();
   }
 }
