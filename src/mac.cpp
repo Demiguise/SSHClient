@@ -46,51 +46,52 @@ public:
 class HMAC_SHA2_256_MACHandler : public IMACHandler
 {
 private:
-  Hmac mHmac;
+  Key mMACKey;
 public:
   HMAC_SHA2_256_MACHandler() = default;
 
   virtual UINT32 Len() override
   {
-    return 0;
+    return WC_SHA256_DIGEST_SIZE;
   }
 
   virtual bool SetKey(const Key& macKey) override
   {
-    int ret = wc_HmacSetKey(&mHmac, WC_SHA256, macKey.Data(), macKey.Len());
-    if (ret != 0)
-    {
-      return false;
-    }
-
+    mMACKey = macKey;
     return true;
   }
 
   virtual bool Create(const Packet* const pPacket, Byte* pOutMAC) override
   {
-    int ret = wc_HmacInit(&mHmac, nullptr, INVALID_DEVID);
+    Hmac hmac;
+    int ret = wc_HmacInit(&hmac, nullptr, INVALID_DEVID);
     if (ret != 0)
     {
       return false;
     }
 
+    ret = wc_HmacSetKey(&hmac, WC_SHA256, mMACKey.Data(), mMACKey.Len());
+    if (ret != 0)
+    {
+      return false;
+    }
     //First we hash the network ordered sequence number for the packet
     UINT32 seqNumber = swap_endian<uint32_t>(pPacket->GetSequenceNumber());
-    ret = wc_HmacUpdate(&mHmac, (Byte*)&seqNumber, sizeof(UINT32));
+    ret = wc_HmacUpdate(&hmac, (Byte*)&seqNumber, sizeof(UINT32));
     if (ret != 0)
     {
       return false;
     }
 
+    ret = wc_HmacUpdate(&hmac, pPacket->Begin(), pPacket->PacketLen());
     //Now we hash the entire unencrypted packet
-    ret = wc_HmacUpdate(&mHmac, pPacket->Begin(), pPacket->PacketLen());
     if (ret != 0)
     {
       return false;
     }
 
     //Now we can output do the MAC field
-    ret = wc_HmacFinal(&mHmac, pOutMAC);
+    ret = wc_HmacFinal(&hmac, pOutMAC);
     if (ret != 0)
     {
       return false;
