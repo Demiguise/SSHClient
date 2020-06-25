@@ -688,16 +688,25 @@ bool Client::Impl::ReceiveNewKeys(TPacket pPacket)
 
   Log(LogLevel::Info, "Received NewKeys message");
 
-  //We can now activate decryption for our packets
-  TCryptoHandler newHandler = Crypto::Create(CryptoHandlers::AES128_CTR);
-  if (!newHandler->SetKey(mRemoteKeys.mEnc, mRemoteKeys.mIV))
+  //We can now activate MAC integrity for incoming packets
+  TMACHandler macHandler = MAC::Create(MACHandlers::HMAC_SHA2_256);
+  if (!macHandler->SetKey(mRemoteKeys.mMac))
+  {
+    Log(LogLevel::Error, "Unable to set keys for MAC Handler");
+    return false;
+  }
+
+  //We can now activate decryption for incoming packets
+  TCryptoHandler cryptoHandler = Crypto::Create(CryptoHandlers::AES128_CTR);
+  if (!cryptoHandler->SetKey(mRemoteKeys.mEnc, mRemoteKeys.mIV))
   {
     Log(LogLevel::Error, "Unable to set keys for Decryption Handler");
     return false;
   }
 
-  mPacketStore.SetDecryptionHandler(newHandler);
-  Log(LogLevel::Info, "Set new Decryption Handler");
+  mPacketStore.SetIncomingMACHandler(macHandler);
+  mPacketStore.SetDecryptionHandler(cryptoHandler);
+  Log(LogLevel::Info, "Set new Incoming MAC and Decryption Handlers");
 
   return true;
 }
@@ -708,16 +717,25 @@ void Client::Impl::SendNewKeys()
   pPacket->Write(SSH_MSG::NEWKEYS);
   Queue(pPacket);
 
-  //We can now activate encryption for our packets
-  TCryptoHandler newHandler = Crypto::Create(CryptoHandlers::AES128_CTR);
-  if (!newHandler->SetKey(mLocalKeys.mEnc, mLocalKeys.mIV))
+  //We can now activate MAC integrity for outgoing packets
+  TMACHandler macHandler = MAC::Create(MACHandlers::HMAC_SHA2_256);
+  if (!macHandler->SetKey(mLocalKeys.mMac))
+  {
+    Log(LogLevel::Error, "Unable to set keys for MAC Handler");
+    return;
+  }
+
+  //We can now activate encryption for outgoing packets
+  TCryptoHandler cryptoHandler = Crypto::Create(CryptoHandlers::AES128_CTR);
+  if (!cryptoHandler->SetKey(mLocalKeys.mEnc, mLocalKeys.mIV))
   {
     Log(LogLevel::Error, "Unable to set keys for Encryption Handler");
     return;
   }
 
-  mPacketStore.SetEncryptionHandler(newHandler);
-  Log(LogLevel::Info, "Set new Encryption Handler");
+  mPacketStore.SetOutgoingMACHandler(macHandler);
+  mPacketStore.SetEncryptionHandler(cryptoHandler);
+  Log(LogLevel::Info, "Set new Outgoing MAC and Encryption Handlers");
 }
 
 void Client::Impl::SendServiceRequest()
