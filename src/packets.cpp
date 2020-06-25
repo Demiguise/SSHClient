@@ -246,6 +246,24 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
 {
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
 
+  pPacket->mType = type;
+  if (type == PacketType::Write)
+  {
+    pPacket->mMAC = mOutgoingMAC;
+    pPacket->mCrypto = mEncryptor;
+  }
+  else
+  {
+    pPacket->mMAC = mIncomingMAC;
+    pPacket->mCrypto = mDecryptor;
+
+    //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
+    if (pPacket->mCrypto->Type() != CryptoHandlers::None)
+    {
+      pPacket->mEncrypted = true;
+    }
+  }
+
   /*
     Figure out how much padding we need.
     TODO: Take into account the MAC length here
@@ -280,24 +298,6 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
   pPacket->Write(pPacket->mPacketLen);
   pPacket->Write((Byte)pPacket->mPaddingLen);
 
-  pPacket->mType = type;
-  if (type == PacketType::Write)
-  {
-    pPacket->mCrypto = mEncryptor;
-    pPacket->mMAC = mOutgoingMAC;
-  }
-  else
-  {
-    pPacket->mCrypto = mDecryptor;
-    pPacket->mMAC = mIncomingMAC;
-  }
-
-  //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
-  if (type == PacketType::Read && (pPacket->mCrypto->Type() != CryptoHandlers::None))
-  {
-    pPacket->mEncrypted = true;
-  }
-
   return pPacket;
 }
 
@@ -310,6 +310,24 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
   }
 
   auto pPacket = std::make_shared<Packet>(typename Packet::Token{});
+
+  pPacket->mType = type;
+  if (type == PacketType::Write)
+  {
+    pPacket->mMAC = mOutgoingMAC;
+    pPacket->mCrypto = mEncryptor;
+  }
+  else
+  {
+    pPacket->mMAC = mIncomingMAC;
+    pPacket->mCrypto = mDecryptor;
+
+    //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
+    if (pPacket->mCrypto->Type() != CryptoHandlers::None)
+    {
+      pPacket->mEncrypted = true;
+    }
+  }
 
   /*
     packetLen does NOT include the MAC or the packetLen field itself.
@@ -334,24 +352,6 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
   pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
 
   pPacket->mSequenceNumber = seqNumber;
-
-  pPacket->mType = type;
-  if (type == PacketType::Write)
-  {
-    pPacket->mCrypto = mEncryptor;
-    pPacket->mMAC = mOutgoingMAC;
-  }
-  else
-  {
-    pPacket->mCrypto = mDecryptor;
-    pPacket->mMAC = mIncomingMAC;
-  }
-
-  //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
-  if (type == PacketType::Read && (pPacket->mCrypto->Type() != CryptoHandlers::None))
-  {
-    pPacket->mEncrypted = true;
-  }
 
   return {pPacket, bytesToConsume};
 }
