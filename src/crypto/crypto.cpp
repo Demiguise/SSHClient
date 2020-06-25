@@ -12,9 +12,7 @@ using namespace SSH;
 
 Key::~Key()
 {
-  //Ensure the key is nuked from memory.
-  //TODO: Check this is not removed via optimisation
-  std::fill(mData.begin(), mData.end(), 0);
+
 }
 
 void Crypto::PopulateNamelist(NameList& list)

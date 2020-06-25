@@ -3,6 +3,7 @@
 
 #include "ssh.h"
 #include "name-list.h"
+#include "key.hpp"
 
 namespace SSH
 {
@@ -10,25 +11,6 @@ namespace SSH
   {
     None,
     AES128_CTR
-  };
-
-  class Key
-  {
-    using TKeyData = std::vector<Byte>;
-    TKeyData mData;
-    UINT32 mLen = 0;
-  public:
-    Key() = default;
-    ~Key();
-
-    const Byte* Data() const { return mData.data(); }
-    Byte* Data() { return mData.data(); }
-    UINT32 Len() const { return mLen; }
-    void SetLen(UINT32 newLen)
-    {
-      mData.resize(newLen);
-      mLen = newLen;
-    }
   };
 
   class ICryptoHandler
