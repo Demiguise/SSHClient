@@ -266,11 +266,11 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
 
   /*
     Figure out how much padding we need.
-    TODO: Take into account the MAC length here
   */
-  pPacket->mTotalPacketLen =  sizeof(UINT32) +  //packet_length
-                              sizeof(Byte) +    //padding_length
-                              payloadLen;       //payload
+  pPacket->mTotalPacketLen =  sizeof(UINT32) +      //packet_length
+                              sizeof(Byte) +        //padding_length
+                              payloadLen +          //payload
+                              pPacket->mMAC->Len(); // MAC
 
   /*
     Now figure out how much padding we need.
