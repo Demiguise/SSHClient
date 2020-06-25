@@ -202,7 +202,7 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   }
 
   //TODO: Write random bytes into the padding string
-  memset(&(*mIter), 0xAD, mPaddingLen);
+  std::fill(mIter, mIter+mPaddingLen, 0xAD);
   mSequenceNumber = seqNumber;
   mIter = mPacket.begin();
 
@@ -295,6 +295,11 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
   pPacket->mPacketLen = payloadLen + pPacket->mPaddingLen + sizeof(Byte);
   pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
   pPacket->mPacket.resize(pPacket->mTotalPacketLen);
+
+#ifdef _DEBUG
+  //Helps to identify exactly which bytes have been allocated for the packet
+  std::fill(pPacket->mPacket.begin(), pPacket->mPacket.end(), 0xDE);
+#endif
 
   pPacket->mIter = pPacket->mPacket.begin();
 
