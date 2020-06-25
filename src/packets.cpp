@@ -21,15 +21,24 @@ const Byte* const Packet::Payload() const
   return &mPacket[payloadOffset];
 }
 
-//Private
-Byte* Packet::Payload_Unsafe()
-{
-  return &mPacket[payloadOffset];
-}
-
 int Packet::PayloadLen() const
 {
   return mPayloadLen;
+}
+
+const Byte* const Packet::Begin() const
+{
+  return mPacket.data();
+}
+
+int Packet::PacketLen() const
+{
+  return mPacketLen;
+}
+
+const Byte* const Packet::MAC() const
+{
+  return &mPacket[mPacketLen];
 }
 
 UINT32 Packet::Remaining() const
@@ -223,7 +232,7 @@ void Packet::PrepareRead()
 
   mIter = mPacket.begin() + payloadOffset;
 
-  if (mEncrypted && mCrypto->Decrypt(Payload_Unsafe(), PayloadLen()))
+  if (mEncrypted && mCrypto->Decrypt(mPacket.data(), mPacketLen))
   {
     mEncrypted = false;
   }

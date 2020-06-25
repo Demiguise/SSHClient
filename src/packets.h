@@ -57,8 +57,6 @@ namespace SSH
     PacketType mType;
     bool mEncrypted = false;
 
-    Byte* Payload_Unsafe();
-
   public:
     enum class WriteMethod
     {
@@ -73,6 +71,13 @@ namespace SSH
     //Pointer to the beginning of the payload
     const Byte* const Payload() const;
     int PayloadLen() const;
+
+    //Pointer to the beginning of the packet
+    const Byte* const Begin() const;
+    int PacketLen() const;
+
+    //Pointer to the beginning of the MAC field
+    const Byte* const MAC() const;
 
     //Number of bytes remaining to send/receive
     UINT32 Remaining() const;
