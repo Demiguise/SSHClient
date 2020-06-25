@@ -221,6 +221,9 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   mSequenceNumber = seqNumber;
   mIter = mPacket.begin();
 
+  //Write the MAC
+  mMAC->Create(this, &mPacket[mPacketLen]);
+
   //Encrypt everything in the packet going out, apart from the MAC
   if (!mEncrypted && mCrypto->Encrypt(mPacket.data(), mPacketLen))
   {
