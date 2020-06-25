@@ -359,3 +359,13 @@ void PacketStore::SetDecryptionHandler(TCryptoHandler handler)
 {
   mDecryptor = handler;
 }
+
+void PacketStore::SetOutgoingMACHandler(TMACHandler handler)
+{
+  mOutgoingMAC = handler;
+}
+
+void PacketStore::SetIncomingMACHandler(TMACHandler handler)
+{
+  mIncomingMAC = handler;
+}

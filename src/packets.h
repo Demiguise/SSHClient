@@ -6,6 +6,7 @@
 #include "mpint.h"
 #include "constants.h"
 #include "crypto/crypto.h"
+#include "mac.h"
 #include <vector>
 
 namespace SSH
@@ -130,6 +131,9 @@ namespace SSH
     TCryptoHandler mEncryptor;
     TCryptoHandler mDecryptor;
 
+    TMACHandler mOutgoingMAC;
+    TMACHandler mIncomingMAC;
+
   public:
     PacketStore();
 
@@ -140,6 +144,10 @@ namespace SSH
     //Crypto handlers are expected to be fully setup by the time they are passed here
     void SetEncryptionHandler(TCryptoHandler handler);
     void SetDecryptionHandler(TCryptoHandler handler);
+
+    //MAC handlers are expected to be fully setup by the time they are passed here
+    void SetOutgoingMACHandler(TMACHandler handler);
+    void SetIncomingMACHandler(TMACHandler handler);
   };
 }
 
