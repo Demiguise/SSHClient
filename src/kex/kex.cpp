@@ -317,6 +317,13 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
+      UINT32 kLen = swap_endian<uint32_t>(mK.Len());
+      ret = wc_HashUpdate(&hash, mHashType, (Byte*)&kLen, sizeof(UINT32));
+      if (ret != 0)
+      {
+        return false;
+      }
+
       ret = wc_HashUpdate(&hash, mHashType, mK.Data(), mK.Len());
       if (ret != 0)
       {
