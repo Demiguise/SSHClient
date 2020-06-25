@@ -4,6 +4,7 @@ set(SRCS
   packets.cpp
   mpint.cpp
   name-list.cpp
+  mac.cpp
   kex/kex.cpp
   crypto/crypto.cpp
 )

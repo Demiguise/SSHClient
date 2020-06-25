@@ -17,6 +17,11 @@ public:
     return 0;
   }
 
+  virtual bool SetKey(const Key& macKey, const Key& ivKey) override
+  {
+    return true;
+  }
+
   virtual bool Create(TPacket pPacket) override
   {
     return true;
