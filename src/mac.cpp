@@ -25,7 +25,7 @@ public:
     return 0;
   }
 
-  virtual bool SetKey(const Key& macKey, const Key& ivKey) override
+  virtual bool SetKey(const Key& macKey) override
   {
     return true;
   }
@@ -45,6 +45,8 @@ public:
 
 class HMAC_SHA2_256_MACHandler : public IMACHandler
 {
+private:
+  Hmac mHmac;
 public:
   HMAC_SHA2_256_MACHandler() = default;
 
@@ -53,15 +55,14 @@ public:
     return 0;
   }
 
-  virtual bool SetKey(const Key& macKey, const Key& ivKey) override
+  virtual bool SetKey(const Key& macKey) override
   {
     return true;
   }
 
   virtual bool Create(TPacket pPacket, Byte* pOutMAC) override
   {
-    Hmac hmac;
-    int ret = wc_HmacInit(&hmac, nullptr, INVALID_DEVID);
+    int ret = wc_HmacInit(&mHmac, nullptr, INVALID_DEVID);
     if (ret != 0)
     {
       return false;
@@ -69,21 +70,21 @@ public:
 
     //First we hash the network ordered sequence number for the packet
     UINT32 seqNumber = swap_endian<uint32_t>(pPacket->GetSequenceNumber());
-    ret = wc_HmacUpdate(&hmac, (Byte*)&seqNumber, sizeof(UINT32));
+    ret = wc_HmacUpdate(&mHmac, (Byte*)&seqNumber, sizeof(UINT32));
     if (ret != 0)
     {
       return false;
     }
 
     //Now we hash the entire unencrypted packet
-    ret = wc_HmacUpdate(&hmac, pPacket->Begin(), pPacket->PacketLen());
+    ret = wc_HmacUpdate(&mHmac, pPacket->Begin(), pPacket->PacketLen());
     if (ret != 0)
     {
       return false;
     }
 
     //Now we can output do the MAC field
-    ret = wc_HmacFinal(&hmac, pOutMAC);
+    ret = wc_HmacFinal(&mHmac, pOutMAC);
     if (ret != 0)
     {
       return false;

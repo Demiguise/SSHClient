@@ -22,7 +22,7 @@ namespace SSH
   public:
     virtual ~IMACHandler() {}
 
-    virtual bool SetKey(const Key& macKey, const Key& ivKey) = 0;
+    virtual bool SetKey(const Key& macKey) = 0;
 
     virtual UINT32 Len() = 0;
     virtual bool Create(TPacket pPacket, Byte* pOutMAC) = 0;
