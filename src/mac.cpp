@@ -83,8 +83,8 @@ public:
       return false;
     }
 
-    ret = wc_HmacUpdate(&hmac, pPacket->Begin(), pPacket->PacketLen());
-    //Now we hash the entire unencrypted packet
+    //Now we hash the entire unencrypted packet, including the packet length field
+    ret = wc_HmacUpdate(&hmac, pPacket->Begin(), pPacket->PacketLen() + sizeof(UINT32));
     if (ret != 0)
     {
       return false;
