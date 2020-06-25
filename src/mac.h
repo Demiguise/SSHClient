@@ -3,7 +3,6 @@
 
 #include "ssh.h"
 #include "name-list.h"
-#include "packets.h"
 #include "crypto/key.hpp"
 
 namespace SSH
@@ -13,6 +12,10 @@ namespace SSH
     None,
     HMAC_SHA2_256
   };
+
+  //Forward declare Packets here to remove the need to include the whole header
+  class Packet;
+  using TPacket = std::shared_ptr<Packet>;
 
   class IMACHandler
   {
