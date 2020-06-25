@@ -240,6 +240,9 @@ PacketStore::PacketStore()
   //Ensure we have blank encryption/decryption ready
   mEncryptor = Crypto::Create(CryptoHandlers::None);
   mDecryptor = Crypto::Create(CryptoHandlers::None);
+
+  mOutgoingMAC = MAC::Create(MACHandlers::None);
+  mIncomingMAC = MAC::Create(MACHandlers::None);
 }
 
 std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
