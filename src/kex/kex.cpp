@@ -308,6 +308,8 @@ class DH_KEXHandler : public SSH::IKEXHandler
     {
       int ret = 0;
       wc_HashAlg hash;
+      int digestSize = wc_HashGetDigestSize(mHashType);
+      Byte scratchPad[WC_MAX_DIGEST_SIZE];
 
       ret = wc_HashInit(&hash, mHashType);
       if (ret != 0)
@@ -339,12 +341,13 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      int digestSize = wc_HashGetDigestSize(mHashType);
-      ret = wc_HashFinal(&hash, mHashType, outKey.Data());
+      ret = wc_HashFinal(&hash, mHashType, scratchPad);
       if (ret != 0)
       {
         return false;
       }
+
+      memcpy(outKey.Data(), scratchPad, outKey.Len());
 
       return true;
     }
