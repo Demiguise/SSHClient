@@ -1,4 +1,12 @@
 #include "mac.h"
+#include "endian.h"
+#include "packets.h"
+
+#define WOLFCRYPT_ONLY
+#define WOLFSSL_LIB
+#define WOLFSSL_AES_COUNTER
+#include <IDE/WIN10/user_settings.h>
+#include <wolfssl/wolfcrypt/hmac.h>
 
 using namespace SSH;
 
@@ -22,7 +30,7 @@ public:
     return true;
   }
 
-  virtual bool Create(TPacket pPacket) override
+  virtual bool Create(TPacket pPacket, Byte* pOutMAC) override
   {
     return true;
   }
@@ -50,8 +58,37 @@ public:
     return true;
   }
 
-  virtual bool Create(TPacket pPacket) override
+  virtual bool Create(TPacket pPacket, Byte* pOutMAC) override
   {
+    Hmac hmac;
+    int ret = wc_HmacInit(&hmac, nullptr, INVALID_DEVID);
+    if (ret != 0)
+    {
+      return false;
+    }
+
+    //First we hash the network ordered sequence number for the packet
+    UINT32 seqNumber = swap_endian<uint32_t>(pPacket->GetSequenceNumber());
+    ret = wc_HmacUpdate(&hmac, (Byte*)&seqNumber, sizeof(UINT32));
+    if (ret != 0)
+    {
+      return false;
+    }
+
+    //Now we hash the entire unencrypted packet
+    ret = wc_HmacUpdate(&hmac, pPacket->Begin(), pPacket->PacketLen());
+    if (ret != 0)
+    {
+      return false;
+    }
+
+    //Now we can output do the MAC field
+    ret = wc_HmacFinal(&hmac, pOutMAC);
+    if (ret != 0)
+    {
+      return false;
+    }
+
     return true;
   }
 

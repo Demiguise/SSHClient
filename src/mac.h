@@ -25,7 +25,7 @@ namespace SSH
     virtual bool SetKey(const Key& macKey, const Key& ivKey) = 0;
 
     virtual UINT32 Len() = 0;
-    virtual bool Create(TPacket pPacket) = 0;
+    virtual bool Create(TPacket pPacket, Byte* pOutMAC) = 0;
     virtual bool Verify(TPacket pPacket) = 0;
 
     virtual MACHandlers Type() = 0;
