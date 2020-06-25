@@ -57,6 +57,12 @@ public:
 
   virtual bool SetKey(const Key& macKey) override
   {
+    int ret = wc_HmacSetKey(&mHmac, WC_SHA256, macKey.Data(), macKey.Len());
+    if (ret != 0)
+    {
+      return false;
+    }
+
     return true;
   }
 
