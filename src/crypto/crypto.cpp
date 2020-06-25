@@ -67,6 +67,11 @@ public:
 
   virtual bool Encrypt(Byte* pBuf, const int bufLen) override
   {
+    if (bufLen % BlockLen() != 0)
+    {
+      return false;
+    }
+
     //AES uses encrypt call for both encryption and decryption
     int ret = wc_AesCtrEncrypt(&mKey, pBuf, pBuf, bufLen);
     if (ret != 0)
@@ -79,6 +84,11 @@ public:
 
   virtual bool Decrypt(Byte* pBuf, const int bufLen) override
   {
+    if (bufLen % BlockLen() != 0)
+    {
+      return false;
+    }
+
     //AES uses encrypt call for both encryption and decryption
     int ret = wc_AesCtrEncrypt(&mKey, pBuf, pBuf, bufLen);
     if (ret != 0)
