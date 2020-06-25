@@ -7,10 +7,10 @@ void MAC::PopulateNamelist(NameList& list)
   list.Add("hmac-sha2-256");
 }
 
-class NoneHandler : public IMACHandler
+class None_MACHandler : public IMACHandler
 {
 public:
-  NoneHandler() = default;
+  None_MACHandler() = default;
 
   virtual UINT32 Len() override
   {
@@ -41,6 +41,6 @@ TMACHandler MAC::Create(MACHandlers handler)
   {
     default:
     case MACHandlers::None:
-      return std::make_shared<NoneHandler>();
+      return std::make_shared<None_MACHandler>();
   }
 }
