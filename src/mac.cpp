@@ -30,12 +30,12 @@ public:
     return true;
   }
 
-  virtual bool Create(TPacket pPacket, Byte* pOutMAC) override
+  virtual bool Create(const Packet* const pPacket, Byte* pOutMAC) override
   {
     return true;
   }
 
-  virtual bool Verify(TPacket pPacket) override
+  virtual bool Verify(const Packet* const pPacket) override
   {
     return true;
   }
@@ -60,7 +60,7 @@ public:
     return true;
   }
 
-  virtual bool Create(TPacket pPacket, Byte* pOutMAC) override
+  virtual bool Create(const Packet* const pPacket, Byte* pOutMAC) override
   {
     int ret = wc_HmacInit(&mHmac, nullptr, INVALID_DEVID);
     if (ret != 0)
@@ -93,7 +93,7 @@ public:
     return true;
   }
 
-  virtual bool Verify(TPacket pPacket) override
+  virtual bool Verify(const Packet* const pPacket) override
   {
     return true;
   }

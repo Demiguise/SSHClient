@@ -15,7 +15,6 @@ namespace SSH
 
   //Forward declare Packets here to remove the need to include the whole header
   class Packet;
-  using TPacket = std::shared_ptr<Packet>;
 
   class IMACHandler
   {
@@ -25,8 +24,8 @@ namespace SSH
     virtual bool SetKey(const Key& macKey) = 0;
 
     virtual UINT32 Len() = 0;
-    virtual bool Create(TPacket pPacket, Byte* pOutMAC) = 0;
-    virtual bool Verify(TPacket pPacket) = 0;
+    virtual bool Create(const Packet* const pPacket, Byte* pOutMAC) = 0;
+    virtual bool Verify(const Packet* const pPacket) = 0;
 
     virtual MACHandlers Type() = 0;
   };
