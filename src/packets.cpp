@@ -38,7 +38,16 @@ int Packet::PacketLen() const
 
 const Byte* const Packet::MAC() const
 {
-  return &mPacket[mPacketLen];
+  return &mPacket[mPacketLen + sizeof(UINT32)];
+}
+
+Byte* Packet::MAC_Unsafe()
+{
+  /*
+    mPacketLen is Padding byte, payload, + padding.
+    To find the MAC we must append the packet len field
+  */
+  return const_cast<Byte*>(MAC());
 }
 
 UINT32 Packet::Remaining() const
@@ -222,7 +231,10 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   mIter = mPacket.begin();
 
   //Write the MAC
-  mMAC->Create(this, &mPacket[mPacketLen]);
+  if (mMAC->Type() != MACHandlers::None)
+  {
+    mMAC->Create(this, MAC_Unsafe());
+  }
 
   //Encrypt everything in the packet going out, apart from the MAC
   if (!mEncrypted && mCrypto->Encrypt(mPacket.data(), mPacketLen))

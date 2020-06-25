@@ -63,6 +63,9 @@ namespace SSH
     */
     bool mComplete = false;
 
+    //Internal access for convinience
+    Byte* MAC_Unsafe();
+
   public:
     enum class WriteMethod
     {
