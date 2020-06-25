@@ -280,8 +280,17 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
   pPacket->Write(pPacket->mPacketLen);
   pPacket->Write((Byte)pPacket->mPaddingLen);
 
-  pPacket->mCrypto = (type == PacketType::Write) ? mEncryptor : mDecryptor;
   pPacket->mType = type;
+  if (type == PacketType::Write)
+  {
+    pPacket->mCrypto = mEncryptor;
+    pPacket->mMAC = mOutgoingMAC;
+  }
+  else
+  {
+    pPacket->mCrypto = mDecryptor;
+    pPacket->mMAC = mIncomingMAC;
+  }
 
   //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
   if (type == PacketType::Read && (pPacket->mCrypto->Type() != CryptoHandlers::None))
@@ -326,8 +335,17 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
 
   pPacket->mSequenceNumber = seqNumber;
 
-  pPacket->mCrypto = (type == PacketType::Write) ? mEncryptor : mDecryptor;
   pPacket->mType = type;
+  if (type == PacketType::Write)
+  {
+    pPacket->mCrypto = mEncryptor;
+    pPacket->mMAC = mOutgoingMAC;
+  }
+  else
+  {
+    pPacket->mCrypto = mDecryptor;
+    pPacket->mMAC = mIncomingMAC;
+  }
 
   //We're assuming that if a cryptographic handler has been set, incoming packets are encrypted.
   if (type == PacketType::Read && (pPacket->mCrypto->Type() != CryptoHandlers::None))
@@ -346,6 +364,7 @@ TPacket PacketStore::Copy(TPacket pPacket)
   pNewPacket->mSequenceNumber = pPacket->mSequenceNumber;
 
   pNewPacket->mCrypto = pPacket->mCrypto;
+  pNewPacket->mMAC = pPacket->mMAC;
 
   return pNewPacket;
 }

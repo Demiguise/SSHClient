@@ -52,6 +52,7 @@ namespace SSH
 
     //Set by the packet store on creation
     TCryptoHandler mCrypto;
+    TMACHandler mMAC;
 
     PacketType mType;
     bool mEncrypted = false;
