@@ -10,11 +10,6 @@
 
 using namespace SSH;
 
-Key::~Key()
-{
-
-}
-
 void Crypto::PopulateNamelist(NameList& list)
 {
   list.Add("aes128-ctr");
