@@ -365,6 +365,7 @@ TPacket PacketStore::Copy(TPacket pPacket)
 
   pNewPacket->mCrypto = pPacket->mCrypto;
   pNewPacket->mMAC = pPacket->mMAC;
+  pNewPacket->mType = pPacket->mType;
 
   return pNewPacket;
 }
