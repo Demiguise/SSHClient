@@ -66,7 +66,8 @@ Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   , mStage(ConStage::Null)
   , mLogFunc(options.log)
   , mLogLevel(options.logLevel)
-  , mSequenceNumber(0)
+  , mIncomingSequenceNumber(0)
+  , mOutgoingSequenceNumber(0)
 {
   mClientKex.mIdent = "SSH-2.0-cppsshSSH_3.6.3q3";
 
@@ -197,7 +198,7 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
 
 void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)
 {
-  pPacket->PrepareWrite(mSequenceNumber++);
+  pPacket->PrepareWrite(mOutgoingSequenceNumber++);
   mSendQueue.push(pPacket);
   Log(LogLevel::Debug, "Packet (%d) has been queued for sending", pPacket->GetSequenceNumber());
 }
@@ -476,14 +477,14 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
 
   while (bytesRemaining >= 4)
   {
-    auto [pNewPacket, bytesConsumed] = mPacketStore.Create(pIter, bytesRemaining, mSequenceNumber, PacketType::Read);
+    auto [pNewPacket, bytesConsumed] = mPacketStore.Create(pIter, bytesRemaining, mIncomingSequenceNumber, PacketType::Read);
     if (!pNewPacket)
     {
-      Log(LogLevel::Error, "Failed to allocate packet (%d)!", mSequenceNumber);
+      Log(LogLevel::Error, "Failed to allocate incoming packet (%d)!", mIncomingSequenceNumber);
       return bytesRemaining;
     }
 
-    mSequenceNumber++;
+    mIncomingSequenceNumber++;
     bytesRemaining -= bytesConsumed;
     pIter += bytesConsumed;
 

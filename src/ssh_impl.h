@@ -62,7 +62,8 @@ namespace SSH
     KEXData mClientKex;
     TKEXHandler mKEXHandler;
 
-    UINT32 mSequenceNumber;
+    UINT32 mIncomingSequenceNumber;
+    UINT32 mOutgoingSequenceNumber;
 
     PacketStore mPacketStore;
 
