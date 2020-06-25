@@ -715,7 +715,6 @@ void Client::Impl::SendNewKeys()
 {
   TPacket pPacket = mPacketStore.Create(1, PacketType::Write);
   pPacket->Write(SSH_MSG::NEWKEYS);
-  Queue(pPacket);
 
   //We can now activate MAC integrity for outgoing packets
   TMACHandler macHandler = MAC::Create(MACHandlers::HMAC_SHA2_256);
@@ -736,6 +735,8 @@ void Client::Impl::SendNewKeys()
   mPacketStore.SetOutgoingMACHandler(macHandler);
   mPacketStore.SetEncryptionHandler(cryptoHandler);
   Log(LogLevel::Info, "Set new Outgoing MAC and Encryption Handlers");
+
+  Queue(pPacket);
 }
 
 void Client::Impl::SendServiceRequest()
