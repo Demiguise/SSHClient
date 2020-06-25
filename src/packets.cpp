@@ -206,7 +206,8 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   mSequenceNumber = seqNumber;
   mIter = mPacket.begin();
 
-  if (!mEncrypted && mCrypto->Encrypt(Payload_Unsafe(), PayloadLen()))
+  //Encrypt everything in the packet going out, apart from the MAC
+  if (!mEncrypted && mCrypto->Encrypt(mPacket.data(), mPacketLen))
   {
     mEncrypted = true;
   }
