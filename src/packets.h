@@ -57,6 +57,12 @@ namespace SSH
     PacketType mType;
     bool mEncrypted = false;
 
+    /*
+      Set to true once a prepare call has been made so we don't
+      use more MAC and encryption calls.
+    */
+    bool mComplete = false;
+
   public:
     enum class WriteMethod
     {

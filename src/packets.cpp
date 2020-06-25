@@ -210,6 +210,12 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
     return;
   }
 
+  if (mComplete)
+  {
+    //This should probably raise an error
+    return;
+  }
+
   //TODO: Write random bytes into the padding string
   std::fill(mIter, mIter+mPaddingLen, 0xAD);
   mSequenceNumber = seqNumber;
@@ -220,11 +226,19 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   {
     mEncrypted = true;
   }
+
+  mComplete = true;
 }
 
 void Packet::PrepareRead()
 {
   if (mType != PacketType::Read)
+  {
+    //This should probably raise an error
+    return;
+  }
+
+  if (mComplete)
   {
     //This should probably raise an error
     return;
@@ -236,6 +250,8 @@ void Packet::PrepareRead()
   {
     mEncrypted = false;
   }
+
+  mComplete = true;
 }
 
 int Packet::Send(TSendFunc sendFunc)
