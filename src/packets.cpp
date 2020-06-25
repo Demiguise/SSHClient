@@ -267,20 +267,21 @@ std::shared_ptr<Packet> PacketStore::Create(int payloadLen, PacketType type)
   /*
     Figure out how much padding we need.
   */
-  pPacket->mTotalPacketLen =  sizeof(UINT32) +      //packet_length
-                              sizeof(Byte) +        //padding_length
-                              payloadLen +          //payload
-                              pPacket->mMAC->Len(); // MAC
+  UINT32 macLen = pPacket->mMAC->Len();
+  pPacket->mTotalPacketLen =  sizeof(UINT32) +  //packet_length
+                              sizeof(Byte) +    //padding_length
+                              payloadLen +      //payload
+                              macLen;           //MAC
 
   /*
     Now figure out how much padding we need.
-    Forcing multiple of 8 until we have block ciphers.
   */
-  UINT32 padding = (8 - (pPacket->mTotalPacketLen % 8));
+  UINT32 blockLen = std::max(8u, pPacket->mCrypto->BlockLen());
+  UINT32 padding = (blockLen - (pPacket->mTotalPacketLen % blockLen));
   if (padding < minPaddingSize)
   {
     //Simple way to ensure we have our minimum
-    padding += 8;
+    padding += blockLen;
   }
 
   pPacket->mTotalPacketLen += padding;
