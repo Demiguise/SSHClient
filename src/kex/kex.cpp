@@ -56,6 +56,53 @@ class DH_KEXHandler : public SSH::IKEXHandler
       return true;
     }
 
+    /*
+      Used when the requested key length is greater than the digest size of the hash.
+      Expects pOutBuffer to be big enough for the digest size.
+    */
+    bool GeneratePartialKey(const Key& inKey, int curKeyLen, Byte* pOutBuffer)
+    {
+      wc_HashAlg hash;
+      int ret = wc_HashInit(&hash, mHashType);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      UINT32 kLen = swap_endian<uint32_t>(mK.Len());
+      ret = wc_HashUpdate(&hash, mHashType, (Byte*)&kLen, sizeof(UINT32));
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, mK.Data(), mK.Len());
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, mH.Data(), mH.Len());
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashUpdate(&hash, mHashType, inKey.Data(), curKeyLen);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      ret = wc_HashFinal(&hash, mHashType, pOutBuffer);
+      if (ret != 0)
+      {
+        return false;
+      }
+
+      return true;
+    }
+
   public:
     DH_KEXHandler()
     {}
@@ -311,6 +358,13 @@ class DH_KEXHandler : public SSH::IKEXHandler
       int digestSize = wc_HashGetDigestSize(mHashType);
       Byte scratchPad[WC_MAX_DIGEST_SIZE];
 
+      /*
+        Keys may be longer than what the digest supports, so we may need
+        multiple rounds of hashing to get there.
+      */
+      int numBlocks = outKey.Len() / digestSize;
+      int remainder = outKey.Len() % digestSize;
+
       ret = wc_HashInit(&hash, mHashType);
       if (ret != 0)
       {
@@ -354,7 +408,44 @@ class DH_KEXHandler : public SSH::IKEXHandler
         return false;
       }
 
-      memcpy(outKey.Data(), scratchPad, outKey.Len());
+      if (numBlocks == 0)
+      {
+        /*
+          Our requested key length is below the digest size of this hash,
+          we should be able to simply output the digest and copy it over.
+        */
+        memcpy(outKey.Data(), scratchPad, outKey.Len());
+      }
+      else
+      {
+        /*
+          Our requested key length is above the digest size of this hash.
+          This means that we must concatenate the data and perform extra hashing operations.
+        */
+        int curKeyLen = digestSize;
+        memcpy(outKey.Data(), scratchPad, digestSize);
+
+        for (int curBlock = 1; curBlock < numBlocks; ++curBlock)
+        {
+          if (!GeneratePartialKey(outKey, curKeyLen, scratchPad))
+          {
+            return false;
+          }
+
+          curKeyLen += digestSize;
+          memcpy(outKey.Data() + curKeyLen, scratchPad, digestSize);
+        }
+
+        if (remainder > 0)
+        {
+          if (!GeneratePartialKey(outKey, curKeyLen, scratchPad))
+          {
+            return false;
+          }
+
+          memcpy(outKey.Data() + curKeyLen, scratchPad, remainder);
+        }
+      }
 
       return true;
     }
