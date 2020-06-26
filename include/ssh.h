@@ -43,7 +43,7 @@ namespace SSH
   using TOnRecvFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
-  using TOnAuthFunc = std::function<TResult (TCtx ctx, UserAuthMethod, const Byte* pBuf, const int bufLen)>;
+  using TOnAuthFunc = std::function<TResult (TCtx ctx, UserAuthMethod, Byte* pBuf, const int bufLen)>;
   using TAuthMethods = std::queue<UserAuthMethod>;
 
   struct ClientOptions

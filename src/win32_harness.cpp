@@ -109,7 +109,7 @@ int main()
         printf("SSH Client: %s\n", pszLogString);
     };
 
-    SSH::TOnAuthFunc onAuthFunc = [](SSH::TCtx ctx, SSH::UserAuthMethod method, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
+    SSH::TOnAuthFunc onAuthFunc = [](SSH::TCtx ctx, SSH::UserAuthMethod method, SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
         std::string sshPassword = "upthehill"; //Nice and secure
         memcpy(pBuf, sshPassword.data(), sshPassword.length());
         return sshPassword.length();
