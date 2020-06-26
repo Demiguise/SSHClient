@@ -130,7 +130,7 @@ namespace SSH
       Prepares the packet for reading, setting the iterator to the beginning
       of the payload.
     */
-    void PrepareRead();
+    bool PrepareRead();
 
     int Send(TSendFunc sendFunc);
   };

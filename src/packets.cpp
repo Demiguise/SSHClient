@@ -245,18 +245,16 @@ void Packet::PrepareWrite(const UINT32 seqNumber)
   mComplete = true;
 }
 
-void Packet::PrepareRead()
+bool Packet::PrepareRead()
 {
   if (mType != PacketType::Read)
   {
-    //This should probably raise an error
-    return;
+    return false;
   }
 
   if (mComplete)
   {
-    //This should probably raise an error
-    return;
+    return false;
   }
 
   mIter = mPacket.begin() + payloadOffset + sizeof(Byte);
@@ -270,17 +268,18 @@ void Packet::PrepareRead()
     else
     {
       //This should probably raise an error
-      return;
+      return false;
     }
   }
 
   if (!mMAC->Verify(this))
   {
     //This should probably raise an error
-    return;
+    return false;
   }
 
   mComplete = true;
+  return true;
 }
 
 int Packet::Send(TSendFunc sendFunc)
