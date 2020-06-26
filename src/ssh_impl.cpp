@@ -413,19 +413,28 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
             SetStage(ConStage::UserLoggedIn);
             break;
           }
-          case UserAuthResponse::Retry:
-          {
-            UserAuthMethod newMethod = mAuthMethods.front();
-            mAuthMethods.pop();
-
-            SendUserAuthRequest(newMethod);
-
-            break;
-          }
           case UserAuthResponse::Banner:
           {
             //Do nothing
             break;
+          }
+          case UserAuthResponse::Retry:
+          {
+            if (mAuthMethods.size() != 0)
+            {
+              UserAuthMethod newMethod = mAuthMethods.front();
+              mAuthMethods.pop();
+
+              SendUserAuthRequest(newMethod);
+
+              break;
+            }
+            else
+            {
+              Log(LogLevel::Info, "No more available authentication methods");
+              Disconnect();
+              return;
+            }
           }
           case UserAuthResponse::Failure:
           default:
