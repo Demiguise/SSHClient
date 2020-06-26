@@ -57,6 +57,9 @@ namespace SSH
     TSendFunc mSendFunc;
     TRecvFunc mRecvFunc;
     TOnRecvFunc mOnRecvFunc;
+    TOnAuthFunc mOnAuthFunc;
+
+    TAuthVec mAuthMethods;
 
     TCtx mCtx;
     State mState;

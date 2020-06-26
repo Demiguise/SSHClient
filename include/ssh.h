@@ -20,6 +20,11 @@ namespace SSH
     Connected,
   };
 
+  enum class UserAuthMethod
+  {
+    None,
+    Password,
+  };
 
   enum LogLevel
   {
@@ -37,11 +42,16 @@ namespace SSH
   using TOnRecvFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
+  using TOnAuthFunc = std::function<TResult (TCtx ctx, UserAuthMethod, const Byte* pBuf, const int bufLen)>;
+  using TAuthVec = std::vector<UserAuthMethod>;
+
   struct ClientOptions
   {
     TSendFunc send;   //Function for how the SSH Client will SEND data into the socket
     TRecvFunc recv;   //Function for how the SSH Client will RECEIVE data from a socket
     TOnRecvFunc onRecv; //Function for when the SSH Client has received data for your application
+    TOnAuthFunc onAuth; //Function for when the SSH Client requests private data for authentication
+    TAuthVec authMethods; //Authentication methods available to the SSH client
 
     TLogFunc log;
     LogLevel logLevel;
