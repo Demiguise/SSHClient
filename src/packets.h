@@ -103,6 +103,7 @@ namespace SSH
     int Consume(const Byte* pBuf, const int numBytes);
 
     int Write(const Byte data);
+    int Write(const bool data);
     int Write(const SSH_MSG data);
     int Write(const int data); //Will be treated as a UINT32 when writing
     int Write(const UINT32 data);
