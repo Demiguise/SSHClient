@@ -40,6 +40,7 @@ namespace SSH
   std::string AuthMethodToString(UserAuthMethod method);
 
   class IPacket;
+  class Client;
 
   class Client::Impl
   {
@@ -63,6 +64,7 @@ namespace SSH
     TCtx mCtx;
     State mState;
     ConStage mStage;
+    Client* mpOwner;
 
     TPacketQueue mRecvQueue;
     TPacketQueue mSendQueue;
@@ -126,7 +128,6 @@ namespace SSH
     UserAuthResponse ReceiveUserAuth(TPacket pPacket);
 
     //Channel Related
-    void OpenChannel(ChannelTypes type, TOnRecvFunc callback);
     void SendChannelOpenRequest();
 
     /*
@@ -138,7 +139,7 @@ namespace SSH
     TResult Send(std::shared_ptr<Packet> pPacket);
 
   public:
-    Impl(ClientOptions& options, TCtx& ctx);
+    Impl(ClientOptions& options, TCtx& ctx, Client* pOwner);
     ~Impl();
 
     TResult Send(const Byte* pBuf, const int bufLen);
@@ -148,6 +149,8 @@ namespace SSH
 
     void Connect();
     void Disconnect();
+
+    void OpenChannel(ChannelTypes type, TOnRecvFunc callback);
 
     State GetState() const { return mState; }
   };

@@ -70,12 +70,13 @@ std::string SSH::AuthMethodToString(UserAuthMethod method)
   }
 }
 
-Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
+Client::Impl::Impl(ClientOptions& options, TCtx& ctx, Client* pOwner)
   : mOpts(options)
   , mActiveAuthMethod(UserAuthMethod::None)
   , mCtx(ctx)
   , mState(State::Idle)
   , mStage(ConStage::Null)
+  , mpOwner(pOwner)
   , mIncomingSequenceNumber(0)
   , mOutgoingSequenceNumber(0)
 {
@@ -416,6 +417,9 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           {
             SetStage(ConStage::UserLoggedIn);
             SetState(State::Connected);
+
+            mOpts.mOnConnect(mpOwner);
+
             break;
           }
           case UserAuthResponse::Banner:
