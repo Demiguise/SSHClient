@@ -827,6 +827,23 @@ bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
   return true;
 }
 
+void Client::Impl::SendUserAuthRequest()
+{
+  //Service name here refers to the service to start AFTER userauth has succeeded
+  std::string serviceName = "ssh-connection";
+
+  //This packet length changes depending on what methods are used
+  UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
+                      sizeof(UINT32) +        //User name length field
+                      0 +                     //User name
+                      sizeof(UINT32) +        //Service name length field
+                      serviceName.length() +  //Service name
+                      sizeof(UINT32) +        //Method name length field
+                      0;                      //Method name
+
+  //Select best method to auth with
+}
+
 Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 {
   Byte msgId;

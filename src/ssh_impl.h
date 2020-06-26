@@ -122,6 +122,7 @@ namespace SSH
     //Authentication Stages
     void SendServiceRequest();
     bool ReceiveServiceAccept(TPacket pPacket);
+    void SendUserAuthRequest();
     UserAuthResponse ReceiveUserAuth(TPacket pPacket);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
