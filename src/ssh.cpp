@@ -62,9 +62,9 @@ TResult Client::Send(const Byte* pBuf, const int bufLen)
   return mImpl->Send(pBuf, bufLen);
 }
 
-void Client::Connect(const std::string pszUser)
+void Client::Connect()
 {
-  mImpl->Connect(pszUser);
+  mImpl->Connect();
 }
 
 void Client::Disconnect()

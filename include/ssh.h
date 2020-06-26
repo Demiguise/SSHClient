@@ -27,6 +27,12 @@ namespace SSH
     Password,
   };
 
+  enum class ChannelTypes
+  {
+    Null,
+    Session,
+  };
+
   enum LogLevel
   {
     Error   = 0,
@@ -43,6 +49,8 @@ namespace SSH
   using TOnRecvFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
+  using TOnConnectFunc = std::function<void (Client* pClient)>;
+
   using TOnAuthFunc = std::function<TResult (TCtx ctx, UserAuthMethod, Byte* pBuf, const int bufLen)>;
   using TAuthMethods = std::queue<UserAuthMethod>;
 
@@ -50,9 +58,11 @@ namespace SSH
   {
     TSendFunc send;   //Function for how the SSH Client will SEND data into the socket
     TRecvFunc recv;   //Function for how the SSH Client will RECEIVE data from a socket
-    TOnRecvFunc onRecv; //Function for when the SSH Client has received data for your application
     TOnAuthFunc onAuth; //Function for when the SSH Client requests private data for authentication
     TAuthMethods authMethods; //Authentication methods available to the SSH client
+
+    TOnConnectFunc onConnect; //Function for when the SSH client has successully connected to the remote
+    std::string userName;
 
     TLogFunc log;
     LogLevel logLevel;
@@ -74,8 +84,10 @@ namespace SSH
 
     TResult Send(const Byte* pBuf, const int bufLen);
 
-    void Connect(const std::string pszUser);
+    void Connect();
     void Disconnect();
+
+    void OpenChannel(ChannelTypes type, TOnRecvFunc callback)
 
     State GetState() const;
   };
