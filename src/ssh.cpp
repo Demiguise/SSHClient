@@ -72,6 +72,11 @@ void Client::Disconnect()
   mImpl->Disconnect();
 }
 
+void Client::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
+{
+  mImpl->OpenChannel(type, callback);
+}
+
 State Client::GetState() const
 {
   return mImpl->GetState();

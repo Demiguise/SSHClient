@@ -415,7 +415,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           case UserAuthResponse::Success:
           {
             SetStage(ConStage::UserLoggedIn);
-            OpenNewChannel();
+            SetState(State::Connected);
             break;
           }
           case UserAuthResponse::Banner:
@@ -990,7 +990,7 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
   }
 }
 
-void Client::Impl::OpenNewChannel()
+void Client::Impl::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
 {
 
 }
