@@ -862,12 +862,34 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
   {
     case UserAuthMethod::Password:
     {
+      //Get user's password from our authentication function
+      SecureBuffer<Byte, 512> passwordBuffer;
+      auto passwordLen = mOnAuthFunc(mCtx, method, passwordBuffer.Buffer(), passwordBuffer.Length());
+
+      if (!passwordLen.has_value())
+      {
+        Disconnect();
+        return;
+      }
+
+      packetLen +=  sizeof(Byte) +        //Password change request ("Usually false")
+                    sizeof(UINT32) +      //Password field length
+                    passwordLen.value();  //Password
+
+      pPacket = mPacketStore.Create(packetLen, PacketType::Write);
+
+      pPacket->Write(SSH_MSG::USERAUTH_REQUEST);
+      pPacket->Write(mUserName);
+      pPacket->Write(serviceName);
+      pPacket->Write(methodName);
+      pPacket->Write(false);  //This is not a password change request
+      pPacket->Write(passwordBuffer.Buffer(), passwordBuffer.Length());
+
       break;
     }
     case UserAuthMethod::None:
     {
       //None is special and requires no other data
-
       pPacket = mPacketStore.Create(packetLen, PacketType::Write);
 
       pPacket->Write(SSH_MSG::USERAUTH_REQUEST);
