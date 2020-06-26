@@ -415,6 +415,11 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           }
           case UserAuthResponse::Retry:
           {
+            UserAuthMethod newMethod = mAuthMethods.front();
+            mAuthMethods.pop();
+
+            SendUserAuthRequest(newMethod);
+
             break;
           }
           case UserAuthResponse::Banner:
@@ -908,6 +913,7 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
   }
 
   Queue(pPacket);
+  mActiveAuthMethod = method;
 }
 
 Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
