@@ -301,8 +301,12 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
       break;
     }
 
-    pPacket->PrepareRead();
     mRecvQueue.pop();
+    if (!pPacket->PrepareRead())
+    {
+      Log(LogLevel::Error, "Failed to prepare to read");
+      return;
+    }
 
     switch (mStage)
     {
