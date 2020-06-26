@@ -52,6 +52,11 @@ public:
 
   virtual UINT32 Len() override
   {
+    return MACLen();
+  }
+
+  static UINT32 MACLen()
+  {
     return WC_SHA256_DIGEST_SIZE;
   }
 
@@ -117,5 +122,17 @@ TMACHandler MAC::Create(MACHandlers handler)
     default:
     case MACHandlers::None:
       return std::make_shared<None_MACHandler>();
+  }
+}
+
+UINT32 MAC::Len(MACHandlers handler)
+{
+  switch (handler)
+  {
+    case MACHandlers::HMAC_SHA2_256:
+      return HMAC_SHA2_256_MACHandler::MACLen();
+    default:
+    case MACHandlers::None:
+      return 0;
   }
 }

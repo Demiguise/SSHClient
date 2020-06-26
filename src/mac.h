@@ -37,6 +37,7 @@ namespace SSH
     void PopulateNamelist(NameList& list);
 
     TMACHandler Create(MACHandlers handler);
+    UINT32 Len(MACHandlers handler);
   }
 }
 
