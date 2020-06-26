@@ -107,7 +107,10 @@ public:
 
   virtual bool Verify(const Packet* const pPacket) override
   {
-    return true;
+    TByteString MAC(Len());
+    Create(pPacket, MAC.data());
+
+    return (memcmp(MAC.data(), pPacket->MAC(), Len()) == 0);
   }
 
   virtual MACHandlers Type() override { return MACHandlers::HMAC_SHA2_256; }
