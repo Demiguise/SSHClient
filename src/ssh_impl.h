@@ -56,21 +56,13 @@ namespace SSH
     };
 
   protected:
-    TSendFunc mSendFunc;
-    TRecvFunc mRecvFunc;
-    TOnRecvFunc mOnRecvFunc;
-    TOnAuthFunc mOnAuthFunc;
+    ClientOptions mOpts;
 
-    TAuthMethods mAuthMethods;
     UserAuthMethod mActiveAuthMethod;
-    std::string mUserName;
 
     TCtx mCtx;
     State mState;
     ConStage mStage;
-
-    TLogFunc mLogFunc;
-    LogLevel mLogLevel;
 
     TPacketQueue mRecvQueue;
     TPacketQueue mSendQueue;
@@ -154,7 +146,7 @@ namespace SSH
 
     void Poll();
 
-    void Connect(const std::string user);
+    void Connect();
     void Disconnect();
 
     State GetState() const { return mState; }

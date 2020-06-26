@@ -71,17 +71,11 @@ std::string SSH::AuthMethodToString(UserAuthMethod method)
 }
 
 Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
-  : mSendFunc(options.send)
-  , mRecvFunc(options.recv)
-  , mOnRecvFunc(options.onRecv)
-  , mOnAuthFunc(options.onAuth)
-  , mAuthMethods(options.authMethods)
+  : mOpts(options)
   , mActiveAuthMethod(UserAuthMethod::None)
   , mCtx(ctx)
   , mState(State::Idle)
   , mStage(ConStage::Null)
-  , mLogFunc(options.log)
-  , mLogLevel(options.logLevel)
   , mIncomingSequenceNumber(0)
   , mOutgoingSequenceNumber(0)
 {
@@ -115,7 +109,7 @@ void Client::Impl::Log(LogLevel level, const std::string frmt, ...)
   char buffer[Impl::sMaxLogLength];
   int bytesWritten = 0;
 
-  if (mLogLevel < level)
+  if (mOpts.mLogLevel < level)
   {
     return;
   }
@@ -128,7 +122,7 @@ void Client::Impl::Log(LogLevel level, const std::string frmt, ...)
   //Add the null terminator.
   buffer[bytesWritten] = '\0';
 
-  mLogFunc(buffer);
+  mOpts.mLogFunc(buffer);
 }
 
 void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const Byte* pBuf, const int bufLen)
@@ -138,7 +132,7 @@ void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const
   constexpr int extraChars = 4; //[...]\n...\0
   constexpr int columnLimit = 16;
 
-  if (mLogLevel < level)
+  if (mOpts.mLogLevel < level)
   {
     return;
   }
@@ -168,7 +162,7 @@ void Client::Impl::LogBuffer(LogLevel level, const std::string bufferName, const
   //Ensure we start a new line and end the string
   pLogBuf[bytesWritten++] = '\0';
 
-  mLogFunc(pLogBuf.get());
+  mOpts.mLogFunc(pLogBuf.get());
 }
 
 void Client::Impl::SetStage(ConStage newStage)
@@ -185,7 +179,7 @@ void Client::Impl::SetState(State newState)
 
 TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
 {
-  auto sentBytes = mSendFunc(mCtx, pBuf, bufLen);
+  auto sentBytes = mOpts.mSend(mCtx, pBuf, bufLen);
   if (!sentBytes.has_value())
   {
     Log(LogLevel::Warning, "Failed to send %d bytes", bufLen);
@@ -250,7 +244,7 @@ void Client::Impl::Poll()
       }
     }
 
-    auto recievedBytes = mRecvFunc(mCtx, buf.Buffer(), buf.Length());
+    auto recievedBytes = mOpts.mRecv(mCtx, buf.Buffer(), buf.Length());
 
     if (!recievedBytes.has_value() || recievedBytes.value() == 0)
     {
@@ -431,10 +425,10 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           }
           case UserAuthResponse::Retry:
           {
-            if (mAuthMethods.size() != 0)
+            if (mOpts.mAuthMethods.size() != 0)
             {
-              UserAuthMethod newMethod = mAuthMethods.front();
-              mAuthMethods.pop();
+              UserAuthMethod newMethod = mOpts.mAuthMethods.front();
+              mOpts.mAuthMethods.pop();
 
               SendUserAuthRequest(newMethod);
 
@@ -886,7 +880,7 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
   //This packet length changes depending on what methods are used
   UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
                       sizeof(UINT32) +        //User name length field
-                      mUserName.length() +    //User name
+                      mOpts.mUserName.length() +    //User name
                       sizeof(UINT32) +        //Service name length field
                       serviceName.length() +  //Service name
                       sizeof(UINT32) +        //Method name length field
@@ -900,7 +894,7 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
     {
       //Get user's password from our authentication function
       SecureBuffer<Byte, 512> passwordBuffer;
-      auto passwordLen = mOnAuthFunc(mCtx, method, passwordBuffer.Buffer(), passwordBuffer.Length());
+      auto passwordLen = mOpts.mOnAuth(mCtx, method, passwordBuffer.Buffer(), passwordBuffer.Length());
 
       if (!passwordLen.has_value())
       {
@@ -915,7 +909,7 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
       pPacket = mPacketStore.Create(packetLen, PacketType::Write);
 
       pPacket->Write(SSH_MSG::USERAUTH_REQUEST);
-      pPacket->Write(mUserName);
+      pPacket->Write(mOpts.mUserName);
       pPacket->Write(serviceName);
       pPacket->Write(methodName);
       pPacket->Write(false);  //This is not a password change request
@@ -929,7 +923,7 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
       pPacket = mPacketStore.Create(packetLen, PacketType::Write);
 
       pPacket->Write(SSH_MSG::USERAUTH_REQUEST);
-      pPacket->Write(mUserName);
+      pPacket->Write(mOpts.mUserName);
       pPacket->Write(serviceName);
       pPacket->Write(methodName);
 
@@ -1017,10 +1011,9 @@ bool Client::Impl::ReceiveMessage(TPacket pPacket)
   return true;
 }
 
-void Client::Impl::Connect(const std::string user)
+void Client::Impl::Connect()
 {
-  Log(LogLevel::Info, "Beginning to connect with user %s", user.c_str());
-  mUserName = user;
+  Log(LogLevel::Info, "Beginning to connect with user %s", mOpts.mUserName.c_str());
 
   Byte buf[512];
   int bytesWritten = snprintf((char*)buf, sizeof(buf), "%s", mClientKex.mIdent.c_str());
