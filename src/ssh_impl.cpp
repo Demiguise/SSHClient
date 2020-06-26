@@ -177,6 +177,12 @@ void Client::Impl::SetStage(ConStage newStage)
   mStage = newStage;
 }
 
+void Client::Impl::SetState(State newState)
+{
+  Log(LogLevel::Info, "State: (%s) -> (%s)", StateToString(mState), StateToString(newState));
+  mState = newState;
+}
+
 TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
 {
   auto sentBytes = mSendFunc(mCtx, pBuf, bufLen);
