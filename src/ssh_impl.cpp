@@ -57,6 +57,16 @@ std::string SSH::StageToString(ConStage stage)
   }
 }
 
+std::string SSH::AuthMethodToString(UserAuthMethod method)
+{
+  switch (method)
+  {
+    case UserAuthMethod::None: return "none";
+    case UserAuthMethod::Password: return "password";
+    default: return "unknown";
+  }
+}
+
 Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   : mSendFunc(options.send)
   , mRecvFunc(options.recv)
@@ -387,8 +397,8 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           to get information on which authentication methods the server
           will accept.
         */
-
-        [[fallthrough]];
+        SendUserAuthRequest();
+        break;
       }
       case ConStage::ReceivedServiceAccept:
       {
@@ -837,13 +847,51 @@ void Client::Impl::SendUserAuthRequest()
   //This packet length changes depending on what methods are used
   UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
                       sizeof(UINT32) +        //User name length field
-                      0 +                     //User name
+                      mUserName.length() +    //User name
                       sizeof(UINT32) +        //Service name length field
                       serviceName.length() +  //Service name
-                      sizeof(UINT32) +        //Method name length field
-                      0;                      //Method name
+                      sizeof(UINT32);         //Method name length field
 
   //Select best method to auth with
+  if (mAuthMethods.size() == 0)
+  {
+    //We already ran out of auth methods for some reason
+    Disconnect();
+    return;
+  }
+
+  TPacket pPacket = nullptr;
+
+  mActiveAuthMethod = mAuthMethods.front();
+  mAuthMethods.pop();
+  std::string methodName = AuthMethodToString(mActiveAuthMethod);
+  switch (mActiveAuthMethod)
+  {
+    case UserAuthMethod::Password:
+    {
+      break;
+    }
+    case UserAuthMethod::None:
+    {
+      //None is special and requires no other data
+      packetLen += methodName.length();
+
+      pPacket = mPacketStore.Create(packetLen, PacketType::Write);
+
+      pPacket->Write(SSH_MSG::USERAUTH_REQUEST);
+      pPacket->Write(mUserName);
+      pPacket->Write(serviceName);
+      pPacket->Write(methodName);
+    }
+    default:
+    {
+      //We've clearly added a new authentication method with no handling
+      Disconnect();
+      return;
+    }
+  }
+
+  Queue(pPacket);
 }
 
 Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
@@ -894,11 +942,12 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
   }
 }
 
-void Client::Impl::Connect(const std::string pszUser)
+void Client::Impl::Connect(const std::string user)
 {
   mState = State::Connecting;
 
-  Log(LogLevel::Info, "Beginning to connect with user %s", pszUser.c_str());
+  Log(LogLevel::Info, "Beginning to connect with user %s", user.c_str());
+  mUserName = user;
 
   Byte buf[512];
   int bytesWritten = snprintf((char*)buf, sizeof(buf), "%s", mClientKex.mIdent.c_str());

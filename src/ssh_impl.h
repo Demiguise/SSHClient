@@ -36,6 +36,7 @@ namespace SSH
   };
 
   std::string StageToString(ConStage stage);
+  std::string AuthMethodToString(UserAuthMethod method);
 
   class IPacket;
 
@@ -59,7 +60,9 @@ namespace SSH
     TOnRecvFunc mOnRecvFunc;
     TOnAuthFunc mOnAuthFunc;
 
-    TAuthVec mAuthMethods;
+    TAuthMethods mAuthMethods;
+    UserAuthMethod mActiveAuthMethod;
+    std::string mUserName;
 
     TCtx mCtx;
     State mState;
@@ -139,7 +142,7 @@ namespace SSH
 
     void Poll();
 
-    void Connect(const std::string pszUser);
+    void Connect(const std::string user);
     void Disconnect();
 
     State GetState() const { return mState; }
