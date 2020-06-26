@@ -401,6 +401,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
         }
 
         SetStage(ConStage::ReceivedServiceAccept);
+        SetState(State::Authenticating);
 
         /*
           Clients can send a "none" authentication method message
@@ -987,8 +988,6 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
 void Client::Impl::Connect(const std::string user)
 {
-  mState = State::Connecting;
-
   Log(LogLevel::Info, "Beginning to connect with user %s", user.c_str());
   mUserName = user;
 
@@ -1000,6 +999,8 @@ void Client::Impl::Connect(const std::string user)
   Send(buf, bytesWritten);
   SetStage(ConStage::SentClientID);
 
+  SetState(State::Connecting);
+
   Log(LogLevel::Debug, "Starting poll async call");
   auto fut = std::async(std::launch::async, &Impl::Poll, this);
 }
@@ -1007,7 +1008,7 @@ void Client::Impl::Connect(const std::string user)
 void Client::Impl::Disconnect()
 {
   Log(LogLevel::Info, "Disconnecting client");
-  mState = State::Disconnected;
+  SetState(State::Disconnected);
   SetStage(ConStage::Null);
 }
 
