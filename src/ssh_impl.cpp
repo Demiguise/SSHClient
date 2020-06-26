@@ -780,7 +780,15 @@ bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
 
   //Verify this is a NewKeys packet
   pPacket->Read(msgId);
-  if (msgId != SSH_MSG::SERVICE_ACCEPT)
+  if (msgId == SSH_MSG::USERAUTH_BANNER)
+  {
+    //We don't do anything with the banner messages at the moment but we can log them out regardless.
+    std::string bannerMessage;
+    pPacket->Read(bannerMessage);
+    Log(LogLevel::Info, "Banner Message: %s", bannerMessage.c_str());
+    return true;
+  }
+  else if (msgId != SSH_MSG::SERVICE_ACCEPT)
   {
     Log(LogLevel::Error, "Expected Service Accept message ID but got %u instead", msgId);
     return false;
