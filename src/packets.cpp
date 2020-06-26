@@ -379,6 +379,12 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
     }
   }
 
+  if (numBytes < pPacket->mCrypto->BlockLen())
+  {
+    //We need more bytes before we start to decrypt this packet
+    return {nullptr, 0};
+  }
+
   /*
     packetLen does NOT include the MAC or the packetLen field itself.
     When copying the buffer data into our packet, we will want to take this into account
