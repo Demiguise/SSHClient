@@ -92,7 +92,7 @@ namespace SSH
     UINT32 Remaining() const;
 
     //Convinience function for checking if the packet is ready
-    bool Ready() const { return Remaining() == 0; }
+    bool Ready() const { return mComplete; }
 
     //Clears the packet's payload and resets the iterator back to the beginning
     void Reset();
