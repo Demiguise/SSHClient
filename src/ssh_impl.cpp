@@ -868,7 +868,7 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
       pPacket->Read(availableMethods);
       pPacket->Read(bPartialSuccess);
 
-      Log(LogLevel::Info, "Userauth Failure. Remaining methods [%s]", availableMethods.Str());
+      Log(LogLevel::Info, "Userauth Failure. Remaining methods [%s]", availableMethods.Str().c_str());
 
       if (availableMethods.Len() == 0)
       {
