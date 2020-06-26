@@ -127,7 +127,7 @@ int main()
     opts.authMethods.push(SSH::UserAuthMethod::Password);
 
     auto client = SSH::Client(opts, sockCtx);
-    client.Connect("jack");
+    client.Connect("jill");
 
     while (true)
     {
