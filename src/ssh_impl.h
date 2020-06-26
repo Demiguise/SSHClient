@@ -30,6 +30,7 @@ namespace SSH
 
     //Authentication Stages
     ReceivedServiceAccept,
+    AttemptingUserAuth,
     UserLoggedIn
 
     //Channel Stages
@@ -128,7 +129,7 @@ namespace SSH
     //Authentication Stages
     void SendServiceRequest();
     bool ReceiveServiceAccept(TPacket pPacket);
-    void SendUserAuthRequest();
+    void SendUserAuthRequest(UserAuthMethod method);
     UserAuthResponse ReceiveUserAuth(TPacket pPacket);
 
     TResult Send(std::shared_ptr<Packet> pPacket);

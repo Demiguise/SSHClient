@@ -53,6 +53,8 @@ std::string SSH::StageToString(ConStage stage)
     case ConStage::ReceivedNewKeys: return "ReceivedNewKeys";
     case ConStage::SentNewKeys: return "SentNewKeys";
     case ConStage::SentServiceRequest: return "SentServiceRequest";
+    case ConStage::ReceivedServiceAccept: return "RecievedServiceAccept";
+    case ConStage::UserLoggedIn: return "UserLoggedIn";
     default: return "Unknown";
   }
 }
@@ -73,6 +75,7 @@ Client::Impl::Impl(ClientOptions& options, TCtx& ctx)
   , mOnRecvFunc(options.onRecv)
   , mOnAuthFunc(options.onAuth)
   , mAuthMethods(options.authMethods)
+  , mActiveAuthMethod(UserAuthMethod::None)
   , mCtx(ctx)
   , mState(State::Idle)
   , mStage(ConStage::Null)
@@ -397,7 +400,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           to get information on which authentication methods the server
           will accept.
         */
-        SendUserAuthRequest();
+        SendUserAuthRequest(UserAuthMethod::None);
         break;
       }
       case ConStage::ReceivedServiceAccept:
@@ -839,10 +842,12 @@ bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
   return true;
 }
 
-void Client::Impl::SendUserAuthRequest()
+void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
 {
   //Service name here refers to the service to start AFTER userauth has succeeded
   std::string serviceName = "ssh-connection";
+  std::string methodName = AuthMethodToString(method);
+  TPacket pPacket = nullptr;
 
   //This packet length changes depending on what methods are used
   UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
@@ -850,22 +855,10 @@ void Client::Impl::SendUserAuthRequest()
                       mUserName.length() +    //User name
                       sizeof(UINT32) +        //Service name length field
                       serviceName.length() +  //Service name
-                      sizeof(UINT32);         //Method name length field
+                      sizeof(UINT32) +        //Method name length field
+                      methodName.length();    //Method name
 
-  //Select best method to auth with
-  if (mAuthMethods.size() == 0)
-  {
-    //We already ran out of auth methods for some reason
-    Disconnect();
-    return;
-  }
-
-  TPacket pPacket = nullptr;
-
-  mActiveAuthMethod = mAuthMethods.front();
-  mAuthMethods.pop();
-  std::string methodName = AuthMethodToString(mActiveAuthMethod);
-  switch (mActiveAuthMethod)
+  switch (method)
   {
     case UserAuthMethod::Password:
     {
@@ -874,7 +867,6 @@ void Client::Impl::SendUserAuthRequest()
     case UserAuthMethod::None:
     {
       //None is special and requires no other data
-      packetLen += methodName.length();
 
       pPacket = mPacketStore.Create(packetLen, PacketType::Write);
 
