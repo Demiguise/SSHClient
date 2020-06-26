@@ -41,6 +41,8 @@ namespace SSH
     Debug   = 3,
   };
 
+  class Client;
+
   using TCtx = std::weak_ptr<void>;
   using TResult = std::optional<int>;
 
@@ -87,7 +89,7 @@ namespace SSH
     void Connect();
     void Disconnect();
 
-    void OpenChannel(ChannelTypes type, TOnRecvFunc callback)
+    void OpenChannel(ChannelTypes type, TOnRecvFunc callback);
 
     State GetState() const;
   };
