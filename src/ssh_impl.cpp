@@ -846,6 +846,13 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
     }
     case SSH_MSG::USERAUTH_FAILURE:
     {
+      NameList availableMethods;
+      Byte bPartialSuccess = 0;
+      pPacket->Read(availableMethods);
+      pPacket->Read(bPartialSuccess);
+
+      Log(LogLevel::Info, "Userauth Failure. Remaining methods [%s]", availableMethods.Str());
+
       return UserAuthResponse::Retry;
     }
     case SSH_MSG::USERAUTH_SUCCESS:
