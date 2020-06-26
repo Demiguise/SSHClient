@@ -261,7 +261,12 @@ bool Packet::PrepareRead()
 
   if (mEncrypted)
   {
-    if (mCrypto->Decrypt(mPacket.data(), mPacketLen + sizeof(UINT32)))
+    /*
+      We already decrypted the first block of data so we shouldn't need to re-decrypt it.
+    */
+    UINT32 blockLen = mCrypto->BlockLen();
+    UINT32 bytesToDecrypt = (mPacketLen + sizeof(UINT32)) - blockLen;
+    if (mCrypto->Decrypt(mPacket.data() + blockLen, bytesToDecrypt))
     {
       mEncrypted = false;
     }
@@ -395,9 +400,12 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
   const Byte* pIter = pBuf;
   UINT32 packetLen = 0;
   UINT32 paddingLen = 0;
-  if (pPacket->mCrypto->Type() != CryptoHandlers::None)
+
+  UINT32 blockLen = pPacket->mCrypto->BlockLen();
+  TByteString scratchPad(blockLen); //Used to decrypt the first block if available
+
+  if (pPacket->mEncrypted)
   {
-    UINT32 blockLen = pPacket->mCrypto->BlockLen();
     if (numBytes < blockLen)
     {
       //We need more bytes before we start to decrypt this packet
@@ -407,13 +415,13 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
     /*
       We need to peek at the initial few bytes of this buffer to determine the length of the packet.
     */
-    TByteString scratchPad(blockLen);
     memcpy(scratchPad.data(), pIter, blockLen);
     pPacket->mCrypto->Decrypt(scratchPad.data(), blockLen);
 
     //Scratch pad should now contain enough information to determine the full size of the packet we'll consume.
     packetLen = Packet::GetLength(scratchPad.data());
     paddingLen = scratchPad[payloadOffset];
+    pIter += blockLen;
   }
   else
   {
@@ -440,7 +448,21 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
   pPacket->mPayloadLen = (packetLen - paddingLen - sizeof(Byte));
 
   UINT32 bytesToConsume = std::min(pPacket->mTotalPacketLen, numBytes);
-  std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
+
+  if (pPacket->mEncrypted)
+  {
+    /*
+      Since we decrypted the first N bytes of the buffer, we have to place them into the
+      packet first
+    */
+    std::memcpy(pPacket->mPacket.data(), scratchPad.data(), blockLen);
+    std::memcpy(pPacket->mPacket.data() + blockLen, pIter, bytesToConsume - blockLen);
+  }
+  else
+  {
+    //Just straight copy the unencrypted buffer
+    std::memcpy(pPacket->mPacket.data(), pBuf, bytesToConsume);
+  }
 
   pPacket->mIter = (pPacket->mPacket.begin() + bytesToConsume);
 
