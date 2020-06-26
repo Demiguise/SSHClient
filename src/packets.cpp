@@ -145,6 +145,13 @@ int Packet::Read(Byte& outData)
   return sizeof(Byte);
 }
 
+int Packet::Read(bool& outData)
+{
+  outData = *mIter;
+  mIter += sizeof(Byte);
+  return sizeof(Byte);
+}
+
 int Packet::Read(UINT32& outData)
 {
   UINT32* pIter = (UINT32*)&(*mIter);

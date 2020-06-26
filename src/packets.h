@@ -112,6 +112,7 @@ namespace SSH
     int Write(const Byte* pBuf, const int numBytes, const WriteMethod method = WriteMethod::WithLength);
 
     int Read(Byte& outData);
+    int Read(bool& outData);
     int Read(UINT32& data);
     int Read(std::string& outData);
     int Read(NameList& outData);
