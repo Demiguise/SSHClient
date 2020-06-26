@@ -11,14 +11,14 @@
 
 using namespace SSH;
 
-constexpr static int payloadOffset = sizeof(UINT32) + sizeof(Byte);
+constexpr static int payloadOffset = sizeof(UINT32);
 constexpr static int minPaddingSize = 4; //RFC states there should be a minimum of 4 bytes
 
 Packet::Packet(Token t) {}
 
 const Byte* const Packet::Payload() const
 {
-  return &mPacket[payloadOffset];
+  return &mPacket[payloadOffset + sizeof(Byte)];
 }
 
 int Packet::PayloadLen() const
@@ -259,7 +259,7 @@ void Packet::PrepareRead()
     return;
   }
 
-  mIter = mPacket.begin() + payloadOffset;
+  mIter = mPacket.begin() + payloadOffset + sizeof(Byte);
 
   if (mEncrypted && mCrypto->Decrypt(mPacket.data(), mPacketLen + sizeof(UINT32)))
   {
@@ -355,7 +355,7 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
 {
   if (numBytes < payloadOffset)
   {
-    //We need a minimum of 5 bytes for the packet and padding length
+    //We need a minimum of 4 bytes for the packet and padding length
     return {nullptr, 0};
   }
 
@@ -379,10 +379,35 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
     }
   }
 
-  if (numBytes < pPacket->mCrypto->BlockLen())
+  const Byte* pIter = pBuf;
+  UINT32 packetLen = 0;
+  UINT32 paddingLen = 0;
+  if (pPacket->mCrypto->Type() != CryptoHandlers::None)
   {
-    //We need more bytes before we start to decrypt this packet
-    return {nullptr, 0};
+    UINT32 blockLen = pPacket->mCrypto->BlockLen();
+    if (numBytes < blockLen)
+    {
+      //We need more bytes before we start to decrypt this packet
+      return {nullptr, 0};
+    }
+
+    /*
+      We need to peek at the initial few bytes of this buffer to determine the length of the packet.
+    */
+    TByteString scratchPad(blockLen);
+    memcpy(scratchPad.data(), pIter, blockLen);
+    pPacket->mCrypto->Decrypt(scratchPad.data(), blockLen);
+
+    //Scratch pad should now contain enough information to determine the full size of the packet we'll consume.
+    packetLen = Packet::GetLength(scratchPad.data());
+    paddingLen = scratchPad[payloadOffset];
+  }
+  else
+  {
+    //Packet is not encrypted, can just use the buffer directly
+    packetLen = Packet::GetLength(pIter);
+    pIter += sizeof(UINT32);
+    paddingLen = *(pIter);
   }
 
   /*
@@ -390,15 +415,14 @@ std::pair<TPacket, int> PacketStore::Create(const Byte* pBuf, const int numBytes
     When copying the buffer data into our packet, we will want to take this into account
     via the fullPacketLen field.
   */
-  const Byte* pIter = pBuf;
-  UINT32 packetLen = Packet::GetLength(pIter);
-  pPacket->mTotalPacketLen = packetLen + sizeof(UINT32);
+  pPacket->mTotalPacketLen =  packetLen +
+                              sizeof(UINT32) +
+                              pPacket->mMAC->Len();
+
   pPacket->mPacketLen = packetLen;
   pPacket->mPacket.reserve(pPacket->mTotalPacketLen);
   pPacket->mPacket.resize(pPacket->mTotalPacketLen);
 
-  pIter += sizeof(UINT32);
-  UINT32 paddingLen = *(pIter);
   pPacket->mPaddingLen = paddingLen;
   pPacket->mPayloadLen = (packetLen - paddingLen - sizeof(Byte));
 
