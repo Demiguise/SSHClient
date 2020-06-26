@@ -56,16 +56,16 @@ namespace SSH
 
   struct ClientOptions
   {
-    TSendFunc send;   //Function for how the SSH Client will SEND data into the socket
-    TRecvFunc recv;   //Function for how the SSH Client will RECEIVE data from a socket
-    TOnAuthFunc onAuth; //Function for when the SSH Client requests private data for authentication
-    TAuthMethods authMethods; //Authentication methods available to the SSH client
+    TSendFunc mSend;   //Function for how the SSH Client will SEND data into the socket
+    TRecvFunc mRecv;   //Function for how the SSH Client will RECEIVE data from a socket
+    TOnAuthFunc mOnAuth; //Function for when the SSH Client requests private data for authentication
+    TAuthMethods mAuthMethods; //Authentication methods available to the SSH client
 
-    TOnConnectFunc onConnect; //Function for when the SSH client has successully connected to the remote
-    std::string userName;
+    TOnConnectFunc mOnConnect; //Function for when the SSH client has successully connected to the remote
+    std::string mUserName;
 
-    TLogFunc log;
-    LogLevel logLevel;
+    TLogFunc mLogFunc;
+    LogLevel mLogLevel;
   };
 
   class Client
