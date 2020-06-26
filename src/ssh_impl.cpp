@@ -421,6 +421,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           case UserAuthResponse::Success:
           {
             SetStage(ConStage::UserLoggedIn);
+            SendChannelOpenRequest();
             break;
           }
           case UserAuthResponse::Banner:
@@ -454,6 +455,15 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           }
         }
 
+        break;
+      }
+      case ConStage::UserLoggedIn:
+      {
+        if (!ReceiveMessage(pPacket))
+        {
+          Disconnect();
+          return;
+        }
         break;
       }
       default:
@@ -984,6 +994,16 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
       return UserAuthResponse::Failure;
     }
   }
+}
+
+void Client::Impl::SendChannelOpenRequest()
+{
+
+}
+
+bool Client::Impl::ReceiveMessage(TPacket pPacket)
+{
+  return true;
 }
 
 void Client::Impl::Connect(const std::string user)
