@@ -4,6 +4,7 @@
 #include <functional>
 #include <memory>
 #include <optional>
+#include <queue>
 
 using UINT32 = uint32_t;
 
@@ -43,7 +44,7 @@ namespace SSH
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
   using TOnAuthFunc = std::function<TResult (TCtx ctx, UserAuthMethod, const Byte* pBuf, const int bufLen)>;
-  using TAuthVec = std::vector<UserAuthMethod>;
+  using TAuthMethods = std::queue<UserAuthMethod>;
 
   struct ClientOptions
   {
@@ -51,7 +52,7 @@ namespace SSH
     TRecvFunc recv;   //Function for how the SSH Client will RECEIVE data from a socket
     TOnRecvFunc onRecv; //Function for when the SSH Client has received data for your application
     TOnAuthFunc onAuth; //Function for when the SSH Client requests private data for authentication
-    TAuthVec authMethods; //Authentication methods available to the SSH client
+    TAuthMethods authMethods; //Authentication methods available to the SSH client
 
     TLogFunc log;
     LogLevel logLevel;
