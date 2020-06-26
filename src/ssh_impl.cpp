@@ -874,6 +874,8 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
       pPacket->Write(mUserName);
       pPacket->Write(serviceName);
       pPacket->Write(methodName);
+
+      break;
     }
     default:
     {
