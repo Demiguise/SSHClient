@@ -5,6 +5,7 @@ set(SRCS
   mpint.cpp
   name-list.cpp
   mac.cpp
+  channels.cpp
   kex/kex.cpp
   crypto/crypto.cpp
 )
