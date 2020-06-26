@@ -261,9 +261,23 @@ void Packet::PrepareRead()
 
   mIter = mPacket.begin() + payloadOffset + sizeof(Byte);
 
-  if (mEncrypted && mCrypto->Decrypt(mPacket.data(), mPacketLen + sizeof(UINT32)))
+  if (mEncrypted)
   {
-    mEncrypted = false;
+    if (mCrypto->Decrypt(mPacket.data(), mPacketLen + sizeof(UINT32)))
+    {
+      mEncrypted = false;
+    }
+    else
+    {
+      //This should probably raise an error
+      return;
+    }
+  }
+
+  if (!mMAC->Verify(this))
+  {
+    //This should probably raise an error
+    return;
   }
 
   mComplete = true;
