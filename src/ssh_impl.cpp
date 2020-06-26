@@ -54,6 +54,7 @@ std::string SSH::StageToString(ConStage stage)
     case ConStage::SentNewKeys: return "SentNewKeys";
     case ConStage::SentServiceRequest: return "SentServiceRequest";
     case ConStage::ReceivedServiceAccept: return "RecievedServiceAccept";
+    case ConStage::AttemptingUserAuth: return "AttemptingUserAuth";
     case ConStage::UserLoggedIn: return "UserLoggedIn";
     default: return "Unknown";
   }
@@ -401,9 +402,11 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           will accept.
         */
         SendUserAuthRequest(UserAuthMethod::None);
+
+        SetStage(ConStage::AttemptingUserAuth);
         break;
       }
-      case ConStage::ReceivedServiceAccept:
+      case ConStage::AttemptingUserAuth:
       {
         UserAuthResponse response = ReceiveUserAuth(pPacket);
         switch (response)
