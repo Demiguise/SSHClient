@@ -29,6 +29,8 @@ namespace SSH
     SentServiceRequest,
 
     //Authentication Stages
+    ReceivedServiceAccept,
+    UserLoggedIn
 
     //Channel Stages
   };
@@ -42,6 +44,14 @@ namespace SSH
   private:
     static const int sMaxLogLength = 256;
     using TPacketQueue = std::queue<TPacket>;
+
+    enum class UserAuthResponse
+    {
+      Success, // A userauth method responded was successful, the user is now logged in
+      Failure, // Failure occurs when ALL available authentication end with failure
+      Retry,   // More userauth methods are available
+      Banner,  // A special message that may come after userauth begins
+    };
 
   protected:
     TSendFunc mSendFunc;
@@ -100,16 +110,19 @@ namespace SSH
     int ParseNameList(NameList& list, const Byte* pBuf);
 
     bool ReceiveServerIdent(const Byte* pBuf, const int bufLen);
-    void SendClientKEXInit();
 
+    //Transport Stages
+    void SendClientKEXInit();
     bool ReceiveServerKEXInit(TPacket pPacket);
     void SendClientDHInit();
     bool ReceiveServerDHReply(TPacket pPacket);
     bool ReceiveNewKeys(TPacket pPacket);
     void SendNewKeys();
 
+    //Authentication Stages
     void SendServiceRequest();
     bool ReceiveServiceAccept(TPacket pPacket);
+    UserAuthResponse ReceiveUserAuth(TPacket pPacket);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
 

@@ -378,6 +378,43 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           return;
         }
 
+        SetStage(ConStage::ReceivedServiceAccept);
+
+        /*
+          Clients can send a "none" authentication method message
+          to get information on which authentication methods the server
+          will accept.
+        */
+
+        [[fallthrough]];
+      }
+      case ConStage::ReceivedServiceAccept:
+      {
+        UserAuthResponse response = ReceiveUserAuth(pPacket);
+        switch (response)
+        {
+          case UserAuthResponse::Success:
+          {
+            SetStage(ConStage::UserLoggedIn);
+            break;
+          }
+          case UserAuthResponse::Retry:
+          {
+            break;
+          }
+          case UserAuthResponse::Banner:
+          {
+            //Do nothing
+            break;
+          }
+          case UserAuthResponse::Failure:
+          default:
+          {
+            Disconnect();
+            return;
+          }
+        }
+
         break;
       }
       default:
@@ -778,17 +815,9 @@ bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
 {
   Byte msgId;
 
-  //Verify this is a NewKeys packet
+  //Verify this is the packet type we are expecting
   pPacket->Read(msgId);
-  if (msgId == SSH_MSG::USERAUTH_BANNER)
-  {
-    //We don't do anything with the banner messages at the moment but we can log them out regardless.
-    std::string bannerMessage;
-    pPacket->Read(bannerMessage);
-    Log(LogLevel::Info, "Banner Message: %s", bannerMessage.c_str());
-    return true;
-  }
-  else if (msgId != SSH_MSG::SERVICE_ACCEPT)
+  if (msgId != SSH_MSG::SERVICE_ACCEPT)
   {
     Log(LogLevel::Error, "Expected Service Accept message ID but got %u instead", msgId);
     return false;
@@ -796,6 +825,40 @@ bool Client::Impl::ReceiveServiceAccept(TPacket pPacket)
 
   Log(LogLevel::Info, "Received service accept");
   return true;
+}
+
+Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
+{
+  Byte msgId;
+
+  //Verify this is a NewKeys packet
+  pPacket->Read(msgId);
+
+  switch (msgId)
+  {
+    case SSH_MSG::USERAUTH_BANNER:
+    {
+      //We don't do anything with the banner messages at the moment but we can log them out regardless.
+      std::string bannerMessage;
+      pPacket->Read(bannerMessage);
+      Log(LogLevel::Info, "Banner Message: %s", bannerMessage.c_str());
+      return UserAuthResponse::Banner;
+    }
+    case SSH_MSG::USERAUTH_FAILURE:
+    {
+      return UserAuthResponse::Retry;
+    }
+    case SSH_MSG::USERAUTH_SUCCESS:
+    {
+      //Nothing else to do
+      return UserAuthResponse::Success;
+    }
+    default:
+    {
+      Log(LogLevel::Error, "Unhandled message ID during user auth (%u)", msgId);
+      return UserAuthResponse::Failure;
+    }
+  }
 }
 
 void Client::Impl::Connect(const std::string pszUser)
