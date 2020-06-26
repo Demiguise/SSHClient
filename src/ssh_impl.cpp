@@ -872,6 +872,8 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
                       sizeof(UINT32) +        //Method name length field
                       methodName.length();    //Method name
 
+  Log(LogLevel::Info, "Attempting to login via %s method", methodName.c_str());
+
   switch (method)
   {
     case UserAuthMethod::Password:
@@ -897,7 +899,7 @@ void Client::Impl::SendUserAuthRequest(UserAuthMethod method)
       pPacket->Write(serviceName);
       pPacket->Write(methodName);
       pPacket->Write(false);  //This is not a password change request
-      pPacket->Write(passwordBuffer.Buffer(), passwordBuffer.Length());
+      pPacket->Write(passwordBuffer.Buffer(), passwordLen.value());
 
       break;
     }
