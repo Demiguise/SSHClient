@@ -33,7 +33,7 @@ namespace SSH
     AttemptingUserAuth,
     UserLoggedIn
 
-    //Channel Stage
+    //After the user is logged in, we are effectively connected.
   };
 
   std::string StageToString(ConStage stage);
