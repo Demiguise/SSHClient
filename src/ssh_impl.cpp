@@ -853,7 +853,14 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
       Log(LogLevel::Info, "Userauth Failure. Remaining methods [%s]", availableMethods.Str());
 
-      return UserAuthResponse::Retry;
+      if (availableMethods.Len() == 0)
+      {
+        return UserAuthResponse::Failure;
+      }
+      else
+      {
+        return UserAuthResponse::Retry;
+      }
     }
     case SSH_MSG::USERAUTH_SUCCESS:
     {
