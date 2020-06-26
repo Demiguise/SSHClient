@@ -601,13 +601,14 @@ void Client::Impl::SendClientDHInit()
   //Set keys now that we have a DH Init in progress
   UINT32 blockLen = mKEXHandler->GetBlockSize();
   UINT32 keyLen = mKEXHandler->GetKeySize();
+  UINT32 macLen = MAC::Len(MACHandlers::HMAC_SHA2_256);
   mRemoteKeys.mIV.SetLen(blockLen);
   mRemoteKeys.mEnc.SetLen(keyLen);
-  mRemoteKeys.mMac.SetLen(blockLen);
+  mRemoteKeys.mMac.SetLen(macLen);
 
   mLocalKeys.mIV.SetLen(blockLen);
   mLocalKeys.mEnc.SetLen(keyLen);
-  mLocalKeys.mMac.SetLen(blockLen);
+  mLocalKeys.mMac.SetLen(macLen);
 }
 
 bool Client::Impl::ReceiveServerDHReply(TPacket pPacket)
