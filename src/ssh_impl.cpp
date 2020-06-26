@@ -421,7 +421,7 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
           case UserAuthResponse::Success:
           {
             SetStage(ConStage::UserLoggedIn);
-            SendChannelOpenRequest();
+            OpenNewChannel();
             break;
           }
           case UserAuthResponse::Banner:
@@ -994,6 +994,11 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
       return UserAuthResponse::Failure;
     }
   }
+}
+
+void Client::Impl::OpenNewChannel()
+{
+
 }
 
 void Client::Impl::SendChannelOpenRequest()

@@ -134,6 +134,7 @@ namespace SSH
     UserAuthResponse ReceiveUserAuth(TPacket pPacket);
 
     //Channel Related
+    void OpenNewChannel();
     void SendChannelOpenRequest();
 
     /*
