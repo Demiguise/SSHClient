@@ -998,7 +998,13 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
 void Client::Impl::SendChannelOpenRequest()
 {
-
+  std::string channelType = "session";
+  UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
+                      sizeof(UINT32) +        //Channel type field length
+                      channelType.length() +  //Channel type
+                      sizeof(UINT32) +        //Sender Channel
+                      sizeof(UINT32) +        //Initial window size
+                      sizeof(UINT32);         //Maximum packet size
 }
 
 bool Client::Impl::ReceiveMessage(TPacket pPacket)
