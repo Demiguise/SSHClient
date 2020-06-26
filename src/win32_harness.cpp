@@ -115,19 +115,23 @@ int main()
         return sshPassword.length();
     };
 
+    SSH::TOnConnectFunc onConnectFunc = [](SSH::Client* pClient){
+
+    };
+
     SSH::TCtx sockCtx = pSock;
 
     SSH::ClientOptions opts;
-    opts.send = sendFunc;
-    opts.recv = recvFunc;
-    opts.onRecv = onRecvFunc;
-    opts.onAuth = onAuthFunc;
-    opts.log = logFunc;
-    opts.logLevel = SSH::LogLevel::Debug;
-    opts.authMethods.push(SSH::UserAuthMethod::Password);
+    opts.mSend = sendFunc;
+    opts.mRecv = recvFunc;
+    opts.mOnAuth = onAuthFunc;
+    opts.mLogFunc = logFunc;
+    opts.mLogLevel = SSH::LogLevel::Debug;
+    opts.mAuthMethods.push(SSH::UserAuthMethod::Password);
+    opts.mUserName = "jill";
 
     auto client = SSH::Client(opts, sockCtx);
-    client.Connect("jill");
+    client.Connect();
 
     while (true)
     {
