@@ -109,17 +109,25 @@ int main()
         printf("SSH Client: %s\n", pszLogString);
     };
 
+    SSH::TOnAuthFunc onAuthFunc = [](SSH::TCtx ctx, SSH::UserAuthMethod method, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
+        std::string sshPassword = "upthehill"; //Nice and secure
+        memcpy(pBuf, sshPassword.data(), sshPassword.length());
+        return sshPassword.length();
+    };
+
     SSH::TCtx sockCtx = pSock;
 
     SSH::ClientOptions opts;
     opts.send = sendFunc;
     opts.recv = recvFunc;
     opts.onRecv = onRecvFunc;
+    opts.onAuth = onAuthFunc;
     opts.log = logFunc;
     opts.logLevel = SSH::LogLevel::Debug;
+    opts.authMethods.push(SSH::UserAuthMethod::Password);
 
     auto client = SSH::Client(opts, sockCtx);
-    client.Connect("pi");
+    client.Connect("jack");
 
     while (true)
     {
