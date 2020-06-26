@@ -292,7 +292,14 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
   }
 
   int bytesRemaining = bufLen;
-  bytesRemaining -= ConsumeBuffer(pBuf, bufLen);
+  int bytesConsumed = ConsumeBuffer(pBuf, bufLen);
+  if (bytesConsumed < 0)
+  {
+    Disconnect();
+    return;
+  }
+
+  bytesRemaining -= bytesConsumed;
   while (!mRecvQueue.empty())
   {
     TPacket pPacket = mRecvQueue.front();
@@ -302,11 +309,6 @@ void Client::Impl::HandleData(const Byte* pBuf, const int bufLen)
     }
 
     mRecvQueue.pop();
-    if (!pPacket->PrepareRead())
-    {
-      Log(LogLevel::Error, "Failed to prepare to read");
-      return;
-    }
 
     switch (mStage)
     {
@@ -472,6 +474,12 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
     if (bytesNeeded == 0)
     {
       Log(LogLevel::Info, "Queued packet (%d) [Payload: %u] is now ready!", pPacket->GetSequenceNumber(), pPacket->PayloadLen());
+
+      if (!pPacket->PrepareRead())
+      {
+        Log(LogLevel::Error, "Failed to prepare to read");
+        return -1;
+      }
     }
     else
     {
@@ -500,6 +508,12 @@ int Client::Impl::ConsumeBuffer(const Byte* pBuf, const int bufLen)
       //We have to wait for more data, pop this packet into the queue
       Log(LogLevel::Debug, "Packet (%d) is waiting on [%d] bytes.", pNewPacket->GetSequenceNumber(), bytesNeeded);
       break;
+    }
+
+    if (!pNewPacket->PrepareRead())
+    {
+      Log(LogLevel::Error, "Failed to prepare to read");
+      return -1;
     }
 
     Log(LogLevel::Info, "Packet (%d) [Payload: %u] now ready", pNewPacket->GetSequenceNumber(), pNewPacket->PayloadLen());
