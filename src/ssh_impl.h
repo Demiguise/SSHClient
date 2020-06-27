@@ -4,6 +4,7 @@
 #include "ssh.h"
 #include "name-list.h"
 #include "packets.h"
+#include "channels.h"
 #include "kex/kex.h"
 #include "crypto/crypto.h"
 #include <queue>
@@ -77,6 +78,7 @@ namespace SSH
     UINT32 mOutgoingSequenceNumber;
 
     PacketStore mPacketStore;
+    ChannelManager mChannelMgr;
 
     //These are the Server to Client keys
     struct
