@@ -7,12 +7,6 @@
 
 namespace SSH
 {
-  enum class ChannelTypes
-  {
-    Null,
-    Session,
-  };
-
   class IChannel
   {
   public:
@@ -25,10 +19,15 @@ namespace SSH
 
   using TChannel = std::shared_ptr<IChannel>;
 
-  namespace Channels
+  class ChannelManager
   {
+    UINT32 mNextID = 0;
+  public:
+    ChannelManager() = default;
+    ~ChannelManager() = default;
+
     TChannel Open(ChannelTypes type);
-  }
+  };
 }
 
 #endif //~__CHANNELS_H__

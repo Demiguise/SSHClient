@@ -13,13 +13,17 @@ public:
     : mChannelId(id)
     , mChannelType(type)
   {
-
   }
+
   virtual ~Channel()
-  {}
+  {
+  }
+
+  virtual UINT32 ID() const override { return mChannelId; }
+  virtual ChannelTypes Type() const override { return mChannelType; }
 };
 
-TChannel Channels::Open(ChannelTypes type)
+TChannel ChannelManager::Open(ChannelTypes type)
 {
-  return nullptr;
+  return std::make_shared<Channel>(type, mNextID++);
 }
