@@ -1001,17 +1001,53 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
 TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnEventFunc callback)
 {
-  return 0;
+  TChannel newChannel = Channel::Create(type, mNextChannelID++, callback);
+  if (newChannel == nullptr)
+  {
+    return 0;
+  }
+
+  TPacket openPacket = newChannel->CreateOpenPacket(mPacketStore);
+  if (openPacket == nullptr)
+  {
+    CloseChannel(newChannel->ID());
+    return 0;
+  }
+
+  Queue(openPacket);
+
+  return newChannel->ID();
 }
 
 bool Client::Impl::CloseChannel(TChannelID channelID)
 {
-  return false;
+  auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel)
+  {
+    return (channel->ID() == channelID);
+  });
+
+  if (iter == mChannels.end())
+  {
+    return false;
+  }
+
+  TChannel oldChannel = (*iter);
+  if (oldChannel->State() == ChannelState::Open)
+  {
+    TPacket closePacket = oldChannel->CreateClosePacket(mPacketStore);
+    if (closePacket == nullptr)
+    {
+      return false;
+    }
+
+    Queue(closePacket);
+  }
+
+  return true;
 }
 
 bool Client::Impl::ReceiveMessage(TPacket pPacket)
 {
-  //Handle the packet ourselves
   return true;
 }
 

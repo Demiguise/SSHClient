@@ -9,7 +9,12 @@
 
 namespace SSH
 {
-  class IChannel;
+  enum class ChannelState
+  {
+    Opening,
+    Open,
+    Closing,
+  };
 
   class IChannel
   {
@@ -17,6 +22,7 @@ namespace SSH
     UINT32 mChannelId;
     ChannelTypes mChannelType;
     TOnEventFunc mOnEvent;
+    ChannelState mState;
 
   public:
     IChannel(UINT32 id, ChannelTypes type, TOnEventFunc callback)
@@ -34,6 +40,14 @@ namespace SSH
     {
       return mChannelType;
     }
+
+    ChannelState State() const
+    {
+      return mState;
+    }
+
+    virtual TPacket CreateOpenPacket(PacketStore& store) = 0;
+    virtual TPacket CreateClosePacket(PacketStore& store) = 0;
   };
 
   using TChannel = std::shared_ptr<IChannel>;

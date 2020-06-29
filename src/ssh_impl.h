@@ -79,6 +79,9 @@ namespace SSH
 
     PacketStore mPacketStore;
 
+    TChannelVec mChannels;
+    TChannelID mNextChannelID = 1;
+
     //These are the Server to Client keys
     struct
     {
