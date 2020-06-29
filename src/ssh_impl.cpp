@@ -999,7 +999,7 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
   }
 }
 
-TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
+TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnEventFunc callback)
 {
   auto [newChannelID, packet] =  mChannelMgr.Open(type, callback, mPacketStore);
   if (newChannelID == 0 || packet == nullptr)

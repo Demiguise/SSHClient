@@ -7,10 +7,10 @@ class Channel : public IChannel
 private:
   UINT32 mChannelId;
   ChannelTypes mChannelType;
-  TOnRecvFunc mOnEvent;
+  TOnEventFunc mOnEvent;
 
 public:
-  Channel(ChannelTypes type, UINT32 id, TOnRecvFunc callback)
+  Channel(ChannelTypes type, UINT32 id, TOnEventFunc callback)
     : mChannelId(id)
     , mChannelType(type)
     , mOnEvent(callback)
@@ -25,7 +25,7 @@ public:
   virtual ChannelTypes Type() const override { return mChannelType; }
   virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) override
   {
-    mOnEvent(nullptr, event, pBuf, bufLen);
+    mOnEvent(event, pBuf, bufLen);
   }
 };
 
@@ -70,7 +70,7 @@ TPacket ChannelManager::CreateOpenChannelRequest(TChannel channel, PacketStore& 
   return newPacket;
 }
 
-std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store)
+std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnEventFunc callback, PacketStore& store)
 {
   if (type == ChannelTypes::Null)
   {

@@ -151,7 +151,7 @@ namespace SSH
 
     TResult Send(TChannelID channelID, const Byte* pBuf, const int bufLen);
 
-    TChannelID OpenChannel(ChannelTypes type, TOnRecvFunc callback);
+    TChannelID OpenChannel(ChannelTypes type, TOnEventFunc callback);
     bool CloseChannel(TChannelID channelID);
 
     State GetState() const { return mState; }

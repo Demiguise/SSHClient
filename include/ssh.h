@@ -55,7 +55,6 @@ namespace SSH
 
   using TSendFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
   using TRecvFunc = std::function<TResult (TCtx ctx, Byte* pBuf, const int bufLen)>;
-  using TOnRecvFunc = std::function<TResult (TCtx ctx, ChannelEvent event, const Byte* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
   using TOnConnectFunc = std::function<void (Client* pClient)>;
@@ -64,6 +63,7 @@ namespace SSH
   using TAuthMethods = std::queue<UserAuthMethod>;
 
   using TChannelID = UINT32;
+  using TOnEventFunc = std::function<TResult (ChannelEvent event, const Byte* pBuf, const int bufLen)>;
 
   struct ClientOptions
   {
@@ -101,7 +101,7 @@ namespace SSH
       channel.
       The callback will receive an event once the channel has been opened.
     */
-    TChannelID OpenChannel(ChannelTypes type, TOnRecvFunc callback);
+    TChannelID OpenChannel(ChannelTypes type, TOnEventFunc callback);
     bool CloseChannel(TChannelID channelID);
 
     TResult Send(TChannelID channelID, const Byte* pBuf, const int bufLen);

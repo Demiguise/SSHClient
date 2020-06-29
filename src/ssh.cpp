@@ -67,7 +67,7 @@ void Client::Disconnect()
   mImpl->Disconnect();
 }
 
-TChannelID Client::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
+TChannelID Client::OpenChannel(ChannelTypes type, TOnEventFunc callback)
 {
   return mImpl->OpenChannel(type, callback);
 }
