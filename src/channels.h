@@ -13,7 +13,7 @@ namespace SSH
     IChannel() = default;
     virtual ~IChannel() = default;
 
-    virtual UINT32 ID() const = 0;
+    virtual TChannelID ID() const = 0;
     virtual ChannelTypes Type() const = 0;
   };
 
@@ -21,12 +21,13 @@ namespace SSH
 
   class ChannelManager
   {
-    UINT32 mNextID = 0;
+    TChannelID mNextID = 0;
   public:
     ChannelManager() = default;
     ~ChannelManager() = default;
 
-    TChannel Open(ChannelTypes type);
+    TChannelID Open(ChannelTypes type, TOnRecvFunc callback);
+    bool Close(TChannelID channelID);
   };
 }
 

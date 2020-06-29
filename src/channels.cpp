@@ -19,11 +19,18 @@ public:
   {
   }
 
-  virtual UINT32 ID() const override { return mChannelId; }
+  virtual TChannelID ID() const override { return mChannelId; }
   virtual ChannelTypes Type() const override { return mChannelType; }
 };
 
-TChannel ChannelManager::Open(ChannelTypes type)
+TChannelID ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback)
 {
-  return std::make_shared<Channel>(type, mNextID++);
+  TChannel newChannel = std::make_shared<Channel>(type, mNextID++);
+
+  return newChannel->ID();
+}
+
+bool ChannelManager::Close(TChannelID)
+{
+  return false;
 }
