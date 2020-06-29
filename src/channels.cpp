@@ -102,3 +102,8 @@ bool ChannelManager::Close(TChannelID channelID, PacketStore& store)
   mChannels.erase(iter);
   return true;
 }
+
+bool ChannelManager::HandlePacket(TPacket pPacket)
+{
+  return false;
+}

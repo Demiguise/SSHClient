@@ -38,6 +38,9 @@ namespace SSH
 
     std::pair<TChannelID, TPacket> Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store);
     bool Close(TChannelID channelID, PacketStore& store);
+
+    //Returns true if handled
+    bool HandlePacket(TPacket pPacket);
   };
 }
 
