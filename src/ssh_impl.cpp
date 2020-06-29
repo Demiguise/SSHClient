@@ -1033,11 +1033,11 @@ TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnEventFunc callback)
   TPacket openPacket = newChannel->CreateOpenPacket(mPacketStore);
   if (openPacket == nullptr)
   {
-    CloseChannel(newChannel->ID());
     return 0;
   }
 
   Queue(openPacket);
+  mChannels.push_back(newChannel);
 
   return newChannel->ID();
 }
