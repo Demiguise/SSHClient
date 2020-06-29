@@ -1001,14 +1001,12 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
 TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
 {
-  TChannelID newID = mChannelMgr.Open(type, callback);
-
-  return newID;
+  return mChannelMgr.Open(type, callback, mPacketStore);
 }
 
 bool Client::Impl::CloseChannel(TChannelID channelID)
 {
-  return mChannelMgr.Close(channelID);
+  return mChannelMgr.Close(channelID, mPacketStore);
 }
 
 void Client::Impl::SendChannelOpenRequest()

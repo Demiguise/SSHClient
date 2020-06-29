@@ -2,6 +2,7 @@
 #define __CHANNELS_H__
 
 #include "ssh.h"
+#include "packets.h"
 #include <vector>
 #include <memory>
 
@@ -30,8 +31,8 @@ namespace SSH
     ChannelManager() = default;
     ~ChannelManager() = default;
 
-    TChannelID Open(ChannelTypes type, TOnRecvFunc callback);
-    bool Close(TChannelID channelID);
+    TChannelID Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store);
+    bool Close(TChannelID channelID, PacketStore& store);
   };
 }
 

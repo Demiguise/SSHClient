@@ -23,7 +23,7 @@ public:
   virtual ChannelTypes Type() const override { return mChannelType; }
 };
 
-TChannelID ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback)
+TChannelID ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store)
 {
   TChannel newChannel = std::make_shared<Channel>(type, mNextID++);
   if (newChannel == nullptr)
@@ -36,7 +36,7 @@ TChannelID ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback)
   return newChannel->ID();
 }
 
-bool ChannelManager::Close(TChannelID channelID)
+bool ChannelManager::Close(TChannelID channelID, PacketStore& store)
 {
   auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel){
     return (channel->ID() == channelID);
