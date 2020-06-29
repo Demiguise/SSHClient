@@ -2,7 +2,18 @@
 
 using namespace SSH;
 
-class Channel : public IChannel
+class SSH::IChannel
+{
+public:
+  IChannel() = default;
+  virtual ~IChannel() = default;
+
+  virtual TChannelID ID() const = 0;
+  virtual ChannelTypes Type() const = 0;
+  virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) = 0;
+};
+
+class Channel : public SSH::IChannel
 {
 private:
   UINT32 mChannelId;
@@ -70,7 +81,7 @@ TPacket ChannelManager::CreateOpenChannelRequest(TChannel channel, PacketStore& 
   return newPacket;
 }
 
-TChannel ChannelManager::GetChannel(TChannelID channelID)
+ChannelManager::TChannel ChannelManager::GetChannel(TChannelID channelID)
 {
   auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel){
     return (channel->ID() == channelID);

@@ -9,25 +9,15 @@
 
 namespace SSH
 {
-  class IChannel
-  {
-  public:
-    IChannel() = default;
-    virtual ~IChannel() = default;
-
-    virtual TChannelID ID() const = 0;
-    virtual ChannelTypes Type() const = 0;
-    virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) = 0;
-  };
-
-  using TChannel = std::shared_ptr<IChannel>;
+  class IChannel;
 
   class ChannelManager
   {
   private:
-    TChannelID mNextID = 1;
-
+    using TChannel = std::shared_ptr<IChannel>;
     using TChannelVec = std::vector<TChannel>;
+
+    TChannelID mNextID = 1;
     TChannelVec mChannels;
 
     std::string ChannelTypeToString(ChannelTypes type);
