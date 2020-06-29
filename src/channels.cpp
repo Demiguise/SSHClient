@@ -4,39 +4,46 @@ using namespace SSH;
 
 class SSH::IChannel
 {
-public:
-  IChannel() = default;
-  virtual ~IChannel() = default;
-
-  virtual TChannelID ID() const = 0;
-  virtual ChannelTypes Type() const = 0;
-  virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) = 0;
-};
-
-class Session_Channel : public SSH::IChannel
-{
 private:
   UINT32 mChannelId;
   ChannelTypes mChannelType;
   TOnEventFunc mOnEvent;
 
 public:
-  Session_Channel(ChannelTypes type, UINT32 id, TOnEventFunc callback)
+  IChannel(UINT32 id, ChannelTypes type, TOnEventFunc callback)
     : mChannelId(id)
-    , mChannelType(type)
+    , mChannelType(ChannelTypes::Session)
     , mOnEvent(callback)
+  {}
+
+  virtual ~IChannel() = default;
+
+  TChannelID ID() const
+  {
+    return mChannelId;
+  }
+
+  ChannelTypes Type() const
+  {
+    return mChannelType;
+  }
+
+  void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen)
+  {
+    mOnEvent(event, pBuf, bufLen);
+  }
+};
+
+class Session_Channel : public SSH::IChannel
+{
+public:
+  Session_Channel(UINT32 id, TOnEventFunc callback)
+    : IChannel(id, ChannelTypes::Session, callback)
   {
   }
 
   virtual ~Session_Channel()
   {
-  }
-
-  virtual TChannelID ID() const override { return mChannelId; }
-  virtual ChannelTypes Type() const override { return mChannelType; }
-  virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) override
-  {
-    mOnEvent(event, pBuf, bufLen);
   }
 };
 
@@ -97,7 +104,7 @@ std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnEventF
     return {0, nullptr};
   }
 
-  TChannel newChannel = std::make_shared<Session_Channel>(type, mNextID++, callback);
+  TChannel newChannel = std::make_shared<Session_Channel>(mNextID++, callback);
   if (newChannel == nullptr)
   {
     return {0, nullptr};
