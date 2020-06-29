@@ -23,9 +23,19 @@ public:
   virtual ChannelTypes Type() const override { return mChannelType; }
 };
 
+std::string ChannelManager::ChannelTypeToString(ChannelTypes type)
+{
+  switch (type)
+  {
+    case ChannelTypes::Session: return "session";
+    default: return "";
+  }
+}
+
 TPacket ChannelManager::CreateOpenChannelRequest(TChannel channel, PacketStore& store)
 {
-  std::string channelType = "session";
+  ChannelTypes type = channel->Type();
+  std::string channelType = ChannelTypeToString(type);
   UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
                       sizeof(UINT32) +        //Channel type field length
                       channelType.length() +  //Channel type
@@ -33,11 +43,34 @@ TPacket ChannelManager::CreateOpenChannelRequest(TChannel channel, PacketStore& 
                       sizeof(UINT32) +        //Initial window size
                       sizeof(UINT32);         //Maximum packet size
 
-  return nullptr;
+  TPacket newPacket = nullptr;
+  switch (type)
+  {
+    case ChannelTypes::Session:
+    {
+      newPacket = store.Create(packetLen, PacketType::Write);
+
+      newPacket->Write(SSH_MSG::CHANNEL_OPEN);
+      newPacket->Write(channelType);
+      newPacket->Write(channel->ID());
+      newPacket->Write(0);
+      newPacket->Write(0);
+
+      break;
+    }
+    default: break;
+  }
+
+  return newPacket;
 }
 
 std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store)
 {
+  if (type == ChannelTypes::Null)
+  {
+    return {0, nullptr};
+  }
+
   TChannel newChannel = std::make_shared<Channel>(type, mNextID++);
   if (newChannel == nullptr)
   {

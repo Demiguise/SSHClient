@@ -3,6 +3,7 @@
 
 #include "ssh.h"
 #include "packets.h"
+#include <string>
 #include <vector>
 #include <memory>
 
@@ -27,6 +28,8 @@ namespace SSH
 
     using TChannelVec = std::vector<TChannel>;
     TChannelVec mChannels;
+
+    std::string ChannelTypeToString(ChannelTypes type);
 
     TPacket CreateOpenChannelRequest(TChannel channel, PacketStore& store);
   public:
