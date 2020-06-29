@@ -39,7 +39,7 @@ namespace SSH
     ChannelManager() = default;
     ~ChannelManager() = default;
 
-    std::pair<TChannelID, TPacket> Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store);
+    std::pair<TChannelID, TPacket> Open(ChannelTypes type, TOnEventFunc callback, PacketStore& store);
     bool Close(TChannelID channelID, PacketStore& store);
 
     //Returns true if handled

@@ -77,7 +77,7 @@ std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnEventF
     return {0, nullptr};
   }
 
-  TChannel newChannel = std::make_shared<Channel>(type, mNextID++);
+  TChannel newChannel = std::make_shared<Channel>(type, mNextID++, callback);
   if (newChannel == nullptr)
   {
     return {0, nullptr};
@@ -137,4 +137,6 @@ bool ChannelManager::HandlePacket(TPacket pPacket)
       return false;
     }
   }
+
+  return false;
 }
