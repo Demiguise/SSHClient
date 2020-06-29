@@ -1001,7 +1001,14 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
 TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
 {
-  return mChannelMgr.Open(type, callback, mPacketStore);
+  auto [newChannelID, packet] =  mChannelMgr.Open(type, callback, mPacketStore);
+  if (newChannelID == 0 || packet == nullptr)
+  {
+    return 0;
+  }
+
+  Queue(packet);
+  return newChannelID;
 }
 
 bool Client::Impl::CloseChannel(TChannelID channelID)
@@ -1011,13 +1018,6 @@ bool Client::Impl::CloseChannel(TChannelID channelID)
 
 void Client::Impl::SendChannelOpenRequest()
 {
-  std::string channelType = "session";
-  UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
-                      sizeof(UINT32) +        //Channel type field length
-                      channelType.length() +  //Channel type
-                      sizeof(UINT32) +        //Sender Channel
-                      sizeof(UINT32) +        //Initial window size
-                      sizeof(UINT32);         //Maximum packet size
 }
 
 bool Client::Impl::ReceiveMessage(TPacket pPacket)

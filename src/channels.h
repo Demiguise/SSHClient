@@ -27,11 +27,13 @@ namespace SSH
 
     using TChannelVec = std::vector<TChannel>;
     TChannelVec mChannels;
+
+    TPacket CreateOpenChannelRequest(TChannel channel, PacketStore& store);
   public:
     ChannelManager() = default;
     ~ChannelManager() = default;
 
-    TChannelID Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store);
+    std::pair<TChannelID, TPacket> Open(ChannelTypes type, TOnRecvFunc callback, PacketStore& store);
     bool Close(TChannelID channelID, PacketStore& store);
   };
 }
