@@ -139,12 +139,12 @@ namespace SSH
     bool ReceiveMessage(TPacket pPacket);
 
     TResult Send(std::shared_ptr<Packet> pPacket);
+    TResult Raw_Send(const Byte* pBuf, const int bufLen);
 
   public:
     Impl(ClientOptions& options, TCtx& ctx, Client* pOwner);
     ~Impl();
 
-    TResult Send(const Byte* pBuf, const int bufLen);
     void Queue(std::shared_ptr<Packet> pPacket);
 
     void Poll();

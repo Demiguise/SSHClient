@@ -178,7 +178,7 @@ void Client::Impl::SetState(State newState)
   mState = newState;
 }
 
-TResult Client::Impl::Send(const Byte* pBuf, const int bufLen)
+TResult Client::Impl::Raw_Send(const Byte* pBuf, const int bufLen)
 {
   auto sentBytes = mOpts.mSend(mCtx, pBuf, bufLen);
   if (!sentBytes.has_value())
@@ -195,7 +195,7 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
 {
   return pPacket->Send([&](const Byte* pBuf, const int numBytes) -> int
   {
-    auto sentBytes = Send(pBuf, numBytes);
+    auto sentBytes = Raw_Send(pBuf, numBytes);
     if (!sentBytes.has_value())
     {
       return 0;
@@ -1031,7 +1031,7 @@ void Client::Impl::Connect()
   buf[bytesWritten++] = CRbyte;
   buf[bytesWritten++] = LFbyte;
 
-  Send(buf, bytesWritten);
+  Raw_Send(buf, bytesWritten);
   SetStage(ConStage::SentClientID);
 
   SetState(State::Connecting);
