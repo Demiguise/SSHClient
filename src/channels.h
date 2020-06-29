@@ -18,7 +18,7 @@ namespace SSH
 
   class IChannel
   {
-  private:
+  protected:
     UINT32 mChannelId;
     ChannelTypes mChannelType;
     TOnEventFunc mOnEvent;

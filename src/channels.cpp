@@ -13,6 +13,37 @@ public:
   virtual ~Session_Channel()
   {
   }
+
+  virtual TPacket CreateOpenPacket(PacketStore& store) override
+  {
+    std::string channelType = Channel::ChannelTypeToString(mChannelType);
+    UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
+                        sizeof(UINT32) +        //Channel type field length
+                        channelType.length() +  //Channel type
+                        sizeof(UINT32) +        //Sender Channel
+                        sizeof(UINT32) +        //Initial window size
+                        sizeof(UINT32);         //Maximum packet size
+
+    TPacket newPacket = store.Create(packetLen, PacketType::Write);
+
+    newPacket->Write(SSH_MSG::CHANNEL_OPEN);
+    newPacket->Write(channelType);
+    newPacket->Write(mChannelId);
+    newPacket->Write(0);
+    newPacket->Write(0);
+
+    return newPacket;
+  }
+
+  virtual TPacket CreateClosePacket(PacketStore& store) override
+  {
+    return nullptr;
+  }
+
+  virtual bool HandleData(TPacket pPacket) override
+  {
+    return true;
+  }
 };
 
 TChannel Channel::Create(ChannelTypes type, TChannelID id, TOnEventFunc callback)
@@ -32,37 +63,3 @@ std::string Channel::ChannelTypeToString(ChannelTypes type)
     default: return "";
   }
 }
-
-/*
-TPacket ChannelManager::CreateOpenChannelRequest(TChannel channel, PacketStore& store)
-{
-  ChannelTypes type = channel->Type();
-  std::string channelType = ChannelTypeToString(type);
-  UINT32 packetLen =  sizeof(Byte) +          //SSH_MSG
-                      sizeof(UINT32) +        //Channel type field length
-                      channelType.length() +  //Channel type
-                      sizeof(UINT32) +        //Sender Channel
-                      sizeof(UINT32) +        //Initial window size
-                      sizeof(UINT32);         //Maximum packet size
-
-  TPacket newPacket = nullptr;
-  switch (type)
-  {
-    case ChannelTypes::Session:
-    {
-      newPacket = store.Create(packetLen, PacketType::Write);
-
-      newPacket->Write(SSH_MSG::CHANNEL_OPEN);
-      newPacket->Write(channelType);
-      newPacket->Write(channel->ID());
-      newPacket->Write(0);
-      newPacket->Write(0);
-
-      break;
-    }
-    default: break;
-  }
-
-  return newPacket;
-}
-*/
