@@ -109,6 +109,18 @@ int main()
                 printf("Opened a channel!");
                 break;
             }
+
+            case SSH::ChannelEvent::Closed:
+            {
+                printf("Closed a channel!");
+                break;
+            }
+
+            case SSH::ChannelEvent::Data:
+            {
+                printf("Receved %llu bytes", bufLen);
+                break;
+            }
         }
 
         return {};
