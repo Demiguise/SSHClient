@@ -56,6 +56,8 @@ namespace SSH
   using TOnAuthFunc = std::function<TResult (TCtx ctx, UserAuthMethod, Byte* pBuf, const int bufLen)>;
   using TAuthMethods = std::queue<UserAuthMethod>;
 
+  using TChannelID = UINT32;
+
   struct ClientOptions
   {
     TSendFunc mSend;   //Function for how the SSH Client will SEND data into the socket
@@ -84,12 +86,13 @@ namespace SSH
     Client(ClientOptions& options, TCtx& ctx);
     ~Client();
 
-    TResult Send(const Byte* pBuf, const int bufLen);
-
     void Connect();
     void Disconnect();
 
-    void OpenChannel(ChannelTypes type, TOnRecvFunc callback);
+    TChannelID OpenChannel(ChannelTypes type, TOnRecvFunc callback);
+    bool CloseChannel(TChannelID channelID);
+
+    TResult Send(TChannelID channelID, const Byte* pBuf, const int bufLen);
 
     State GetState() const;
   };
