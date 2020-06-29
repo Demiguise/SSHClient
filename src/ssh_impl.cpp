@@ -994,9 +994,16 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
   }
 }
 
-void Client::Impl::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
+TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
 {
+  TChannelID newID = mChannelMgr.Open(type, callback);
 
+  return newID;
+}
+
+bool Client::Impl::CloseChannel(TChannelID channelID)
+{
+  return mChannelMgr.Close(channelID);
 }
 
 void Client::Impl::SendChannelOpenRequest()

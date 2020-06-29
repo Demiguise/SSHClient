@@ -152,7 +152,8 @@ namespace SSH
     void Connect();
     void Disconnect();
 
-    void OpenChannel(ChannelTypes type, TOnRecvFunc callback);
+    TChannelID OpenChannel(ChannelTypes type, TOnRecvFunc callback);
+    bool CloseChannel(TChannelID channelID);
 
     State GetState() const { return mState; }
   };
