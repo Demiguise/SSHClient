@@ -101,7 +101,7 @@ int main()
         return result;
     };
 
-    SSH::TOnRecvFunc onRecvFunc = [](SSH::TCtx ctx, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
+    SSH::TOnRecvFunc onRecvFunc = [](SSH::TCtx ctx, SSH::ChannelEvent event, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
         return {};
     };
 
