@@ -13,7 +13,7 @@ public:
   virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) = 0;
 };
 
-class Channel : public SSH::IChannel
+class Session_Channel : public SSH::IChannel
 {
 private:
   UINT32 mChannelId;
@@ -21,14 +21,14 @@ private:
   TOnEventFunc mOnEvent;
 
 public:
-  Channel(ChannelTypes type, UINT32 id, TOnEventFunc callback)
+  Session_Channel(ChannelTypes type, UINT32 id, TOnEventFunc callback)
     : mChannelId(id)
     , mChannelType(type)
     , mOnEvent(callback)
   {
   }
 
-  virtual ~Channel()
+  virtual ~Session_Channel()
   {
   }
 
@@ -97,7 +97,7 @@ std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnEventF
     return {0, nullptr};
   }
 
-  TChannel newChannel = std::make_shared<Channel>(type, mNextID++, callback);
+  TChannel newChannel = std::make_shared<Session_Channel>(type, mNextID++, callback);
   if (newChannel == nullptr)
   {
     return {0, nullptr};
