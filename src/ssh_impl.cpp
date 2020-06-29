@@ -999,6 +999,16 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
   }
 }
 
+TChannel Client::Impl::GetChannel(TChannelID id)
+{
+  auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel)
+  {
+    return (channel->ID() == id);
+  });
+
+  return (iter == mChannels.end()) ? nullptr : *iter;
+}
+
 TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnEventFunc callback)
 {
   TChannel newChannel = Channel::Create(type, mNextChannelID++, callback);
@@ -1021,17 +1031,12 @@ TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnEventFunc callback)
 
 bool Client::Impl::CloseChannel(TChannelID channelID)
 {
-  auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel)
-  {
-    return (channel->ID() == channelID);
-  });
-
-  if (iter == mChannels.end())
+  TChannel oldChannel = GetChannel(channelID);
+  if (oldChannel == nullptr)
   {
     return false;
   }
 
-  TChannel oldChannel = (*iter);
   if (oldChannel->State() == ChannelState::Open)
   {
     TPacket closePacket = oldChannel->CreateClosePacket(mPacketStore);

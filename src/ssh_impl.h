@@ -140,6 +140,8 @@ namespace SSH
     TResult Send(std::shared_ptr<Packet> pPacket);
     TResult Raw_Send(const Byte* pBuf, const int bufLen);
 
+    TChannel GetChannel(TChannelID id);
+
   public:
     Impl(ClientOptions& options, TCtx& ctx, Client* pOwner);
     ~Impl();
