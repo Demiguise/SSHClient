@@ -102,6 +102,15 @@ int main()
     };
 
     SSH::TOnEventFunc onEventFunc = [](SSH::ChannelEvent event, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
+        switch (event)
+        {
+            case SSH::ChannelEvent::Opened:
+            {
+                printf("Opened a channel!");
+                break;
+            }
+        }
+
         return {};
     };
 
@@ -115,8 +124,9 @@ int main()
         return sshPassword.length();
     };
 
-    SSH::TOnConnectFunc onConnectFunc = [](SSH::Client* pClient){
-
+    SSH::TChannelID channelID;
+    SSH::TOnConnectFunc onConnectFunc = [&](SSH::Client* pClient){
+        channelID = pClient->OpenChannel(SSH::ChannelTypes::Session, onEventFunc);
     };
 
     SSH::TCtx sockCtx = pSock;
