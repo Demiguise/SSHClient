@@ -27,6 +27,13 @@ namespace SSH
     Password,
   };
 
+  enum class ChannelEvent
+  {
+    Opened,
+    Data,
+    Closed,
+  }
+
   enum class ChannelTypes
   {
     Null,
@@ -48,7 +55,7 @@ namespace SSH
 
   using TSendFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
   using TRecvFunc = std::function<TResult (TCtx ctx, Byte* pBuf, const int bufLen)>;
-  using TOnRecvFunc = std::function<TResult (TCtx ctx, const Byte* pBuf, const int bufLen)>;
+  using TOnRecvFunc = std::function<TResult (TCtx ctx, ChannelEvent event, const Byte* pBuf, const int bufLen)>;
   using TLogFunc = std::function<void (const char* pszLogString)>;
 
   using TOnConnectFunc = std::function<void (Client* pClient)>;
@@ -89,6 +96,11 @@ namespace SSH
     void Connect();
     void Disconnect();
 
+    /*
+      OpenChannel does not mean that the remote successfully opened a new
+      channel.
+      The callback will receive an event once the channel has been opened.
+    */
     TChannelID OpenChannel(ChannelTypes type, TOnRecvFunc callback);
     bool CloseChannel(TChannelID channelID);
 
