@@ -11,30 +11,39 @@ namespace SSH
 {
   class IChannel;
 
-  class ChannelManager
+  class IChannel
   {
   private:
-    using TChannel = std::shared_ptr<IChannel>;
-    using TChannelVec = std::vector<TChannel>;
+    UINT32 mChannelId;
+    ChannelTypes mChannelType;
+    TOnEventFunc mOnEvent;
 
-    TChannelID mNextID = 1;
-    TChannelVec mChannels;
-
-    std::string ChannelTypeToString(ChannelTypes type);
-
-    TPacket CreateOpenChannelRequest(TChannel channel, PacketStore& store);
-
-    TChannel GetChannel(TChannelID channelID);
   public:
-    ChannelManager() = default;
-    ~ChannelManager() = default;
+    IChannel(UINT32 id, ChannelTypes type, TOnEventFunc callback)
+        : mChannelId(id), mChannelType(ChannelTypes::Session), mOnEvent(callback)
+    {}
 
-    std::pair<TChannelID, TPacket> Open(ChannelTypes type, TOnEventFunc callback, PacketStore& store);
-    bool Close(TChannelID channelID, PacketStore& store);
+    virtual ~IChannel() = default;
 
-    //Returns true if handled
-    bool HandlePacket(TPacket pPacket);
+    TChannelID ID() const
+    {
+      return mChannelId;
+    }
+
+    ChannelTypes Type() const
+    {
+      return mChannelType;
+    }
   };
+
+  using TChannel = std::shared_ptr<IChannel>;
+  using TChannelVec = std::vector<TChannel>;
+
+  namespace Channel
+  {
+    TChannel Create(ChannelTypes type, TChannelID id, TOnEventFunc callback);
+    std::string ChannelTypeToString(ChannelTypes type);
+  }
 }
 
 #endif //~__CHANNELS_H__
