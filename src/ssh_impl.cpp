@@ -1071,7 +1071,7 @@ bool Client::Impl::ReceiveMessage(TPacket pPacket)
         return false;
       }
 
-      channel->HandleData(pPacket);
+      channel->HandleData(msgId, pPacket);
 
       break;
     }

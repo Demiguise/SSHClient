@@ -40,8 +40,17 @@ public:
     return nullptr;
   }
 
-  virtual bool HandleData(TPacket pPacket) override
+  virtual bool HandleData(Byte msgId, TPacket pPacket) override
   {
+    switch (msgId)
+    {
+      case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
+      {
+        mState = ChannelState::Open;
+        break;
+      }
+    }
+
     return true;
   }
 };
