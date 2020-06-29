@@ -19,14 +19,26 @@ namespace SSH
   class IChannel
   {
   protected:
+    struct ChannelInfo
+    {
+      UINT32 mWindowSize;
+      UINT32 mMaxPacketSize;
+    };
+
     UINT32 mChannelId;
+    UINT32 mRemoteId;
     ChannelTypes mChannelType;
     TOnEventFunc mOnEvent;
     ChannelState mState;
 
+    ChannelInfo mLocal;
+    ChannelInfo mRemote;
+
   public:
     IChannel(UINT32 id, ChannelTypes type, TOnEventFunc callback)
-        : mChannelId(id), mChannelType(ChannelTypes::Session), mOnEvent(callback)
+        : mChannelId(id)
+        , mChannelType(ChannelTypes::Session)
+        , mOnEvent(callback)
     {}
 
     virtual ~IChannel() = default;

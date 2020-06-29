@@ -8,6 +8,8 @@ public:
   Session_Channel(UINT32 id, TOnEventFunc callback)
     : IChannel(id, ChannelTypes::Session, callback)
   {
+    mLocal.mWindowSize = 1024;
+    mLocal.mMaxPacketSize = 1024;
   }
 
   virtual ~Session_Channel()
@@ -29,8 +31,8 @@ public:
     newPacket->Write(SSH_MSG::CHANNEL_OPEN);
     newPacket->Write(channelType);
     newPacket->Write(mChannelId);
-    newPacket->Write(1024);
-    newPacket->Write(1024);
+    newPacket->Write(mLocal.mWindowSize);
+    newPacket->Write(mLocal.mMaxPacketSize);
 
     return newPacket;
   }
@@ -50,7 +52,7 @@ public:
     TPacket newPacket = store.Create(packetLen, PacketType::Write);
 
     newPacket->Write(SSH_MSG::CHANNEL_DATA);
-    newPacket->Write(mChannelId);
+    newPacket->Write(mRemoteId);
     newPacket->Write(pBuf, bufLen);
 
     return newPacket;
@@ -62,6 +64,10 @@ public:
     {
       case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
       {
+        pPacket->Read(mRemoteId);
+        pPacket->Read(mRemote.mWindowSize);
+        pPacket->Read(mRemote.mMaxPacketSize);
+
         mState = ChannelState::Open;
         mOnEvent(ChannelEvent::Opened, nullptr, 0);
 
