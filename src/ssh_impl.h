@@ -78,7 +78,6 @@ namespace SSH
     UINT32 mOutgoingSequenceNumber;
 
     PacketStore mPacketStore;
-    ChannelManager mChannelMgr;
 
     //These are the Server to Client keys
     struct

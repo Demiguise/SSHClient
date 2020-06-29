@@ -1001,29 +1001,16 @@ Client::Impl::UserAuthResponse Client::Impl::ReceiveUserAuth(TPacket pPacket)
 
 TChannelID Client::Impl::OpenChannel(ChannelTypes type, TOnEventFunc callback)
 {
-  auto [newChannelID, packet] =  mChannelMgr.Open(type, callback, mPacketStore);
-  if (newChannelID == 0 || packet == nullptr)
-  {
-    return 0;
-  }
-
-  Queue(packet);
-  return newChannelID;
+  return 0;
 }
 
 bool Client::Impl::CloseChannel(TChannelID channelID)
 {
-  return mChannelMgr.Close(channelID, mPacketStore);
+  return false;
 }
 
 bool Client::Impl::ReceiveMessage(TPacket pPacket)
 {
-  if (mChannelMgr.HandlePacket(pPacket))
-  {
-    //Channel manager has handled the packet
-    return true;
-  }
-
   //Handle the packet ourselves
   return true;
 }
