@@ -112,6 +112,7 @@ namespace SSH
     int Write(const MPInt data);
     int Write(const Byte* pBuf, const int numBytes, const WriteMethod method = WriteMethod::WithLength);
 
+    //Reads data from the packet and increments the iterator
     int Read(Byte& outData);
     int Read(bool& outData);
     int Read(UINT32& data);
@@ -120,6 +121,9 @@ namespace SSH
     int Read(MPInt& outData);
     int Read(Byte* pOutBuf, int outBufLen);
     int Read(TByteString& outData);
+
+    //Reads data from the packet without incrementing the iterator
+    void Peek(Byte& outData);
 
     /*
       Prepares the packet for sending, writing any additional header

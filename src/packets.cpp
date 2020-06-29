@@ -217,6 +217,11 @@ int Packet::Read(TByteString& outData)
   return Read(outData.data(), len) + sizeof(UINT32);
 }
 
+void Packet::Peek(Byte& outData)
+{
+  outData = *mIter;
+}
+
 UINT32 Packet::GetLength(const Byte* pBuf)
 {
   uint32_t nLen = *((uint32_t*)pBuf);
