@@ -1070,6 +1070,8 @@ bool Client::Impl::ReceiveMessage(TPacket pPacket)
 
   pPacket->Peek(msgId);
 
+  Log(LogLevel::Info, "Peeked at new MsgID: %u", msgId);
+
   switch (msgId)
   {
     case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
