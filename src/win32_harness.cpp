@@ -136,6 +136,7 @@ int main()
     opts.mRecv = recvFunc;
     opts.mOnAuth = onAuthFunc;
     opts.mLogFunc = logFunc;
+    opts.mOnConnect = onConnectFunc;
     opts.mLogLevel = SSH::LogLevel::Debug;
     opts.mAuthMethods.push(SSH::UserAuthMethod::Password);
     opts.mUserName = "jill";
