@@ -101,6 +101,8 @@ int main()
         return result;
     };
 
+    SSH::TChannelID channelID;
+    SSH::Client* pCliento = nullptr;
     bool bChannelOpen = false;
     SSH::TOnEventFunc onEventFunc = [&](SSH::ChannelEvent event, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
         switch (event)
@@ -109,6 +111,9 @@ int main()
             {
                 printf("Opened a channel!\n");
                 bChannelOpen = true;
+
+                const char* strBuf = "HelloMe!";
+                pCliento->Send(channelID, (const SSH::Byte*)strBuf, strlen(strBuf));
                 break;
             }
 
@@ -139,12 +144,8 @@ int main()
         return sshPassword.length();
     };
 
-    SSH::TChannelID channelID;
     SSH::TOnConnectFunc onConnectFunc = [&](SSH::Client* pClient){
         channelID = pClient->OpenChannel(SSH::ChannelTypes::Session, onEventFunc);
-
-        const char* strBuf = "HelloMe!";
-        pClient->Send(channelID, (const SSH::Byte*)strBuf, strlen(strBuf));
     };
 
     SSH::TCtx sockCtx = pSock;
@@ -160,6 +161,7 @@ int main()
     opts.mUserName = "jill";
 
     auto client = SSH::Client(opts, sockCtx);
+    pCliento = &client;
     client.Connect();
 
     while (true)
