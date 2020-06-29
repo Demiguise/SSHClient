@@ -104,7 +104,18 @@ std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnEventF
     return {0, nullptr};
   }
 
-  TChannel newChannel = std::make_shared<Session_Channel>(mNextID++, callback);
+  TChannel newChannel = nullptr;
+
+  switch (type)
+  {
+    case ChannelTypes::Session:
+    {
+      newChannel = std::make_shared<Session_Channel>(mNextID++, callback);
+      break;
+    }
+    default: break;
+  }
+
   if (newChannel == nullptr)
   {
     return {0, nullptr};
