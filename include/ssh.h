@@ -32,7 +32,7 @@ namespace SSH
     Opened,
     Data,
     Closed,
-  }
+  };
 
   enum class ChannelTypes
   {
