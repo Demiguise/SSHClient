@@ -215,7 +215,20 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
 
 TResult Client::Impl::Send(TChannelID channelID, const Byte* pBuf, const int bufLen)
 {
-  return {};
+  TChannel channel = GetChannel(channelID);
+  if (channel == nullptr)
+  {
+    return {};
+  }
+
+  TPacket dataPacket = channel->PrepareSend(pBuf, bufLen, mPacketStore);
+  if (dataPacket == nullptr)
+  {
+    return false;
+  }
+
+  Queue(dataPacket);
+  return dataPacket->PayloadLen();
 }
 
 void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)

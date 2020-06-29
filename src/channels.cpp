@@ -29,8 +29,8 @@ public:
     newPacket->Write(SSH_MSG::CHANNEL_OPEN);
     newPacket->Write(channelType);
     newPacket->Write(mChannelId);
-    newPacket->Write(0);
-    newPacket->Write(0);
+    newPacket->Write(1024);
+    newPacket->Write(1024);
 
     return newPacket;
   }
@@ -38,6 +38,22 @@ public:
   virtual TPacket CreateClosePacket(PacketStore& store) override
   {
     return nullptr;
+  }
+
+  virtual TPacket PrepareSend(const Byte* pBuf, const int bufLen, PacketStore& store) override
+  {
+    UINT32 packetLen =  sizeof(Byte) +    //SSH_MSG
+                        sizeof(UINT32) +  //Recipient channel
+                        sizeof(UINT32) +  //Data length field
+                        bufLen;           //Data
+
+    TPacket newPacket = store.Create(packetLen, PacketType::Write);
+
+    newPacket->Write(SSH_MSG::CHANNEL_DATA);
+    newPacket->Write(mChannelId);
+    newPacket->Write(pBuf, bufLen);
+
+    return newPacket;
   }
 
   virtual bool HandleData(Byte msgId, TPacket pPacket) override

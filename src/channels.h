@@ -48,6 +48,7 @@ namespace SSH
 
     virtual TPacket CreateOpenPacket(PacketStore& store) = 0;
     virtual TPacket CreateClosePacket(PacketStore& store) = 0;
+    virtual TPacket PrepareSend(const Byte* pBuf, const int bufLen, PacketStore& store) = 0;
 
     virtual bool HandleData(Byte msgId, TPacket pPacket) = 0;
   };
