@@ -152,6 +152,8 @@ namespace SSH
     void Connect();
     void Disconnect();
 
+    TResult Send(TChannelID channelID, const Byte* pBuf, const int bufLen);
+
     TChannelID OpenChannel(ChannelTypes type, TOnRecvFunc callback);
     bool CloseChannel(TChannelID channelID);
 

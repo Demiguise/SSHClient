@@ -213,6 +213,11 @@ TResult Client::Impl::Send(std::shared_ptr<Packet> pPacket)
   });
 }
 
+TResult Client::Impl::Send(TChannelID channelID, const Byte* pBuf, const int bufLen)
+{
+  return {};
+}
+
 void Client::Impl::Queue(std::shared_ptr<Packet> pPacket)
 {
   pPacket->PrepareWrite(mOutgoingSequenceNumber++);
