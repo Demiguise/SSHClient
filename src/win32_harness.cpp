@@ -101,24 +101,27 @@ int main()
         return result;
     };
 
-    SSH::TOnEventFunc onEventFunc = [](SSH::ChannelEvent event, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
+    bool bChannelOpen = false;
+    SSH::TOnEventFunc onEventFunc = [&](SSH::ChannelEvent event, const SSH::Byte* pBuf, const UINT64 bufLen) -> SSH::TResult {
         switch (event)
         {
             case SSH::ChannelEvent::Opened:
             {
-                printf("Opened a channel!");
+                printf("Opened a channel!\n");
+                bChannelOpen = true;
                 break;
             }
 
             case SSH::ChannelEvent::Closed:
             {
-                printf("Closed a channel!");
+                printf("Closed a channel!\n");
+                bChannelOpen = false;
                 break;
             }
 
             case SSH::ChannelEvent::Data:
             {
-                printf("Receved %llu bytes", bufLen);
+                printf("Receved %llu bytes\n", bufLen);
                 break;
             }
         }
@@ -139,6 +142,9 @@ int main()
     SSH::TChannelID channelID;
     SSH::TOnConnectFunc onConnectFunc = [&](SSH::Client* pClient){
         channelID = pClient->OpenChannel(SSH::ChannelTypes::Session, onEventFunc);
+
+        const char* strBuf = "HelloMe!";
+        pClient->Send(channelID, (const SSH::Byte*)strBuf, strlen(strBuf));
     };
 
     SSH::TCtx sockCtx = pSock;
