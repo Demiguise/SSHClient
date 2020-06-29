@@ -57,11 +57,6 @@ Client::~Client()
   mImpl.reset();
 }
 
-TResult Client::Send(const Byte* pBuf, const int bufLen)
-{
-  return mImpl->Send(pBuf, bufLen);
-}
-
 void Client::Connect()
 {
   mImpl->Connect();
@@ -72,9 +67,19 @@ void Client::Disconnect()
   mImpl->Disconnect();
 }
 
-void Client::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
+TChannelID Client::OpenChannel(ChannelTypes type, TOnRecvFunc callback)
 {
-  mImpl->OpenChannel(type, callback);
+  return mImpl->OpenChannel(type, callback);
+}
+
+bool Client::CloseChannel(TChannelID channelID)
+{
+  return mImpl->CloseChannel(channelID);
+}
+
+TResult Client::Send(TChannelID channelID, const Byte* pBuf, const int bufLen)
+{
+  return mImpl->Send(channelID, pBuf, bufLen);
 }
 
 State Client::GetState() const
