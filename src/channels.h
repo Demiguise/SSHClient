@@ -48,6 +48,8 @@ namespace SSH
 
     virtual TPacket CreateOpenPacket(PacketStore& store) = 0;
     virtual TPacket CreateClosePacket(PacketStore& store) = 0;
+
+    virtual bool HandleData(TPacket pPacket) = 0;
   };
 
   using TChannel = std::shared_ptr<IChannel>;

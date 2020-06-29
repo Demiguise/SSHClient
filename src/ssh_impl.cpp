@@ -1048,6 +1048,31 @@ bool Client::Impl::CloseChannel(TChannelID channelID)
 
 bool Client::Impl::ReceiveMessage(TPacket pPacket)
 {
+  Byte msgId;
+
+  pPacket->Peek(msgId);
+
+  switch (msgId)
+  {
+    case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
+    {
+      TChannelID recipientChannelID = 0;
+      pPacket->Read(msgId);
+      pPacket->Read(recipientChannelID);
+
+      TChannel channel = GetChannel(recipientChannelID);
+      if (channel == nullptr)
+      {
+        return false;
+      }
+
+      channel->HandleData(pPacket);
+
+      break;
+    }
+    default: break;
+  }
+
   return true;
 }
 
