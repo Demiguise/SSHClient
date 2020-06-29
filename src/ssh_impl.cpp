@@ -1022,6 +1022,13 @@ void Client::Impl::SendChannelOpenRequest()
 
 bool Client::Impl::ReceiveMessage(TPacket pPacket)
 {
+  if (mChannelMgr.HandlePacket(pPacket))
+  {
+    //Channel manager has handled the packet
+    return true;
+  }
+
+  //Handle the packet ourselves
   return true;
 }
 
