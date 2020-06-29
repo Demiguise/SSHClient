@@ -70,6 +70,15 @@ TPacket ChannelManager::CreateOpenChannelRequest(TChannel channel, PacketStore& 
   return newPacket;
 }
 
+TChannel ChannelManager::GetChannel(TChannelID channelID)
+{
+  auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel){
+    return (channel->ID() == channelID);
+  });
+
+  return (iter == mChannels.end()) ? nullptr : *iter;
+}
+
 std::pair<TChannelID, TPacket> ChannelManager::Open(ChannelTypes type, TOnEventFunc callback, PacketStore& store)
 {
   if (type == ChannelTypes::Null)
