@@ -1060,6 +1060,7 @@ bool Client::Impl::ReceiveMessage(TPacket pPacket)
   switch (msgId)
   {
     case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
+    case SSH_MSG::CHANNEL_DATA:
     {
       TChannelID recipientChannelID = 0;
       pPacket->Read(msgId);

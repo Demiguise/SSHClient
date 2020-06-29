@@ -47,6 +47,16 @@ public:
       case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
       {
         mState = ChannelState::Open;
+        mOnEvent(ChannelEvent::Opened, nullptr, 0);
+
+        break;
+      }
+      case SSH_MSG::CHANNEL_DATA:
+      {
+        TByteString data;
+        pPacket->Read(data);
+
+        mOnEvent(ChannelEvent::Data, data.data(), data.size());
         break;
       }
     }
