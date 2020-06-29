@@ -129,9 +129,6 @@ namespace SSH
     void SendUserAuthRequest(UserAuthMethod method);
     UserAuthResponse ReceiveUserAuth(TPacket pPacket);
 
-    //Channel Related
-    void SendChannelOpenRequest();
-
     /*
       This is a generically named function as multiple things could occur
       after we are logged in. From new keys to channel requests or data.

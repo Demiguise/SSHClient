@@ -1016,10 +1016,6 @@ bool Client::Impl::CloseChannel(TChannelID channelID)
   return mChannelMgr.Close(channelID, mPacketStore);
 }
 
-void Client::Impl::SendChannelOpenRequest()
-{
-}
-
 bool Client::Impl::ReceiveMessage(TPacket pPacket)
 {
   if (mChannelMgr.HandlePacket(pPacket))
