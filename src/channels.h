@@ -21,7 +21,11 @@ namespace SSH
 
   class ChannelManager
   {
-    TChannelID mNextID = 0;
+  private:
+    TChannelID mNextID = 1;
+
+    using TChannelVec = std::vector<TChannel>;
+    TChannelVec mChannels;
   public:
     ChannelManager() = default;
     ~ChannelManager() = default;

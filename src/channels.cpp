@@ -26,11 +26,27 @@ public:
 TChannelID ChannelManager::Open(ChannelTypes type, TOnRecvFunc callback)
 {
   TChannel newChannel = std::make_shared<Channel>(type, mNextID++);
+  if (newChannel == nullptr)
+  {
+    return 0;
+  }
+
+  mChannels.push_back(newChannel);
 
   return newChannel->ID();
 }
 
-bool ChannelManager::Close(TChannelID)
+bool ChannelManager::Close(TChannelID channelID)
 {
-  return false;
+  auto iter = std::find_if(mChannels.begin(), mChannels.end(), [&](TChannel channel){
+    return (channel->ID() == channelID);
+  });
+
+  if (iter == mChannels.end())
+  {
+    return false;
+  }
+
+  mChannels.erase(iter);
+  return true;
 }
