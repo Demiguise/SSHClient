@@ -17,6 +17,7 @@ namespace SSH
 
     virtual TChannelID ID() const = 0;
     virtual ChannelTypes Type() const = 0;
+    virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) = 0;
   };
 
   using TChannel = std::shared_ptr<IChannel>;
@@ -32,6 +33,8 @@ namespace SSH
     std::string ChannelTypeToString(ChannelTypes type);
 
     TPacket CreateOpenChannelRequest(TChannel channel, PacketStore& store);
+
+    TChannel GetChannel(TChannelID channelID);
   public:
     ChannelManager() = default;
     ~ChannelManager() = default;

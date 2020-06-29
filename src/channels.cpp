@@ -7,11 +7,13 @@ class Channel : public IChannel
 private:
   UINT32 mChannelId;
   ChannelTypes mChannelType;
+  TOnRecvFunc mOnEvent;
 
 public:
-  Channel(ChannelTypes type, UINT32 id)
+  Channel(ChannelTypes type, UINT32 id, TOnRecvFunc callback)
     : mChannelId(id)
     , mChannelType(type)
+    , mOnEvent(callback)
   {
   }
 
@@ -21,6 +23,10 @@ public:
 
   virtual TChannelID ID() const override { return mChannelId; }
   virtual ChannelTypes Type() const override { return mChannelType; }
+  virtual void OnEvent(ChannelEvent event, const Byte* pBuf, const int bufLen) override
+  {
+    mOnEvent(nullptr, event, pBuf, bufLen);
+  }
 };
 
 std::string ChannelManager::ChannelTypeToString(ChannelTypes type)
@@ -105,5 +111,30 @@ bool ChannelManager::Close(TChannelID channelID, PacketStore& store)
 
 bool ChannelManager::HandlePacket(TPacket pPacket)
 {
-  return false;
+  Byte msgId;
+  pPacket->Peek(msgId);
+
+  switch (msgId)
+  {
+    case SSH_MSG::CHANNEL_OPEN_CONFIRMATION:
+    {
+      //Channel opened!
+      TChannelID receipientID = 0;
+      pPacket->Read(msgId);
+      pPacket->Read(receipientID);
+
+      TChannel channel = GetChannel(receipientID);
+      if (channel == nullptr)
+      {
+        return false;
+      }
+
+      channel->OnEvent(ChannelEvent::Opened, nullptr, 0);
+    }
+    break;
+    default:
+    {
+      return false;
+    }
+  }
 }
