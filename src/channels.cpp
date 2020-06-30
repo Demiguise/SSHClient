@@ -81,6 +81,11 @@ public:
         mOnEvent(ChannelEvent::Data, data.data(), data.size());
         break;
       }
+      case SSH_MSG::CHANNEL_CLOSE:
+      {
+        mOnEvent(ChannelEvent::Closed, nullptr, 0);
+        break;
+      }
     }
 
     return true;
