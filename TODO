@@ -1,0 +1,21 @@
+Ensure secure buffer is secure.
+Add more algorithms for crypto, kex and MAC.
+Select best match for SSH algorithms based on client/remote KEX init packets.
+
+Add public key authentication method.
+Handle password change requests.
+
+Ensure channels respect window sizes and max packet lengths.
+Add pseudo-tty channel type.
+Handle all possible Channel messages.
+
+Add disconnect reasons so users can more easily figure out what went wrong.
+Unify logging so that multiple systems can log for any given SSH client. (I.E. KEX should be able to log out, not just SSH_Impl.cpp)
+
+Protect send queue from threading issues, since it may be edited by both the user's thread and the async poll thread.
+
+Check for un-needed copies through API.
+Look at improving the API by removing raw pointers, if possible.
+Look at improving the API by removing buffer pointer/buf len pairs, unifying them.
+
+Add an example set of files for different methods of using the API (Lambdas or binding an object's functions).
